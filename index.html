@@ -107,14 +107,8 @@ body {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px 12px;
-  grid-auto-flow: row; /* ごめんね */
-
-  #slotRecordBox .collection-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-auto-flow: row;
 }
-  
+
 .collection-item {
   padding: 4px;
   white-space: normal;
@@ -153,6 +147,32 @@ body {
   border-color: rgba(212,175,55,0.45);
 }
 
+
+
+/* =====================
+運命記録：左から順番に並べる専用グリッド
+===================== */
+.slot-record-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 12px;
+  grid-auto-flow: row;
+  align-items: start;
+}
+
+#slotRecordBox .slot-record-item {
+  min-width: 0;
+  box-sizing: border-box;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 700px) {
+  .slot-record-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
 
 .title-grid {
   display: grid;
@@ -14681,8 +14701,6 @@ var heartMessages = [
     "許してなんて簡単に言えないけど",
     "それでも一緒に居てほしいよ",
     "もっと大人になるね",
-    "何度でも言う　ずっと一緒に居てね",
-    "あなたをずっと笑わせていたい",
     "もうドライブで一々更新しなくてもいいからね",
     "すぐに新しいアップデートを体験できるよ",
 ];
@@ -15308,7 +15326,7 @@ slotRecordBtn.addEventListener("click", function () {
     header.className = "collection-header";
     header.innerHTML = "🎰運命記録<br>収集率：".concat(owned, " / ").concat(total, "（").concat(rate, "%）");
     var grid = document.createElement("div");
-    grid.className = "collection-grid";
+    grid.className = "slot-record-grid";
     SLOT_BONUS_MESSAGES.forEach(function (msg) {
         var item = document.createElement("div");
         item.className = "slot-record-item";
