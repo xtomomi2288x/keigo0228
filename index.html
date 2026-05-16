@@ -45,6 +45,7 @@ body {
 
 #bookBtn,
 #titleBtn,
+#slotRecordBtn,
 #resetBtn {
   display: inline-block !important;
   visibility: visible !important;
@@ -63,7 +64,8 @@ body {
 }
 
 #collectionBox,
-#titleCollectionBox {
+#titleCollectionBox,
+#slotRecordBox {
   display: none;
   position: absolute;
   top: 50px;
@@ -88,6 +90,11 @@ body {
 #titleCollectionBox {
   font-size: 14px;
   line-height: 1.8;
+}
+
+#slotRecordBox {
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .collection-header {
@@ -119,6 +126,27 @@ body {
   border-radius: 6px;
   background: rgba(190,0,255,0.08);
 }
+
+.slot-record-item {
+  padding: 5px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(120,120,120,0.25);
+  background: rgba(255,248,210,0.08);
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+.slot-record-item.locked {
+  color: #999;
+  background: rgba(120,120,120,0.08);
+}
+
+.slot-record-item.unlocked {
+  color: inherit;
+  background: rgba(255,215,0,0.08);
+  border-color: rgba(212,175,55,0.45);
+}
+
 
 .title-grid {
   display: grid;
@@ -288,6 +316,7 @@ body.night-mode #title {
 
 body.night-mode #collectionBox,
 body.night-mode #titleCollectionBox,
+body.night-mode #slotRecordBox,
 body.night-mode #lostCollectionBox {
   background: #333;
   color: #f0f0f0;
@@ -544,6 +573,7 @@ iPad/Safariタップ安定化パッチ
 #heart,
 #bookBtn,
 #titleBtn,
+#slotRecordBtn,
 #lostBtn,
 #resetBtn,
 summary,
@@ -579,10 +609,12 @@ button {
 <div id="buttonArea">
 <button id="bookBtn">📖図鑑</button>
 <button id="titleBtn">🏆称号</button>
+<button id="slotRecordBtn">🎰運命記録</button>
 <button id="lostBtn">？？？</button>
 <button id="resetBtn">🗑リセット</button>
 <div id="collectionBox"></div>
 <div id="titleCollectionBox"></div>
+<div id="slotRecordBox"></div>
 <div id="lostCollectionBox"></div>
 </div>
 <div id="rareEffect">👑✨ RARE !! ✨👑</div>
@@ -14418,6 +14450,14 @@ catch (e) {
     unlockedLostItems = [];
     safeSetItem("unlockedLostItems", JSON.stringify([]));
 }
+var unlockedSlotBonusMessages = [];
+try {
+    unlockedSlotBonusMessages = JSON.parse(safeGetItem("unlockedSlotBonusMessages")) || [];
+}
+catch (e) {
+    unlockedSlotBonusMessages = [];
+    safeSetItem("unlockedSlotBonusMessages", JSON.stringify([]));
+}
 var blackoutCooldown = Number(safeGetItem("blackoutCooldown")) || 0;
 var heart = document.getElementById("heart");
 var box = document.getElementById("randomMsg");
@@ -14426,10 +14466,12 @@ var levelBox = document.getElementById("level");
 var titleBox = document.getElementById("title");
 var bookBtn = document.getElementById("bookBtn");
 var titleBtn = document.getElementById("titleBtn");
+var slotRecordBtn = document.getElementById("slotRecordBtn");
 var lostBtn = document.getElementById("lostBtn");
 var resetBtn = document.getElementById("resetBtn");
 var collectionBox = document.getElementById("collectionBox");
 var titleCollectionBox = document.getElementById("titleCollectionBox");
+var slotRecordBox = document.getElementById("slotRecordBox");
 var lostCollectionBox = document.getElementById("lostCollectionBox");
 var lostItemOverlay = document.getElementById("lostItemOverlay");
 var lostItemText = document.getElementById("lostItemText");
@@ -14626,15 +14668,6 @@ var heartMessages = [
     "マスクは外さない三輪啓悟",
     "怜悧な目元が好きだよ",
     "顎のラインが綺麗な三輪啓悟",
-    "すぐに泣いて怒ってごめんね",
-    "頑張って作ったから悔しかったの ごめんね",
-    "頑固で融通が効かなくてごめんね",
-00  "本当に大好きなのに上手く伝えられない",
-    "嫌われたくなんてないのにな",
-    "それでも一緒に居てほしいよ",
-    "今度はドライブからの更新もいらなくなったからね",
-    "すぐに新しいバージョンを体験できるよ",
-    "仲直りしてね ごめんね",
 ];
 var rareMessages = [
     "💎幻なんかじゃないぜ！レアだぜ！",
@@ -14709,7 +14742,33 @@ var SLOT_BONUS_MESSAGES = [
     "あなたと私だけのもの",
     "永遠のその先",
     "あなたが掴み取ったのは僕だけじゃない",
-    "駆け足になる待ち合わせ"
+    "駆け足になる待ち合わせ",
+    "いつまでも続く関係",
+    "運命さえ引き寄せる",
+    "あなたが繋げた未来",
+    "手を伸ばした分だけ届くもの",
+    "諦めなかった結果",
+    "切り裂いた鎌の向こう側",
+    "幻なんかじゃないから",
+    "その指先に祝福を",
+    "歌の続きを探しに行こう",
+    "まだ見ぬページをめくる音",
+    "きっと偶然じゃない",
+    "あなただけの景色",
+    "即興、次の奇跡まで",
+    "愛はちゃんと蓄積される",
+    "憧れを隣に",
+    "欲しい、ぜんぶ欲しい",
+    "欲しがったぶんだけ返す",
+    "押した数だけ増える愛",
+    "忘れ物を拾いに",
+    "音の神様が少し笑った",
+    "今日のReasonを引き当てた",
+    "幻なんかじゃなかったね",
+    "ワンタッチで決めるスイッチ",
+    "美しい指で押すボタン",
+    "あなたに届け続ける",
+    "一生押します"
 ];
 var slotBonusReady = safeGetItem("slotBonusReady") === "true";
 var heartLocked = false;
@@ -14774,6 +14833,12 @@ function unlockMessage(msg) {
     if (!unlockedMessages.includes(msg)) {
         unlockedMessages.push(msg);
         safeSetItem("unlockedMessages", JSON.stringify(unlockedMessages));
+    }
+}
+function unlockSlotBonusMessage(msg) {
+    if (!unlockedSlotBonusMessages.includes(msg)) {
+        unlockedSlotBonusMessages.push(msg);
+        safeSetItem("unlockedSlotBonusMessages", JSON.stringify(unlockedSlotBonusMessages));
     }
 }
 function showRareReward() {
@@ -14845,6 +14910,7 @@ function showSlotBonusReward() {
         forceDropLostItem();
     }
     var slotMsg = SLOT_BONUS_MESSAGES[Math.floor(Math.random() * SLOT_BONUS_MESSAGES.length)];
+    unlockSlotBonusMessage(slotMsg);
     showSlotMessage(slotMsg);
 }
 var LOST_ITEM_RATE = 1 / 5000;
@@ -14904,19 +14970,27 @@ function getAvailableLostItems() {
 }
 function showLostItem(item) {
     lostItemText.classList.remove("show", "fadeout");
-    lostItemText.innerHTML = "\n    <div>\u5553\u609F\u3055\u3093\u306F\u5FD8\u308C\u7269\u3092\u62FE\u3063\u305F</div>\n    <div style=\"font-size:30px; margin-top:18px;\">\u300C".concat(item, "\u300D</div>\n  ");
+    lostItemText.innerHTML = "";
+    lostItemOverlay.style.transition = "none";
+    lostItemOverlay.style.background = "rgba(0,0,0,1)";
     lostItemOverlay.classList.add("show");
+    void lostItemOverlay.offsetWidth;
     setTimeout(function () {
+        lostItemText.innerHTML = "\n    <div>啓悟さんは忘れ物を拾った</div>\n    <div style=\"font-size:30px; margin-top:18px;\">「".concat(item, "」</div>\n  ");
+        lostItemOverlay.style.transition = "background 0.55s ease, opacity 0.6s ease";
+        lostItemOverlay.style.background = "rgba(0,0,0,0.45)";
         lostItemText.classList.add("show");
-    }, 120);
+    }, 260);
     setTimeout(function () {
         lostItemText.classList.add("fadeout");
         lostItemText.classList.remove("show");
-    }, 1700);
+    }, 2100);
     setTimeout(function () {
         lostItemOverlay.classList.remove("show");
         lostItemText.classList.remove("fadeout");
-    }, 3200);
+        lostItemOverlay.style.transition = "opacity 0.6s ease";
+        lostItemOverlay.style.background = "rgba(0,0,0,0.45)";
+    }, 3600);
 }
 function maybeDropLostItem() {
     if (Math.random() >= LOST_ITEM_RATE)
@@ -15079,13 +15153,14 @@ heart.addEventListener("click", function () {
         showSlotBonusReward();
     }
     else {
-        maybeDropLostItem();
-        var isUR = Math.random() < (1 / 2000);
-        var isRare = !isUR && Math.random() < (1 / 1000);
-        if (isUR) {
+        var normalRoll = Math.random();
+        if (normalRoll < (1 / 5000)) {
+            forceDropLostItem();
+        }
+        else if (normalRoll < (1 / 5000 + 1 / 2000)) {
             showURReward();
         }
-        else if (isRare) {
+        else if (normalRoll < (1 / 5000 + 1 / 2000 + 1 / 1000)) {
             showRareReward();
         }
         else {
@@ -15126,12 +15201,14 @@ heart.addEventListener("click", function () {
 function bringPanelToFront(activeBox) {
     collectionBox.style.zIndex = "99999";
     titleCollectionBox.style.zIndex = "99999";
+    slotRecordBox.style.zIndex = "99999";
     lostCollectionBox.style.zIndex = "99999";
     activeBox.style.zIndex = "1000000";
 }
 function closeAllPanels() {
     collectionBox.style.display = "none";
     titleCollectionBox.style.display = "none";
+    slotRecordBox.style.display = "none";
     lostCollectionBox.style.display = "none";
 }
 bookBtn.addEventListener("click", function () {
@@ -15200,6 +15277,35 @@ titleBtn.addEventListener("click", function () {
     titleCollectionBox.innerHTML = html;
     titleCollectionBox.style.display = "block";
 });
+slotRecordBtn.addEventListener("click", function () {
+    if (slotRecordBox.style.display === "block") {
+        slotRecordBox.style.display = "none";
+        return;
+    }
+    closeAllPanels();
+    bringPanelToFront(slotRecordBox);
+    var owned = SLOT_BONUS_MESSAGES.filter(function (msg) { return unlockedSlotBonusMessages.includes(msg); }).length;
+    var total = SLOT_BONUS_MESSAGES.length;
+    var rate = Math.floor((owned / total) * 100);
+    var header = document.createElement("div");
+    header.className = "collection-header";
+    header.innerHTML = "🎰運命記録<br>収集率：".concat(owned, " / ").concat(total, "（").concat(rate, "%）");
+    var grid = document.createElement("div");
+    grid.className = "collection-grid";
+    SLOT_BONUS_MESSAGES.forEach(function (msg) {
+        var item = document.createElement("div");
+        item.className = "slot-record-item";
+        var got = unlockedSlotBonusMessages.includes(msg);
+        item.classList.add(got ? "unlocked" : "locked");
+        item.textContent = got ? msg : "💀未獲得";
+        grid.appendChild(item);
+    });
+    slotRecordBox.innerHTML = "";
+    slotRecordBox.appendChild(header);
+    slotRecordBox.appendChild(grid);
+    slotRecordBox.style.display = "block";
+});
+
 lostBtn.addEventListener("click", function () {
     if (lostCollectionBox.style.display === "block") {
         lostCollectionBox.style.display = "none";
