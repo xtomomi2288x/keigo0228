@@ -14944,13 +14944,6 @@ function showSlotBonusReward() {
     else {
         forceDropLostItem();
     }
-}
-    else if (roll < 0.99) {
-        showURReward();
-    }
-    else {
-        forceDropLostItem();
-    }
     var slotMsg = SLOT_BONUS_MESSAGES[Math.floor(Math.random() * SLOT_BONUS_MESSAGES.length)];
     unlockSlotBonusMessage(slotMsg);
     showSlotMessage(slotMsg);
