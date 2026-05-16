@@ -14964,7 +14964,21 @@ function unlockSlotBonusMessage(msg) {
         safeSetItem("unlockedSlotBonusMessages", JSON.stringify(unlockedSlotBonusMessages));
     }
 }
+
+function lockHeartForReward(ms) {
+    if (typeof heartLocked === "undefined" || typeof heart === "undefined" || !heart) {
+        return;
+    }
+    heartLocked = true;
+    heart.classList.add("locked");
+    setTimeout(function () {
+        heartLocked = false;
+        heart.classList.remove("locked");
+    }, ms);
+}
+
 function showRareReward() {
+    lockHeartForReward(800);
     box.classList.remove("ur-glow");
     box.classList.remove("sr-reward");
     document.body.classList.add("flash");
@@ -14980,6 +14994,7 @@ function showRareReward() {
     unlockMessage(msg);
 }
 function showURReward() {
+    lockHeartForReward(1800);
     box.classList.remove("sr-reward");
     document.body.classList.add("flash");
     setTimeout(function () { return document.body.classList.remove("flash"); }, 400);
@@ -15033,6 +15048,7 @@ function showSREffect() {
     }, 650);
 }
 function showSRReward() {
+    lockHeartForReward(1200);
     box.classList.remove("ur-glow");
     box.classList.remove("rare");
     box.classList.add("sr-reward");
