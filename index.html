@@ -127,6 +127,23 @@ body {
   background: rgba(190,0,255,0.08);
 }
 
+.collection-item.sr-item {
+  border: 1px solid #4da6ff;
+  border-radius: 6px;
+  background: rgba(77,166,255,0.08);
+  box-shadow:
+    0 0 6px rgba(77,166,255,0.35),
+    0 0 12px rgba(77,166,255,0.18);
+}
+
+.sr-reward {
+  color: #2f8cff;
+  font-weight: bold;
+  text-shadow:
+    0 0 6px rgba(77,166,255,0.8),
+    0 0 12px rgba(77,166,255,0.45);
+}
+
 .slot-record-item {
   padding: 5px 6px;
   border-radius: 6px;
@@ -14753,6 +14770,44 @@ var urMessages = [
     "💚🌙神様がいるのならきっと どこまでもあなたの形をしている(短歌)🌙💚",
     "🌅🎸明け方の魂の暴力 叫ぶ 叫べよ 終わらない歌(短歌)🎸🌅",
 ];
+var srMessages = [
+    "ギャグ枠です　とはいえSRだからね？！",
+    "そう簡単にUR出されてたまるか",
+    "残念！SRでした！！でも愛はたっぷりだから！",
+    "UR狙ってる顔してたね？物欲センサーってやつ",
+    "SRもちゃんと当たりだよ、そっぽ向かないでね",
+    "SRだけど、気持ちはUR寄り",
+    "惜しいようで惜しくない これがSRの味です",
+    "焦りすぎ焦りすぎ　SRもちゃんと価値あるから",
+    "その押し方、ちょっと好き だからSRあげる",
+    "これ、地味にいいやつ SRの中では当たり",
+    "その連打、気合いは認める とりあえずSR置いとくね",
+    "引きはいい 欲が強いだけ",
+    "惜しいね〜って言いたいところだけど SRは普通に当たり",
+    "まだ物語の途中だよ とりあえずSR",
+    "その手、止めないで SRでもちゃんと進んでる",
+    "ロマンは簡単には来ない",
+    "そらultraは滅多に出ない",
+    "ここでSR引けるの、寧ろいい これは後で効いてくるやつ",
+    "今の一音、ちゃんと拾ったよ だからSR",
+    "路上ライブの残滓　誰もいない朝",
+    "ちょっと走ったね でもそれもライブっぽい",
+    "完璧じゃないのがいい SRってそういうとこ",
+    "最近間の取り方がとても素敵 SRあげるね",
+    "今のはちょっと雑だったね 僕にしかわからない優越感",
+    "自転車に飛び乗って空を探したけど、雨",
+    "幻だったぜ",
+    "1幻で1URとかどうですか",
+    "下は音響がいいから……。",
+    "MCが下手な三輪啓悟",
+    "うろ覚えのSOUL LOVE",
+    "URはまだステージ裏 今日はSRで我慢して",
+    "まだクライマックスじゃない ここはSRで繋ぐところ",
+    "Cメロがわからない　一回休み",
+    "URは今チューニング中 先にSRどうぞ",
+    "今はまだイントロ SRで繋いでいこう",
+    "今晩はオリジナル無しかあ…",
+];
 var SLOT_SYMBOLS = ["🎤", "🎹", "✨"];
 var SLOT_HIT_RATE = 1 / 200;
 var SLOT_BONUS_MESSAGES = [
@@ -14878,6 +14933,7 @@ function unlockSlotBonusMessage(msg) {
 }
 function showRareReward() {
     box.classList.remove("ur-glow");
+    box.classList.remove("sr-reward");
     document.body.classList.add("flash");
     setTimeout(function () { return document.body.classList.remove("flash"); }, 300);
     rareCount++;
@@ -14891,6 +14947,7 @@ function showRareReward() {
     unlockMessage(msg);
 }
 function showURReward() {
+    box.classList.remove("sr-reward");
     document.body.classList.add("flash");
     setTimeout(function () { return document.body.classList.remove("flash"); }, 400);
     urCount++;
@@ -14912,14 +14969,61 @@ function showURReward() {
     box.textContent = msg;
     unlockMessage(msg);
 }
+
+function showSREffect() {
+    var old = document.getElementById("srFlashEffect");
+    if (old)
+        old.remove();
+
+    var effect = document.createElement("div");
+    effect.id = "srFlashEffect";
+    effect.style.position = "fixed";
+    effect.style.inset = "0";
+    effect.style.background = "rgba(77,166,255,0.16)";
+    effect.style.zIndex = "999999";
+    effect.style.pointerEvents = "none";
+    effect.style.opacity = "0";
+    effect.style.transition = "opacity 0.3s ease";
+
+    document.body.appendChild(effect);
+
+    setTimeout(function () {
+        effect.style.opacity = "1";
+    }, 10);
+
+    setTimeout(function () {
+        effect.style.opacity = "0";
+    }, 300);
+
+    setTimeout(function () {
+        effect.remove();
+    }, 650);
+}
+function showSRReward() {
+    box.classList.remove("ur-glow");
+    box.classList.remove("rare");
+    box.classList.add("sr-reward");
+    showSREffect();
+
+    var msg = srMessages[Math.floor(Math.random() * srMessages.length)];
+    box.textContent = msg;
+    unlockMessage(msg);
+
+    setTimeout(function () {
+        box.classList.remove("sr-reward");
+    }, 2200);
+}
+
 function showNormalReward() {
     box.classList.remove("ur-glow");
     box.classList.remove("rare");
+    box.classList.remove("sr-reward");
     var msg = heartMessages[Math.floor(Math.random() * heartMessages.length)];
     box.textContent = msg;
     unlockMessage(msg);
 }
 function forceDropLostItem() {
+    box.classList.remove("sr-reward");
     var pool = getAvailableLostItems();
     if (pool.length === 0)
         return;
@@ -14935,8 +15039,11 @@ function forceDropLostItem() {
 }
 function showSlotBonusReward() {
     var roll = Math.random();
-    if (roll < 0.975) {
+    if (roll < 0.925) {
         showRareReward();
+    }
+    else if (roll < 0.975) {
+        showSRReward();
     }
     else if (roll < 0.995) {
         showURReward();
@@ -15195,7 +15302,10 @@ heart.addEventListener("click", function () {
         else if (normalRoll < (1 / 12000 + 1 / 10000)) {
             showURReward();
         }
-        else if (normalRoll < (1 / 12000 + 1 / 10000 + 1 / 1000)) {
+        else if (normalRoll < (1 / 12000 + 1 / 10000 + 1 / 2000)) {
+            showSRReward();
+        }
+        else if (normalRoll < (1 / 12000 + 1 / 10000 + 1 / 2000 + 1 / 1000)) {
             showRareReward();
         }
         else {
@@ -15253,7 +15363,7 @@ bookBtn.addEventListener("click", function () {
     }
     closeAllPanels();
     bringPanelToFront(collectionBox);
-    var allMessages = __spreadArray(__spreadArray(__spreadArray([], heartMessages, true), rareMessages, true), urMessages, true);
+    var allMessages = __spreadArray(__spreadArray(__spreadArray(__spreadArray([], heartMessages, true), rareMessages, true), srMessages, true), urMessages, true);
     var owned = allMessages.filter(function (msg) { return unlockedMessages.includes(msg); }).length;
     var total = allMessages.length;
     var rate = Math.floor((owned / total) * 100);
@@ -15266,10 +15376,13 @@ bookBtn.addEventListener("click", function () {
         var item = document.createElement("div");
         item.className = "collection-item";
         var rare = rareMessages.includes(msg);
+        var sr = srMessages.includes(msg);
         var ur = urMessages.includes(msg);
         var got = unlockedMessages.includes(msg);
         if (rare)
             item.classList.add("rare-item");
+        if (sr)
+            item.classList.add("sr-item");
         if (ur)
             item.classList.add("ur-item");
         item.textContent = got ? msg : "👿未所持";
