@@ -107,8 +107,14 @@ body {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px 12px;
-}
+  grid-auto-flow: row; /* ごめんね */
 
+  #slotRecordBox .collection-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: row;
+}
+  
 .collection-item {
   padding: 4px;
   white-space: normal;
