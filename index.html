@@ -11,6 +11,20 @@ body {
   font-family: sans-serif;
 }
 
+.lyric {
+  line-height: 2.2;
+}
+
+.chord-line {
+  color: #1e90ff; /* 青 */
+  font-size: 14px;
+  height: 18px;
+}
+
+.lyric-line {
+  font-size: 18px;
+}
+
 .rare {
   color: #d4af37;
   font-weight: bold;
@@ -15953,6 +15967,35 @@ function triggerSecret() {
   }
 })();
 
+document.querySelectorAll('.lyric').forEach(block => {
+  const lines = block.innerHTML.split("<br>");
+
+  let result = "";
+
+  lines.forEach(line => {
+    let chordLine = "";
+    let lyricLine = "";
+    let i = 0;
+
+    while (i < line.length) {
+      if (line[i] === "[") {
+        let end = line.indexOf("]", i);
+        let chord = line.substring(i + 1, end);
+        chordLine += chord.padEnd(6, " ");
+        i = end + 1;
+      } else {
+        chordLine += " ";
+        lyricLine += line[i];
+        i++;
+      }
+    }
+
+    result += `<div class="chord-line">${chordLine}</div>`;
+    result += `<div class="lyric-line">${lyricLine}</div>`;
+  });
+
+  block.innerHTML = result;
+});
 </script>
 <details class="song" data-yomi="あおきとり">
 <summary>蒼きとり</summary>
