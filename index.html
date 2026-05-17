@@ -11,20 +11,6 @@ body {
   font-family: sans-serif;
 }
 
-.lyric {
-  line-height: 2.2;
-}
-
-.chord-line {
-  color: #1e90ff; /* 青 */
-  font-size: 14px;
-  height: 18px;
-}
-
-.lyric-line {
-  font-size: 18px;
-}
-
 .rare {
   color: #d4af37;
   font-weight: bold;
@@ -676,27 +662,52 @@ button {
 
 /* =====================
 コード表示（歌詞の上にルビ風）
-使い方：歌詞内に [C]あいしてる [G]ぜ のように書く
+使い方：
+歌詞内で [C]君と[G]僕 みたいに書くと、コードが歌詞の上に表示されます。
+コードを入れない曲は今まで通り表示されます。
 ===================== */
 .chord-line {
-  font-size: 13px;
-  line-height: 1.1;
-  color: #2f6fd6;
-  font-weight: bold;
-  white-space: pre-wrap;
-  margin-top: 4px;
-  margin-bottom: 0;
-  letter-spacing: 0.03em;
+  margin: 8px 0 2px;
+  line-height: 1.55;
+  white-space: normal;
 }
-.lyric-line-with-chords {
-  margin: 0 0 8px 0;
+
+.chord-token {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  vertical-align: bottom;
+  margin-right: 0.08em;
 }
-.lyric-line-with-chords .plain-lyric-line {
+
+.chord-token .chord-name {
   display: block;
+  min-height: 1.1em;
+  font-size: 12px;
+  line-height: 1.0;
+  color: #2f8cff;
+  font-weight: bold;
+  letter-spacing: 0.02em;
+  text-shadow:
+    0 0 4px rgba(77,166,255,0.55),
+    0 0 8px rgba(77,166,255,0.25);
 }
-body.night-mode .chord-line {
-  color: #8dbbff;
+
+.chord-token .lyric-fragment {
+  display: block;
+  font-size: inherit;
+  line-height: 1.2;
 }
+
+.chord-plain-line {
+  min-height: 1.2em;
+  white-space: pre-wrap;
+}
+
+body.night-mode .chord-token .chord-name {
+  color: #9fd0ff;
+}
+
 
 </style>
 </head>
@@ -10691,9 +10702,7 @@ Everywhere I'll go
 <details class="song">
 <summary>抱きしめたい</summary>
 <div class="lyric">
-
-
-出会った日と同じように　霧雨けむる　静かな夜]
+出会った日と　同じように　霧雨けむる　静かな夜
 目を閉じれば　浮かんでくる　あの日のままの二人
 
 人波で溢れた　街のショウウィンドウ
@@ -15652,348 +15661,6 @@ function triggerSecret() {
     }, 2000);
 }
 
-
-
-/* =====================
-読み順ソート・自動カウント・コード表示
-※漢字の読みはブラウザだけでは完全自動判定できないので、正確にしたい曲は
-<details class="song" data-yomi="かなで"> のように data-yomi を入れる。
-===================== */
-(function () {
-  function hiraToKata(str) {
-    return String(str || "").replace(/[ぁ-ん]/g, function(ch) {
-      return String.fromCharCode(ch.charCodeAt(0) + 0x60);
-    });
-  }
-
-  function normalizeYomi(str) {
-    return hiraToKata(String(str || ""))
-      .toLowerCase()
-      .replace(/[\s　・･~〜～!！?？、。,.\-―ー_＿()（）\[\]【】『』「」'"“”]/g, "")
-      .replace(/&/g, "あんど")
-      .replace(/＋|\+/g, "ぷらす");
-  }
-
-  var YOMI_OVERRIDES = {
-    "愛を伝えたいだとか":"アイヲツタエタイダトカ",
-    "マリーゴールド":"マリーゴールド",
-    "ウズラ":"ウズラ",
-    "鞄の中、心の中":"カバンノナカココロノナカ",
-    "僕らしさ、君らしさ":"ボクラシサキミラシサ",
-    "ハローグッバイ":"ハローグッバイ",
-    "赤橙":"セキトウ",
-    "造花が笑う":"ゾウカガワラウ",
-    "アンダースタンド":"アンダースタンド",
-    "Re:Re:":"リライト",
-    "君という花":"キミトイウハナ",
-    "君の街まで":"キミノマチマデ",
-    "ソラニン":"ソラニン",
-    "遥か彼方":"ハルカカナタ",
-    "ブルートレイン":"ブルートレイン",
-    "リライト":"リライト",
-    "ループ＆ループ":"ループアンドループ",
-    "アブノーマルが足りない":"アブノーマルガタリナイ",
-    "キャッチャ―を科学する":"キャッチャーヲカガクスル",
-    "かわいいひと":"カワイイヒト",
-    "ガッツだぜ!!":"ガッツダゼ",
-    "バンザイ ～好きでよかった～":"バンザイスキデヨカッタ",
-    "笑えれば":"ワラエレバ",
-    "風の日":"カゼノヒ",
-    "高架線":"コウカセン",
-    "ジターバグ":"ジターバグ",
-    "スターフィッシュ":"スターフィッシュ",
-    "Supernova":"スーパーノヴァ",
-    "No.13":"ナンバーサーティーン",
-    "虹":"ニジ",
-    "Funny Bunny":"ファニーバニー",
-    "Missing":"ミッシング",
-    "モンスター":"モンスター",
-    "指輪":"ユビワ",
-    "今宵の月のように":"コヨイノツキノヨウニ",
-    "俺たちの明日":"オレタチノアシタ",
-    "悲しみの果て":"カナシミノハテ",
-    "I Love You":"アイラブユー",
-    "OH MY LITTLE GIRL":"オーマイリトルガール",
-    "15の夜":"ジュウゴノヨル",
-    "卒業":"ソツギョウ",
-    "シェリー":"シェリー",
-    "シルエット":"シルエット",
-    "ないものねだり":"ナイモノネダリ",
-    "スターマーカー":"スターマーカー",
-    "フルドライブ":"フルドライブ",
-    "ダイバー":"ダイバー",
-    "カメレオン":"カメレオン",
-    "Teenager Forever":"ティーンエイジャーフォーエバー",
-    "BOY":"ボーイ",
-    "ユーモア":"ユーモア",
-    "白日":"ハクジツ",
-    "逆夢":"サカユメ",
-    "一途":"イチズ",
-    "LA・LA・LA LOVE SONG":"ララララブソング",
-    "少年":"ショウネン",
-    "MARIA":"マリア",
-    "NITE&DAY":"ナイトアンドデイ",
-    "see you":"シーユー",
-    "忘却の空":"ボウキャクノソラ",
-    "ミザリー":"ミザリー",
-    "ROCK'N'ROLL":"ロックンロール",
-    "I、愛、会い":"アイアイアイ",
-    "精いっぱい、僕らの歌":"セイイッパイボクラノウタ",
-    "ラブソング":"ラブソング",
-    "誘惑":"ユウワク",
-    "口唇":"クチビル",
-    "Winter Again":"ウィンターアゲイン",
-    "SOUL LOVE":"ソウルラブ",
-    "愛の言霊":"アイノコトダマ",
-    "いとしのエリー":"イトシノエリー",
-    "TSUNAMI":"ツナミ",
-    "波乗りジョニー":"ナミノリジョニー",
-    "真夏の果実":"マナツノカジツ",
-    "白い恋人達":"シロイコイビトタチ",
-    "歌うたいのバラッド":"ウタウタイノバラッド",
-    "歩いて帰ろう":"アルイテカエロウ",
-    "ずっと好きだった":"ズットスキダッタ",
-    "ウェディング・ソング":"ウェディングソング",
-    "コロナ":"コロナ",
-    "サイハテホーム":"サイハテホーム",
-    "待ちぼうけ":"マチボウケ",
-    "マーガレット":"マーガレット",
-    "リリィ愛の歌":"リリィアイノウタ",
-    "青空":"アオゾラ",
-    "終わらない歌":"オワラナイウタ",
-    "キスして欲しい":"キスシテホシイ",
-    "シャララ":"シャララ",
-    "少年の歌":"ショウネンノウタ",
-    "情熱の薔薇":"ジョウネツノバラ",
-    "ダンス・ナンバー":"ダンスナンバー",
-    "TRAIN-TRAIN":"トレイントレイン",
-    "人にやさしく":"ヒトニヤサシク",
-    "夢":"ユメ",
-    "リンダリンダ":"リンダリンダ",
-    "青春":"セイシュン",
-    "日曜日よりの使者":"ニチヨウビヨリノシシャ",
-    "不死身の花":"フジミノハナ",
-    "胸がドキドキ":"ムネガドキドキ",
-    "いいわけ":"イイワケ",
-    "シングルベッド":"シングルベッド",
-    "ズルイ女":"ズルイオンナ",
-    "空を見なよ":"ソラヲミナヨ",
-    "藍":"アイ",
-    "アカツキの歌":"アカツキノウタ",
-    "雨待ち風":"アメマチカゼ",
-    "奏":"カナデ",
-    "ガラナ":"ガラナ",
-    "キレイだ":"キレイダ",
-    "スフィアの羽":"スフィアノハネ",
-    "全力少年":"ゼンリョクショウネン",
-    "view":"ビュー",
-    "冬の口笛":"フユノクチブエ",
-    "ふれて未来を":"フレテミライヲ",
-    "ボクノート":"ボクノート",
-    "メロドラマ":"メロドラマ",
-    "螺旋":"ラセン",
-    "アシンメトリー":"アシンメトリー",
-    "黄金の月":"オウゴンノツキ",
-    "コノユビトマレ":"コノユビトマレ",
-    "サヨナラホームラン":"サヨナラホームラン",
-    "19才":"ジュウキュウサイ",
-    "NOBODY KNOWS":"ノーバディノウズ",
-    "はじまりの日":"ハジマリノヒ",
-    "ヒットチャートをかけぬけろ":"ヒットチャートヲカケヌケロ",
-    "プログレス":"プログレス",
-    "夜空ノムコウ":"ヨゾラノムコウ",
-    "チェリー":"チェリー",
-    "空も飛べるはず":"ソラモトベルハズ",
-    "ロビンソン":"ロビンソン",
-    "タコとかになりたい":"タコトカニナリタイ",
-    "運命の人":"ウンメイノヒト",
-    "渚":"ナギサ",
-    "流れ星":"ナガレボシ",
-    "スターゲイザー":"スターゲイザー",
-    "バニーガール":"バニーガール",
-    "ルナルナ":"ルナルナ",
-    "スカーレット":"スカーレット",
-    "突破口":"トッパコウ",
-    "人として":"ヒトトシテ",
-    "RPG":"アールピージー",
-    "インスタントラジオ":"インスタントラジオ",
-    "死の魔法":"シノマホウ",
-    "スターライトパレード":"スターライトパレード",
-    "世界平和":"セカイヘイワ",
-    "Dragon Night":"ドラゴンナイト",
-    "天使と悪魔":"テンシトアクマ",
-    "虹色の戦争":"ニジイロノセンソウ",
-    "Habit":"ハビット",
-    "ファンタジー":"ファンタジー",
-    "幻の命":"マボロシノイノチ",
-    "炎と森のカーニバル":"ホノオトモリノカーニバル"
-  };
-
-  var ARTIST_YOMI_OVERRIDES = {
-    "あいみょん":"アイミョン",
-    "藍坊主":"アオボウズ",
-    "Asid Man":"アシッドマン",
-    "ASIAN KUNG-FU GENERATION":"アジアンカンフージェネレーション",
-    "アルカラ":"アルカラ",
-    "ウルフルズ":"ウルフルズ",
-    "ELLEGARDEN":"エルレガーデン",
-    "エレファントカシマシ":"エレファントカシマシ",
-    "尾崎豊":"オザキユタカ",
-    "KANA-BOON":"カナブーン",
-    "King gnu":"キングヌー",
-    "久保田利伸":"クボタトシノブ",
-    "黒夢(SADS)":"クロユメサッズ",
-    "ghostnote":"ゴーストノート",
-    "GLAY":"グレイ",
-    "サザン":"サザン",
-    "斉藤和義":"サイトウカズヨシ",
-    "サクラメリーメン":"サクラメリーメン",
-    "THE BLUE HEARTS(THE HIGH-LOWS)":"ザブルーハーツザハイロウズ",
-    "シャ乱Q":"シャランキュー",
-    "スキマスイッチ":"スキマスイッチ",
-    "スガシカオ":"スガシカオ",
-    "スピッツ":"スピッツ",
-    "SUPER BEAVER":"スーパービーバー",
-    "世界の終わり":"セカイノオワリ",
-    "AAA":"トリプルエー",
-    "CHARCOAL FILTER":"チャコールフィルター",
-    "DA PUMP":"ダパンプ",
-    "高橋優":"タカハシユウ",
-    "玉置浩二":"タマキコウジ",
-    "徳永英明":"トクナガヒデアキ",
-    "DREAMS COME TRUE":"ドリームズカムトゥルー",
-    "DOES":"ドーズ",
-    "中島みゆき":"ナカジマミユキ",
-    "BUCK-TICK":"バクチク",
-    "B'z":"ビーズ",
-    "BUMP OF CHICKEN":"バンプオブチキン",
-    "秦基博":"ハタモトヒロ",
-    "平井堅":"ヒライケン",
-    "ポルノグラフィティ":"ポルノグラフィティ",
-    "PINCH COX":"ピンチコックス",
-    "槇原敬之":"マキハラノリユキ",
-    "Mr.children":"ミスターチルドレン"
-  };
-
-  function getSummaryText(details) {
-    var summary = details ? details.querySelector(":scope > summary") : null;
-    return summary ? summary.textContent.trim() : "";
-  }
-
-  function getSortYomi(details, map) {
-    var title = getSummaryText(details);
-    var raw = details.getAttribute("data-yomi") || map[title] || title;
-    return normalizeYomi(raw);
-  }
-
-  function sortSongDetails(artistDetails) {
-    var songs = Array.prototype.slice.call(artistDetails.querySelectorAll(":scope > details.song"));
-    songs.sort(function(a, b) {
-      return getSortYomi(a, YOMI_OVERRIDES).localeCompare(getSortYomi(b, YOMI_OVERRIDES), "ja");
-    });
-    songs.forEach(function(song) { artistDetails.appendChild(song); });
-  }
-
-  function sortArtistDetails(kanaGroup) {
-    var artists = Array.prototype.slice.call(kanaGroup.querySelectorAll(":scope > details:not(.song)"));
-    artists.sort(function(a, b) {
-      return getSortYomi(a, ARTIST_YOMI_OVERRIDES).localeCompare(getSortYomi(b, ARTIST_YOMI_OVERRIDES), "ja");
-    });
-    artists.forEach(function(artist) { kanaGroup.appendChild(artist); });
-  }
-
-  function updateKanaGroupCounts() {
-    document.querySelectorAll("details.kana-group").forEach(function(group) {
-      var summary = group.querySelector(":scope > summary");
-      if (!summary) return;
-      var base = summary.textContent.replace(/（.*?）/g, "").trim();
-      var artists = group.querySelectorAll(":scope > details:not(.song)").length;
-      var songs = group.querySelectorAll("details.song").length;
-      summary.textContent = base + "（" + artists + "アーティスト / " + songs + "曲）";
-    });
-  }
-
-  function applyChordRuby() {
-    document.querySelectorAll(".lyric").forEach(function(lyric) {
-      if (lyric.getAttribute("data-chord-rendered") === "true") return;
-      var original = lyric.textContent;
-      if (original.indexOf("[") === -1 || original.indexOf("]") === -1) return;
-      var lines = original.split("\n");
-      var html = lines.map(function(line) {
-        var chordLine = "";
-        var plain = "";
-        var visiblePos = 0;
-        var i = 0;
-        while (i < line.length) {
-          if (line[i] === "[") {
-            var end = line.indexOf("]", i + 1);
-            if (end !== -1) {
-              var chord = line.slice(i + 1, end);
-              while (chordLine.length < visiblePos) chordLine += " ";
-              chordLine += chord;
-              i = end + 1;
-              continue;
-            }
-          }
-          plain += line[i];
-          visiblePos++;
-          i++;
-        }
-        if (chordLine.trim()) {
-          return '<div class="lyric-line-with-chords"><span class="chord-line">' + chordLine + '</span><span class="plain-lyric-line">' + plain + '</span></div>';
-        }
-        return plain;
-      }).join("\n");
-      lyric.innerHTML = html;
-      lyric.setAttribute("data-chord-rendered", "true");
-    });
-  }
-
-  function applyAutoSortAndCounts() {
-    document.querySelectorAll("details.kana-group").forEach(function(group) {
-      Array.prototype.slice.call(group.querySelectorAll(":scope > details:not(.song)")).forEach(sortSongDetails);
-      sortArtistDetails(group);
-    });
-    updateKanaGroupCounts();
-    applyChordRuby();
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", applyAutoSortAndCounts);
-  } else {
-    applyAutoSortAndCounts();
-  }
-})();
-
-document.querySelectorAll('.lyric').forEach(block => {
-  const lines = block.innerHTML.split("<br>");
-
-  let result = "";
-
-  lines.forEach(line => {
-    let chordLine = "";
-    let lyricLine = "";
-    let i = 0;
-
-    while (i < line.length) {
-      if (line[i] === "[") {
-        let end = line.indexOf("]", i);
-        let chord = line.substring(i + 1, end);
-        chordLine += chord.padEnd(6, " ");
-        i = end + 1;
-      } else {
-        chordLine += " ";
-        lyricLine += line[i];
-        i++;
-      }
-    }
-
-    result += `<div class="chord-line">${chordLine}</div>`;
-    result += `<div class="lyric-line">${lyricLine}</div>`;
-  });
-
-  block.innerHTML = result;
-});
 </script>
 <details class="song" data-yomi="あおきとり">
 <summary>蒼きとり</summary>
@@ -18367,5 +18034,240 @@ your way！のところかっこよくて好きだ！
 この曲のお陰で生きながらえた感ある　仕事もリアルも上手く行ってない時にどれだけ励まされたことか
 ありがとう
   </div>
-</details></details></body>
+</details></details>
+<script>
+/* =====================
+自動整列・自動カウント・コード表示
+===================== */
+(function () {
+  function getDirectChildrenByTag(parent, tagName) {
+    var out = [];
+    var children = parent.children;
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].tagName && children[i].tagName.toLowerCase() === tagName.toLowerCase()) {
+        out.push(children[i]);
+      }
+    }
+    return out;
+  }
+
+  function getFirstSummaryText(details) {
+    var children = details.children;
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].tagName && children[i].tagName.toLowerCase() === "summary") {
+        return (children[i].textContent || "").trim();
+      }
+    }
+    return "";
+  }
+
+  function getFirstSummary(details) {
+    var children = details.children;
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].tagName && children[i].tagName.toLowerCase() === "summary") {
+        return children[i];
+      }
+    }
+    return null;
+  }
+
+  function sortKey(details) {
+    var yomi = details.getAttribute("data-yomi");
+    if (yomi) return yomi.trim();
+    return getFirstSummaryText(details);
+  }
+
+  function sortDetailsList(list) {
+    var collator = null;
+    try {
+      collator = new Intl.Collator("ja", { numeric: true, sensitivity: "base" });
+    } catch (e) {
+      collator = null;
+    }
+
+    list.sort(function (a, b) {
+      var ak = sortKey(a);
+      var bk = sortKey(b);
+      if (collator) return collator.compare(ak, bk);
+      if (ak < bk) return -1;
+      if (ak > bk) return 1;
+      return 0;
+    });
+  }
+
+  function sortSongsInArtist(artist) {
+    var songs = [];
+    var directDetails = getDirectChildrenByTag(artist, "details");
+
+    for (var i = 0; i < directDetails.length; i++) {
+      if (directDetails[i].classList.contains("song")) {
+        songs.push(directDetails[i]);
+      }
+    }
+
+    sortDetailsList(songs);
+
+    for (var j = 0; j < songs.length; j++) {
+      artist.appendChild(songs[j]);
+    }
+  }
+
+  function sortArtistsAndSongs() {
+    var kanaGroups = document.querySelectorAll("details.kana-group");
+
+    for (var i = 0; i < kanaGroups.length; i++) {
+      var group = kanaGroups[i];
+      var directDetails = getDirectChildrenByTag(group, "details");
+      var artists = [];
+
+      for (var j = 0; j < directDetails.length; j++) {
+        if (!directDetails[j].classList.contains("song")) {
+          artists.push(directDetails[j]);
+          sortSongsInArtist(directDetails[j]);
+        }
+      }
+
+      sortDetailsList(artists);
+
+      for (var k = 0; k < artists.length; k++) {
+        group.appendChild(artists[k]);
+      }
+    }
+  }
+
+  function updateKanaGroupCounts() {
+    var kanaGroups = document.querySelectorAll("details.kana-group");
+
+    for (var i = 0; i < kanaGroups.length; i++) {
+      var group = kanaGroups[i];
+      var summary = getFirstSummary(group);
+      if (!summary) continue;
+
+      var directDetails = getDirectChildrenByTag(group, "details");
+      var artistCount = 0;
+      var songCount = 0;
+
+      for (var j = 0; j < directDetails.length; j++) {
+        if (!directDetails[j].classList.contains("song")) {
+          artistCount++;
+          songCount += directDetails[j].querySelectorAll("details.song").length;
+        }
+      }
+
+      var base = (summary.textContent || "").replace(/（.*?）/g, "").trim();
+      summary.textContent = base + "（" + artistCount + "アーティスト / " + songCount + "曲）";
+    }
+  }
+
+  function isChordName(text) {
+    return /^[A-G](#|b)?(m|maj|min|dim|aug|sus|add)?[0-9]*(\([^)]+\))?(\/[A-G](#|b)?)?$/.test(text);
+  }
+
+  function escapeHtml(text) {
+    return String(text)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function renderChordLine(line) {
+    var parts = [];
+    var regex = /\[([A-G](?:#|b)?(?:m|maj|min|dim|aug|sus|add)?[0-9]*(?:\([^)]+\))?(?:\/[A-G](?:#|b)?)?)\]/g;
+    var matches = [];
+    var match;
+
+    while ((match = regex.exec(line)) !== null) {
+      if (isChordName(match[1])) {
+        matches.push({ chord: match[1], index: match.index, end: regex.lastIndex });
+      }
+    }
+
+    if (matches.length === 0) {
+      return '<div class="chord-plain-line">' + escapeHtml(line) + '</div>';
+    }
+
+    if (matches[0].index > 0) {
+      parts.push('<span class="chord-token"><span class="chord-name">&nbsp;</span><span class="lyric-fragment">' + escapeHtml(line.slice(0, matches[0].index)) + '</span></span>');
+    }
+
+    for (var i = 0; i < matches.length; i++) {
+      var start = matches[i].end;
+      var end = (i + 1 < matches.length) ? matches[i + 1].index : line.length;
+      var lyricPart = line.slice(start, end);
+      parts.push(
+        '<span class="chord-token">' +
+          '<span class="chord-name">' + escapeHtml(matches[i].chord) + '</span>' +
+          '<span class="lyric-fragment">' + escapeHtml(lyricPart || "　") + '</span>' +
+        '</span>'
+      );
+    }
+
+    return '<div class="chord-line">' + parts.join("") + '</div>';
+  }
+
+  function renderChordLyrics() {
+    var lyrics = document.querySelectorAll(".lyric");
+
+    for (var i = 0; i < lyrics.length; i++) {
+      var lyric = lyrics[i];
+
+      if (lyric.getAttribute("data-chord-rendered") === "true") continue;
+
+      var text = lyric.textContent || "";
+      if (!/\[[A-G](#|b)?/.test(text)) continue;
+
+      var lines = text.split(/\r?\n/);
+      var html = [];
+
+      for (var j = 0; j < lines.length; j++) {
+        html.push(renderChordLine(lines[j]));
+      }
+
+      lyric.innerHTML = html.join("");
+      lyric.setAttribute("data-chord-rendered", "true");
+      lyric.classList.add("has-chords");
+    }
+  }
+
+  function refreshLibraryLayout() {
+    sortArtistsAndSongs();
+    updateKanaGroupCounts();
+    renderChordLyrics();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", refreshLibraryLayout);
+  } else {
+    refreshLibraryLayout();
+  }
+
+  window.refreshLibraryLayout = refreshLibraryLayout;
+})();
+</script>
+
+
+<script>
+/* SR表示テキスト強制上書き */
+(function(){
+  const SR_TEXT = "🧊💙✨SUPER RARE✨💙🧊";
+
+  const observer = new MutationObserver(() => {
+    const msg = document.getElementById("slotMessage");
+    if (!msg) return;
+
+    if (msg.classList.contains("slot-sr")) {
+      msg.textContent = SR_TEXT;
+    }
+  });
+
+  const target = document.getElementById("slotMessage");
+  if (target) {
+    observer.observe(target, { childList: true, subtree: true, characterData: true });
+  }
+})();
+</script>
+
+</body>
 </html>
