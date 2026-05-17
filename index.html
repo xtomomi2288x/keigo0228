@@ -11,6 +11,20 @@ body {
   font-family: sans-serif;
 }
 
+.lyric {
+  line-height: 2.2;
+}
+
+.chord-line {
+  color: #1e90ff; /* 青 */
+  font-size: 14px;
+  height: 18px;
+}
+
+.lyric-line {
+  font-size: 18px;
+}
+
 .rare {
   color: #d4af37;
   font-weight: bold;
@@ -663,51 +677,24 @@ button {
 /* =====================
 コード表示（歌詞の上にルビ風）
 使い方：歌詞内に [C]あいしてる [G]ぜ のように書く
-※空白で揃える方式ではなく、コード＋歌詞を小ブロック化して並べる
 ===================== */
-.lyric.has-chords {
-  line-height: 1.45;
-}
-
-.chorded-line {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 0;
-  margin: 8px 0 10px;
-}
-
-.chord-piece {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  white-space: pre;
-  vertical-align: bottom;
-}
-
-.chord-piece .chord-name {
-  color: #2f6fd6;
+.chord-line {
   font-size: 13px;
+  line-height: 1.1;
+  color: #2f6fd6;
   font-weight: bold;
-  line-height: 1;
-  min-height: 15px;
-  padding-left: 0;
-  text-shadow:
-    0 0 4px rgba(47,111,214,0.22);
+  white-space: pre-wrap;
+  margin-top: 4px;
+  margin-bottom: 0;
+  letter-spacing: 0.03em;
 }
-
-.chord-piece .lyric-word {
-  color: inherit;
-  font-size: inherit;
-  font-weight: inherit;
-  line-height: 1.25;
+.lyric-line-with-chords {
+  margin: 0 0 8px 0;
 }
-
-.chord-plain-line {
-  margin: 5px 0;
+.lyric-line-with-chords .plain-lyric-line {
+  display: block;
 }
-
-body.night-mode .chord-piece .chord-name {
+body.night-mode .chord-line {
   color: #8dbbff;
 }
 
@@ -10704,7 +10691,9 @@ Everywhere I'll go
 <details class="song">
 <summary>抱きしめたい</summary>
 <div class="lyric">
-[G]出会った日[Dsus4]と　[D]　[Em]同じよう[Bm]に　[C]霧雨[Cm]けむる　[Am7]静かな夜　[Dsus4]　[D]
+
+
+出会った日と同じように　霧雨けむる　静かな夜]
 目を閉じれば　浮かんでくる　あの日のままの二人
 
 人波で溢れた　街のショウウィンドウ
@@ -15924,80 +15913,39 @@ function triggerSecret() {
     });
   }
 
-  function escapeChordHtml(text) {
-    return String(text).replace(/[&<>"']/g, function(ch) {
-      return {
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-      }[ch];
-    });
-  }
-
-  function renderChordLine(line) {
-    var parts = line.split(/(\[[^\]]+\])/g).filter(function(part) {
-      return part !== "";
-    });
-
-    var hasChord = parts.some(function(part) {
-      return part.charAt(0) === "[" && part.charAt(part.length - 1) === "]";
-    });
-
-    if (!hasChord) {
-      return '<div class="chord-plain-line">' + escapeChordHtml(line) + '</div>';
-    }
-
-    var html = '<div class="chorded-line">';
-    var currentChord = "";
-
-    parts.forEach(function(part) {
-      if (part.charAt(0) === "[" && part.charAt(part.length - 1) === "]") {
-        currentChord = part.slice(1, -1);
-        return;
-      }
-
-      html +=
-        '<span class="chord-piece">' +
-          '<span class="chord-name">' + escapeChordHtml(currentChord) + '</span>' +
-          '<span class="lyric-word">' + escapeChordHtml(part) + '</span>' +
-        '</span>';
-
-      currentChord = "";
-    });
-
-    if (currentChord) {
-      html +=
-        '<span class="chord-piece">' +
-          '<span class="chord-name">' + escapeChordHtml(currentChord) + '</span>' +
-          '<span class="lyric-word">　</span>' +
-        '</span>';
-    }
-
-    html += '</div>';
-    return html;
-  }
-
   function applyChordRuby() {
     document.querySelectorAll(".lyric").forEach(function(lyric) {
       if (lyric.getAttribute("data-chord-rendered") === "true") return;
-
       var original = lyric.textContent;
       if (original.indexOf("[") === -1 || original.indexOf("]") === -1) return;
-
-      var lines = original.split("
-");
+      var lines = original.split("\n");
       var html = lines.map(function(line) {
-        if (line.trim() === "") {
-          return "<br>";
+        var chordLine = "";
+        var plain = "";
+        var visiblePos = 0;
+        var i = 0;
+        while (i < line.length) {
+          if (line[i] === "[") {
+            var end = line.indexOf("]", i + 1);
+            if (end !== -1) {
+              var chord = line.slice(i + 1, end);
+              while (chordLine.length < visiblePos) chordLine += " ";
+              chordLine += chord;
+              i = end + 1;
+              continue;
+            }
+          }
+          plain += line[i];
+          visiblePos++;
+          i++;
         }
-        return renderChordLine(line);
-      }).join("");
-
+        if (chordLine.trim()) {
+          return '<div class="lyric-line-with-chords"><span class="chord-line">' + chordLine + '</span><span class="plain-lyric-line">' + plain + '</span></div>';
+        }
+        return plain;
+      }).join("\n");
       lyric.innerHTML = html;
       lyric.setAttribute("data-chord-rendered", "true");
-      lyric.classList.add("has-chords");
     });
   }
 
@@ -16017,6 +15965,35 @@ function triggerSecret() {
   }
 })();
 
+document.querySelectorAll('.lyric').forEach(block => {
+  const lines = block.innerHTML.split("<br>");
+
+  let result = "";
+
+  lines.forEach(line => {
+    let chordLine = "";
+    let lyricLine = "";
+    let i = 0;
+
+    while (i < line.length) {
+      if (line[i] === "[") {
+        let end = line.indexOf("]", i);
+        let chord = line.substring(i + 1, end);
+        chordLine += chord.padEnd(6, " ");
+        i = end + 1;
+      } else {
+        chordLine += " ";
+        lyricLine += line[i];
+        i++;
+      }
+    }
+
+    result += `<div class="chord-line">${chordLine}</div>`;
+    result += `<div class="lyric-line">${lyricLine}</div>`;
+  });
+
+  block.innerHTML = result;
+});
 </script>
 <details class="song" data-yomi="あおきとり">
 <summary>蒼きとり</summary>
