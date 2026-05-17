@@ -660,10 +660,10 @@ button {
 
 
 
-
 /* =====================
-コード表示（歌詞の上にルビ風）最新版
-使い方：[G]出会った日[Dsus4]と
+コード表示（歌詞の上にルビ風）
+使い方：歌詞内に [C]あいしてる [G]ぜ のように書く
+※空白で揃える方式ではなく、コード＋歌詞を小ブロック化して並べる
 ===================== */
 .lyric.has-chords {
   line-height: 1.45;
@@ -691,7 +691,9 @@ button {
   font-weight: bold;
   line-height: 1;
   min-height: 15px;
-  text-shadow: 0 0 4px rgba(47,111,214,0.22);
+  padding-left: 0;
+  text-shadow:
+    0 0 4px rgba(47,111,214,0.22);
 }
 
 .chord-piece .lyric-word {
@@ -10701,6 +10703,7 @@ Everywhere I'll go
 </details>
 <details class="song">
 <summary>抱きしめたい</summary>
+<div class="lyric">
 [G]出会った日[Dsus4]と　[D]　[Em]同じよう[Bm]に　[C]霧雨[Cm]けむる　[Am7]静かな夜　[Dsus4]　[D]
 目を閉じれば　浮かんでくる　あの日のままの二人
 
@@ -15920,7 +15923,76 @@ function triggerSecret() {
       summary.textContent = base + "（" + artists + "アーティスト / " + songs + "曲）";
     });
   }
-return renderChordLine(line);
+
+  function escapeChordHtml(text) {
+    return String(text).replace(/[&<>"']/g, function(ch) {
+      return {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[ch];
+    });
+  }
+
+  function renderChordLine(line) {
+    var parts = line.split(/(\[[^\]]+\])/g).filter(function(part) {
+      return part !== "";
+    });
+
+    var hasChord = parts.some(function(part) {
+      return part.charAt(0) === "[" && part.charAt(part.length - 1) === "]";
+    });
+
+    if (!hasChord) {
+      return '<div class="chord-plain-line">' + escapeChordHtml(line) + '</div>';
+    }
+
+    var html = '<div class="chorded-line">';
+    var currentChord = "";
+
+    parts.forEach(function(part) {
+      if (part.charAt(0) === "[" && part.charAt(part.length - 1) === "]") {
+        currentChord = part.slice(1, -1);
+        return;
+      }
+
+      html +=
+        '<span class="chord-piece">' +
+          '<span class="chord-name">' + escapeChordHtml(currentChord) + '</span>' +
+          '<span class="lyric-word">' + escapeChordHtml(part) + '</span>' +
+        '</span>';
+
+      currentChord = "";
+    });
+
+    if (currentChord) {
+      html +=
+        '<span class="chord-piece">' +
+          '<span class="chord-name">' + escapeChordHtml(currentChord) + '</span>' +
+          '<span class="lyric-word">　</span>' +
+        '</span>';
+    }
+
+    html += '</div>';
+    return html;
+  }
+
+  function applyChordRuby() {
+    document.querySelectorAll(".lyric").forEach(function(lyric) {
+      if (lyric.getAttribute("data-chord-rendered") === "true") return;
+
+      var original = lyric.textContent;
+      if (original.indexOf("[") === -1 || original.indexOf("]") === -1) return;
+
+      var lines = original.split("
+");
+      var html = lines.map(function(line) {
+        if (line.trim() === "") {
+          return "<br>";
+        }
+        return renderChordLine(line);
       }).join("");
 
       lyric.innerHTML = html;
@@ -15935,7 +16007,8 @@ return renderChordLine(line);
       sortArtistDetails(group);
     });
     updateKanaGroupCounts();
-}
+    applyChordRuby();
+  }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", applyAutoSortAndCounts);
@@ -18317,94 +18390,5 @@ your way！のところかっこよくて好きだ！
 この曲のお陰で生きながらえた感ある　仕事もリアルも上手く行ってない時にどれだけ励まされたことか
 ありがとう
   </div>
-</details></details>
-<script>
-/* =====================
-コード表示 最終安定版
-[G]出会った日[Dsus4]と → コードを歌詞の上に表示
-===================== */
-(function() {
-  function escapeChordHtml(text) {
-    return String(text).replace(/[&<>"']/g, function(ch) {
-      return {
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-      }[ch];
-    });
-  }
-
-  function renderChordLine(line) {
-    var parts = line.split(/(\[[^\]]+\])/g).filter(function(part) {
-      return part !== "";
-    });
-
-    var hasChord = parts.some(function(part) {
-      return part.charAt(0) === "[" && part.charAt(part.length - 1) === "]";
-    });
-
-    if (!hasChord) {
-      return '<div class="chord-plain-line">' + escapeChordHtml(line) + '</div>';
-    }
-
-    var html = '<div class="chorded-line">';
-    var currentChord = "";
-
-    parts.forEach(function(part) {
-      if (part.charAt(0) === "[" && part.charAt(part.length - 1) === "]") {
-        currentChord = part.slice(1, -1);
-      } else {
-        html +=
-          '<span class="chord-piece">' +
-            '<span class="chord-name">' + escapeChordHtml(currentChord) + '</span>' +
-            '<span class="lyric-word">' + escapeChordHtml(part) + '</span>' +
-          '</span>';
-        currentChord = "";
-      }
-    });
-
-    if (currentChord) {
-      html +=
-        '<span class="chord-piece">' +
-          '<span class="chord-name">' + escapeChordHtml(currentChord) + '</span>' +
-          '<span class="lyric-word">　</span>' +
-        '</span>';
-    }
-
-    html += '</div>';
-    return html;
-  }
-
-  function applyChordRubyFinal() {
-    document.querySelectorAll(".lyric").forEach(function(lyric) {
-      if (lyric.dataset.chordRenderedFinal === "true") return;
-
-      var original = lyric.textContent;
-      if (original.indexOf("[") === -1 || original.indexOf("]") === -1) return;
-
-      var lines = original.split(/\r?\n/);
-      var html = lines.map(function(line) {
-        if (line.trim() === "") return "<br>";
-        return renderChordLine(line);
-      }).join("");
-
-      lyric.innerHTML = html;
-      lyric.classList.add("has-chords");
-      lyric.dataset.chordRenderedFinal = "true";
-    });
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", applyChordRubyFinal);
-  } else {
-    applyChordRubyFinal();
-  }
-
-  window.applyChordRubyFinal = applyChordRubyFinal;
-})();
-</script>
-
-</body>
+</details></details></body>
 </html>
