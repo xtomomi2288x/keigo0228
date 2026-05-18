@@ -1,0 +1,11 @@
+{
+  "name": "三輪啓悟ライブラリ",
+  "short_name": "啓悟ライブラリ",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "description": "三輪啓悟ライブラリ オフライン対応版",
+  "icons": []
+}

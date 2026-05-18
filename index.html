@@ -710,6 +710,8 @@ body.night-mode .chord-token .chord-name {
 
 
 </style>
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#ffffff">
 </head>
 <body>
 <h1 id="mainTitle">🎸三輪啓悟ライブラリ🎸</h1>
@@ -18249,24 +18251,14 @@ your way！のところかっこよくて好きだ！
 
 
 <script>
-/* SR表示テキスト強制上書き */
-(function(){
-  const SR_TEXT = "🧊💙✨SUPER RARE✨💙🧊";
-
-  const observer = new MutationObserver(() => {
-    const msg = document.getElementById("slotMessage");
-    if (!msg) return;
-
-    if (msg.classList.contains("slot-sr")) {
-      msg.textContent = SR_TEXT;
-    }
+/* GitHub Pages用：オフライン対応 */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("./sw.js").catch(function (err) {
+      console.log("ServiceWorker registration failed:", err);
+    });
   });
-
-  const target = document.getElementById("slotMessage");
-  if (target) {
-    observer.observe(target, { childList: true, subtree: true, characterData: true });
-  }
-})();
+}
 </script>
 
 </body>
