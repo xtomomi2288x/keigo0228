@@ -20262,5 +20262,246 @@ SR完全融合最終パッチ
 })();
 </script>
 
+
+<style>
+.hidden-by-search-final {
+  display: none !important;
+}
+</style>
+
+<script>
+/* =====================
+検索機能 最終修正パッチ
+- 歌詞本文では検索しない
+- アーティスト名・曲名だけで検索
+===================== */
+(function(){
+
+  function normalizeSearchText(text){
+    return (text || "")
+      .toString()
+      .toLowerCase()
+      .normalize("NFKC")
+      .replace(/\s+/g, "");
+  }
+
+  function getDirectChildrenByTagFinal(parent, tagName){
+    var out = [];
+    if(!parent) return out;
+
+    var children = parent.children;
+    for(var i = 0; i < children.length; i++){
+      if(children[i].tagName && children[i].tagName.toLowerCase() === tagName.toLowerCase()){
+        out.push(children[i]);
+      }
+    }
+    return out;
+  }
+
+  function getDirectSummaryTextFinal(details){
+    if(!details) return "";
+    var children = details.children;
+    for(var i = 0; i < children.length; i++){
+      if(children[i].tagName && children[i].tagName.toLowerCase() === "summary"){
+        return children[i].textContent || "";
+      }
+    }
+    return "";
+  }
+
+  function clearSearchFinal(){
+    document.querySelectorAll(".hidden-by-search-final").forEach(function(el){
+      el.classList.remove("hidden-by-search-final");
+    });
+
+    document.querySelectorAll("details.song").forEach(function(song){
+      song.open = false;
+    });
+
+    document.querySelectorAll("details.kana-group").forEach(function(group){
+      group.open = false;
+    });
+  }
+
+  function applySearchFinal(){
+    var input = document.getElementById("search");
+    if(!input) return;
+
+    var q = normalizeSearchText(input.value);
+
+    if(!q){
+      clearSearchFinal();
+      return;
+    }
+
+    var kanaGroups = document.querySelectorAll("details.kana-group");
+
+    kanaGroups.forEach(function(group){
+      var groupHasHit = false;
+      var directDetails = getDirectChildrenByTagFinal(group, "details");
+
+      directDetails.forEach(function(artist){
+        var songs = Array.from(artist.children).filter(function(child){
+          return child.matches && child.matches("details.song");
+        });
+
+        if(songs.length === 0){
+          return;
+        }
+
+        var artistName = normalizeSearchText(
+          (artist.getAttribute("data-yomi") || "") + " " +
+          getDirectSummaryTextFinal(artist)
+        );
+
+        var artistHit = artistName.includes(q);
+        var artistHasHit = false;
+
+        songs.forEach(function(song){
+          var songTitle = normalizeSearchText(
+            (song.getAttribute("data-yomi") || "") + " " +
+            getDirectSummaryTextFinal(song)
+          );
+
+          // 歌詞本文は検索しない
+          var songHit = artistHit || songTitle.includes(q);
+
+          song.classList.toggle("hidden-by-search-final", !songHit);
+          song.open = false;
+
+          if(songHit){
+            artistHasHit = true;
+            groupHasHit = true;
+          }
+        });
+
+        artist.classList.toggle("hidden-by-search-final", !artistHasHit);
+        artist.open = artistHasHit;
+      });
+
+      group.classList.toggle("hidden-by-search-final", !groupHasHit);
+      group.open = groupHasHit;
+    });
+
+    // アニソン・その他・オリジナルなど直下にsongがある特殊カテゴリ
+    ["anisong", "others", "original"].forEach(function(id){
+      var container = document.getElementById(id);
+      if(!container) return;
+
+      var songs = Array.from(container.children).filter(function(child){
+        return child.matches && child.matches("details.song");
+      });
+
+      if(songs.length === 0) return;
+
+      var hasHit = false;
+
+      songs.forEach(function(song){
+        var songTitle = normalizeSearchText(
+          (song.getAttribute("data-yomi") || "") + " " +
+          getDirectSummaryTextFinal(song)
+        );
+
+        var songHit = songTitle.includes(q);
+        song.classList.toggle("hidden-by-search-final", !songHit);
+        song.open = false;
+
+        if(songHit){
+          hasHit = true;
+        }
+      });
+
+      container.classList.toggle("hidden-by-search-final", !hasHit);
+      container.open = hasHit;
+    });
+  }
+
+  function setupSearchFinal(){
+    var oldInput = document.getElementById("search");
+    if(!oldInput) return;
+
+    // 旧検索イベントを切るため、inputをクローンで差し替え
+    var newInput = oldInput.cloneNode(true);
+    oldInput.parentNode.replaceChild(newInput, oldInput);
+
+    newInput.addEventListener("input", applySearchFinal);
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", setupSearchFinal);
+  }else{
+    setupSearchFinal();
+  }
+
+})();
+</script>
+
+
+<script>
+/* ====== 高z-index固定オーバーレイ掃除 ====== */
+setInterval(() => {
+  document.querySelectorAll("div").forEach(e => {
+    const s = getComputedStyle(e);
+    if (
+      s.position === "fixed" &&
+      Number(s.zIndex) > 999999 &&
+      e.id !== "rareEffect"
+    ) {
+      e.remove();
+    }
+  });
+}, 3000);
+
+/* ====== 3周目演出：5秒固定（タップ無効） ====== */
+(function(){
+  var busy = false;
+
+  function showThirdLoopEffectFixed(){
+    if(busy) return;
+    busy = true;
+
+    // 既存オーバーレイ除去
+    ["thirdLoopOverlay","thirdLoopOverlayV2"].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.remove();
+    });
+
+    const overlay = document.createElement("div");
+    overlay.id = "thirdLoopOverlayV2";
+    overlay.style.position = "fixed";
+    overlay.style.inset = "0";
+    overlay.style.background = "black";
+    overlay.style.color = "white";
+    overlay.style.display = "flex";
+    overlay.style.alignItems = "center";
+    overlay.style.justifyContent = "center";
+    overlay.style.zIndex = "999999999";
+    overlay.style.fontSize = "28px";
+    overlay.style.opacity = "0";
+    overlay.style.transition = "opacity 0.6s ease";
+    overlay.style.pointerEvents = "none"; // ←タップ無効
+    overlay.textContent = "あなたの総てになりたかった";
+
+    document.body.appendChild(overlay);
+
+    setTimeout(()=> overlay.style.opacity = "1", 30);
+
+    // 5秒固定表示
+    setTimeout(()=>{
+      overlay.style.opacity = "0";
+    }, 5000);
+
+    setTimeout(()=>{
+      if(overlay) overlay.remove();
+      busy = false;
+    }, 5600);
+  }
+
+  window.showThirdLoopEffect = showThirdLoopEffectFixed;
+  try { showThirdLoopEffect = showThirdLoopEffectFixed; } catch(e){}
+
+})();
+</script>
+
 </body>
 </html>
