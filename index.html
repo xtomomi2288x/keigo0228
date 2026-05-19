@@ -20098,5 +20098,169 @@ SR完全融合最終パッチ
 })();
 </script>
 
+
+<script>
+/* =====================
+三周目Lv.1停止・押せない問題 完全復旧パッチ
+- 連打デバッグで残ったロック/透明オーバーレイを起動時に削除
+- heartLockedを強制解除
+- 💗クリックのたびに邪魔な残骸を掃除
+- 三周目Lv.1で固まった状態から進める
+===================== */
+(function(){
+
+  function safeGet(key){
+    try {
+      if(typeof safeGetItem === "function") return safeGetItem(key);
+      return localStorage.getItem(key);
+    } catch(e){
+      return localStorage.getItem(key);
+    }
+  }
+
+  function safeSet(key, value){
+    try {
+      if(typeof safeSetItem === "function") safeSetItem(key, value);
+      else localStorage.setItem(key, value);
+    } catch(e){
+      localStorage.setItem(key, value);
+    }
+  }
+
+  function removeStuckOverlays(){
+    [
+      "thirdLoopOverlay",
+      "thirdLoopOverlayV2",
+      "completeRewardScreen",
+      "milestonePopup",
+      "milestonePopupV2",
+      "srFlashEffect"
+    ].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el && el.parentNode) el.parentNode.removeChild(el);
+    });
+
+    document.querySelectorAll("div").forEach(function(el){
+      var z = Number(el.style && el.style.zIndex);
+      var pos = el.style && el.style.position;
+      var inset = el.style && el.style.inset;
+      var bg = el.style && el.style.background;
+
+      if(
+        pos === "fixed" &&
+        inset === "0px" || inset === "0"
+      ){
+        var txt = (el.textContent || "").trim();
+        if(
+          txt.includes("あなたの総てになりたかった") ||
+          txt.includes("ここにあったものは") ||
+          txt.includes("使ってくれてありがとう") ||
+          txt.includes("あなたの努力は全部知ってるよ") ||
+          txt.includes("あなたは私の憧れ") ||
+          txt.includes("隣に立つのに相応しい") ||
+          txt.includes("忘れ物を全て拾って")
+        ){
+          el.remove();
+        }
+      }
+    });
+  }
+
+  function unlockHeart(){
+    var heart = document.getElementById("heart");
+    if(heart){
+      heart.classList.remove("locked");
+      heart.style.pointerEvents = "auto";
+      heart.style.opacity = "";
+    }
+
+    try { heartLocked = false; } catch(e){}
+    try { window.heartLocked = false; } catch(e){}
+  }
+
+  function rescueThirdLoopLv1(){
+    var loopNow = Number(safeGet("loop"));
+    var levelNow = Number(safeGet("level"));
+    var expNow = Number(safeGet("exp"));
+
+    // 3周目突入直後の正しい状態は loop=2, level=1, exp=0 でもOK。
+    // ただし連打事故で心臓がロックされたままなら進めないのでロックだけ解除。
+    if(loopNow >= 2 && levelNow <= 1){
+      safeSet("level", "1");
+      if(isNaN(expNow)) safeSet("exp", "0");
+      unlockHeart();
+      removeStuckOverlays();
+    }
+  }
+
+  function startupFix(){
+    removeStuckOverlays();
+    unlockHeart();
+    rescueThirdLoopLv1();
+  }
+
+  // 起動時に必ず復旧
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", startupFix);
+  }else{
+    startupFix();
+  }
+
+  // 少し遅れて残骸が出る場合も潰す
+  setTimeout(startupFix, 300);
+  setTimeout(startupFix, 1000);
+  setTimeout(startupFix, 2500);
+
+  // 💗押下直前にも掃除して、押せない状態を防ぐ
+  document.addEventListener("click", function(e){
+    var heart = document.getElementById("heart");
+    if(heart && (e.target === heart || heart.contains(e.target))){
+      removeStuckOverlays();
+      unlockHeart();
+    }
+  }, true);
+
+  // 既存showThirdLoopEffectをさらに安全化
+  var oldThird = window.showThirdLoopEffect;
+
+  window.showThirdLoopEffect = function(){
+    removeStuckOverlays();
+    unlockHeart();
+
+    var overlay = document.createElement("div");
+    overlay.id = "thirdLoopOverlayV2";
+    overlay.style.position = "fixed";
+    overlay.style.inset = "0";
+    overlay.style.background = "black";
+    overlay.style.color = "white";
+    overlay.style.display = "flex";
+    overlay.style.alignItems = "center";
+    overlay.style.justifyContent = "center";
+    overlay.style.zIndex = "999999999";
+    overlay.style.fontSize = "28px";
+    overlay.style.opacity = "0";
+    overlay.style.transition = "opacity 0.6s ease";
+    overlay.style.pointerEvents = "none";
+    overlay.textContent = "あなたの総てになりたかった";
+    document.body.appendChild(overlay);
+
+    setTimeout(function(){ overlay.style.opacity = "1"; }, 30);
+    setTimeout(function(){ overlay.style.opacity = "0"; }, 2600);
+    setTimeout(function(){
+      if(overlay && overlay.parentNode) overlay.remove();
+      unlockHeart();
+    }, 3400);
+
+    setTimeout(function(){
+      removeStuckOverlays();
+      unlockHeart();
+    }, 5000);
+  };
+
+  try { showThirdLoopEffect = window.showThirdLoopEffect; } catch(e){}
+
+})();
+</script>
+
 </body>
 </html>
