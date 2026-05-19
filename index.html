@@ -20025,152 +20025,85 @@ SR完全融合最終パッチ
 </script>
 
 
-<script>
+<style>
 /* =====================
-3周目突入エフェクト 安定化パッチ
-- 連打対策（短時間ロック）
-- 黒画面オーバーレイは必ず除去（フォールバックタイマー付き）
+緊急修正：上部UIを必ず触れるようにする
 ===================== */
-(function(){
-  var __thirdLoopBusy = false;
 
-  function removeExistingOverlays(){
-    var ids = ["thirdLoopOverlay", "thirdLoopOverlayV2"];
-    ids.forEach(function(id){
-      var el = document.getElementById(id);
-      if(el && el.parentNode) el.parentNode.removeChild(el);
-    });
-  }
+/* クリック不要な演出レイヤーは絶対に操作を塞がない */
+#lostItemOverlay,
+#slotPopup,
+#milestonePopup,
+#milestonePopupV2,
+#thirdLoopOverlay,
+#thirdLoopOverlayV2,
+#srFlashEffect {
+  pointer-events: none !important;
+}
 
-  function createOverlay(){
-    var overlay = document.createElement("div");
-    overlay.id = "thirdLoopOverlayV2";
-    overlay.style.position = "fixed";
-    overlay.style.inset = "0";
-    overlay.style.background = "black";
-    overlay.style.color = "white";
-    overlay.style.display = "flex";
-    overlay.style.alignItems = "center";
-    overlay.style.justifyContent = "center";
-    overlay.style.zIndex = "999999999";
-    overlay.style.fontSize = "28px";
-    overlay.style.opacity = "0";
-    overlay.style.transition = "opacity 0.6s ease";
-    overlay.style.pointerEvents = "none";
-    overlay.textContent = "あなたの総てになりたかった";
-    return overlay;
-  }
+/* 非表示時は画面上に残さない */
+#lostItemOverlay:not(.show),
+#slotPopup:not(.show) {
+  display: none !important;
+  pointer-events: none !important;
+}
 
-  function safeShowThirdLoopEffect(){
-    if(__thirdLoopBusy) return;
-    __thirdLoopBusy = true;
+/* 上部UIは最前面 */
+#mainTitle,
+#search,
+.love,
+#loveSlotWrap,
+#buttonArea,
+#counter,
+#level,
+#title,
+#heart,
+#bookBtn,
+#titleBtn,
+#slotRecordBtn,
+#lostBtn,
+#resetBtn {
+  position: relative !important;
+  z-index: 2147483647 !important;
+  pointer-events: auto !important;
+}
 
-    removeExistingOverlays();
-
-    var overlay = createOverlay();
-    document.body.appendChild(overlay);
-
-    // フェードイン
-    setTimeout(function(){ overlay.style.opacity = "1"; }, 30);
-
-    // 3秒後フェードアウト
-    setTimeout(function(){
-      overlay.style.opacity = "0";
-    }, 3000);
-
-    // 確実に消す（通常）
-    setTimeout(function(){
-      if(overlay && overlay.parentNode) overlay.remove();
-      __thirdLoopBusy = false;
-    }, 3800);
-
-    // フォールバック（万一残った場合）
-    setTimeout(function(){
-      removeExistingOverlays();
-      __thirdLoopBusy = false;
-    }, 6000);
-  }
-
-  // 既存関数があれば上書き
-  window.showThirdLoopEffect = safeShowThirdLoopEffect;
-  try { showThirdLoopEffect = safeShowThirdLoopEffect; } catch(e){}
-
-})();
-</script>
-
+.search-final-hide {
+  display: none !important;
+}
+</style>
 
 <script>
 /* =====================
-三周目Lv.1停止・押せない問題 完全復旧パッチ
-- 連打デバッグで残ったロック/透明オーバーレイを起動時に削除
-- heartLockedを強制解除
-- 💗クリックのたびに邪魔な残骸を掃除
-- 三周目Lv.1で固まった状態から進める
+緊急修正パッチ
+- 上部UIを触れない問題を最優先で修正
+- 検索は曲名・歌詞・アーティスト名全部対象
+- スロット表示/3周目表示は触れないレイヤーにする
 ===================== */
 (function(){
 
-  function safeGet(key){
-    try {
-      if(typeof safeGetItem === "function") return safeGetItem(key);
-      return localStorage.getItem(key);
-    } catch(e){
-      return localStorage.getItem(key);
-    }
-  }
+  function id(x){ return document.getElementById(x); }
 
-  function safeSet(key, value){
-    try {
-      if(typeof safeSetItem === "function") safeSetItem(key, value);
-      else localStorage.setItem(key, value);
-    } catch(e){
-      localStorage.setItem(key, value);
-    }
-  }
+  function forceTouchable(){
+    document.body.style.pointerEvents = "auto";
 
-  function removeStuckOverlays(){
-    [
-      "thirdLoopOverlay",
-      "thirdLoopOverlayV2",
-      "completeRewardScreen",
-      "milestonePopup",
-      "milestonePopupV2",
-      "srFlashEffect"
-    ].forEach(function(id){
-      var el = document.getElementById(id);
-      if(el && el.parentNode) el.parentNode.removeChild(el);
-    });
+    var ids = [
+      "mainTitle","search","heart","bookBtn","titleBtn","slotRecordBtn",
+      "lostBtn","resetBtn","buttonArea","loveSlotWrap","counter","level","title"
+    ];
 
-    document.querySelectorAll("div").forEach(function(el){
-      var z = Number(el.style && el.style.zIndex);
-      var pos = el.style && el.style.position;
-      var inset = el.style && el.style.inset;
-      var bg = el.style && el.style.background;
-
-      if(
-        pos === "fixed" &&
-        inset === "0px" || inset === "0"
-      ){
-        var txt = (el.textContent || "").trim();
-        if(
-          txt.includes("あなたの総てになりたかった") ||
-          txt.includes("ここにあったものは") ||
-          txt.includes("使ってくれてありがとう") ||
-          txt.includes("あなたの努力は全部知ってるよ") ||
-          txt.includes("あなたは私の憧れ") ||
-          txt.includes("隣に立つのに相応しい") ||
-          txt.includes("忘れ物を全て拾って")
-        ){
-          el.remove();
-        }
+    ids.forEach(function(name){
+      var el = id(name);
+      if(el){
+        el.style.position = "relative";
+        el.style.zIndex = "2147483647";
+        el.style.pointerEvents = "auto";
       }
     });
-  }
 
-  function unlockHeart(){
-    var heart = document.getElementById("heart");
+    var heart = id("heart");
     if(heart){
       heart.classList.remove("locked");
-      heart.style.pointerEvents = "auto";
       heart.style.opacity = "";
     }
 
@@ -20178,54 +20111,270 @@ SR完全融合最終パッチ
     try { window.heartLocked = false; } catch(e){}
   }
 
-  function rescueThirdLoopLv1(){
-    var loopNow = Number(safeGet("loop"));
-    var levelNow = Number(safeGet("level"));
-    var expNow = Number(safeGet("exp"));
+  function makeOverlaysNotBlock(){
+    ["lostItemOverlay","slotPopup","milestonePopup","milestonePopupV2","thirdLoopOverlay","thirdLoopOverlayV2","srFlashEffect"].forEach(function(name){
+      var el = id(name);
+      if(el){
+        el.style.pointerEvents = "none";
+      }
+    });
 
-    // 3周目突入直後の正しい状態は loop=2, level=1, exp=0 でもOK。
-    // ただし連打事故で心臓がロックされたままなら進めないのでロックだけ解除。
-    if(loopNow >= 2 && levelNow <= 1){
-      safeSet("level", "1");
-      if(isNaN(expNow)) safeSet("exp", "0");
-      unlockHeart();
-      removeStuckOverlays();
+    var lost = id("lostItemOverlay");
+    if(lost && !lost.classList.contains("show")){
+      lost.style.display = "none";
+    }
+
+    var slot = id("slotPopup");
+    if(slot && !slot.classList.contains("show")){
+      slot.style.display = "none";
     }
   }
 
-  function startupFix(){
-    removeStuckOverlays();
-    unlockHeart();
-    rescueThirdLoopLv1();
+  function removeUnknownBlockingFixed(){
+    document.querySelectorAll("div").forEach(function(el){
+      var keep = [
+        "rareEffect",
+        "completeRewardScreen",
+        "lostItemOverlay",
+        "slotPopup",
+        "slotPopupText",
+        "thirdLoopOverlayV2",
+        "milestonePopup",
+        "milestonePopupV2",
+        "srFlashEffect"
+      ].includes(el.id);
+
+      if(keep) return;
+
+      var s = getComputedStyle(el);
+      var z = Number(s.zIndex);
+
+      if(s.position === "fixed" && z >= 999999){
+        el.remove();
+      }
+    });
   }
 
-  // 起動時に必ず復旧
-  if(document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", startupFix);
-  }else{
-    startupFix();
+  function rescueTop(){
+    makeOverlaysNotBlock();
+    removeUnknownBlockingFixed();
+    forceTouchable();
   }
 
-  // 少し遅れて残骸が出る場合も潰す
-  setTimeout(startupFix, 300);
-  setTimeout(startupFix, 1000);
-  setTimeout(startupFix, 2500);
+  /* ---------- 検索 ---------- */
 
-  // 💗押下直前にも掃除して、押せない状態を防ぐ
-  document.addEventListener("click", function(e){
-    var heart = document.getElementById("heart");
-    if(heart && (e.target === heart || heart.contains(e.target))){
-      removeStuckOverlays();
-      unlockHeart();
+  function norm(t){
+    return (t || "").toString().toLowerCase().normalize("NFKC").replace(/\s+/g,"");
+  }
+
+  function summaryText(details){
+    if(!details) return "";
+    var children = details.children || [];
+    for(var i=0;i<children.length;i++){
+      if(children[i].tagName && children[i].tagName.toLowerCase()==="summary"){
+        return children[i].textContent || "";
+      }
     }
-  }, true);
+    return "";
+  }
 
-  // 既存showThirdLoopEffectをさらに安全化
-  var oldThird = window.showThirdLoopEffect;
+  function artistOf(song){
+    var p = song.parentElement;
+    while(p && p !== document.body){
+      if(
+        p.tagName &&
+        p.tagName.toLowerCase()==="details" &&
+        !p.classList.contains("song") &&
+        !p.classList.contains("kana-group")
+      ){
+        return p;
+      }
+      p = p.parentElement;
+    }
+    return null;
+  }
 
-  window.showThirdLoopEffect = function(){
-    removeStuckOverlays();
-    unlockHeart();
+  function groupOf(song){
+    var p = song.parentElement;
+    while(p && p !== document.body){
+      if(p.classList && p.classList.contains("kana-group")) return p;
+      p = p.parentElement;
+    }
+    return null;
+  }
+
+  function clearSearch(){
+    document.querySelectorAll(".search-final-hide").forEach(function(el){
+      el.classList.remove("search-final-hide");
+      el.style.display = "";
+    });
+    document.querySelectorAll("details").forEach(function(d){ d.open = false; });
+  }
+
+  function runSearch(){
+    rescueTop();
+
+    var input = id("search");
+    if(!input) return;
+
+    var q = norm(input.value);
+
+    document.querySelectorAll(".search-final-hide").forEach(function(el){
+      el.classList.remove("search-final-hide");
+      el.style.display = "";
+    });
+
+    if(!q){
+      clearSearch();
+      return;
+    }
+
+    var songs = Array.from(document.querySelectorAll("details.song"));
+    var artists = new Set();
+    var groups = new Set();
+    var visibleArtists = new Set();
+    var visibleGroups = new Set();
+
+    songs.forEach(function(song){
+      var artist = artistOf(song);
+      var group = groupOf(song);
+
+      if(artist) artists.add(artist);
+      if(group) groups.add(group);
+
+      var hit =
+        norm(summaryText(song)).includes(q) ||
+        norm(song.textContent).includes(q) ||
+        (artist && norm(summaryText(artist)).includes(q));
+
+      if(hit){
+        song.classList.remove("search-final-hide");
+        song.style.display = "";
+        song.open = true;
+
+        if(artist){
+          visibleArtists.add(artist);
+          artist.classList.remove("search-final-hide");
+          artist.style.display = "";
+          artist.open = true;
+        }
+
+        if(group){
+          visibleGroups.add(group);
+          group.classList.remove("search-final-hide");
+          group.style.display = "";
+          group.open = true;
+        }
+      }else{
+        song.classList.add("search-final-hide");
+        song.style.display = "none";
+        song.open = false;
+      }
+    });
+
+    artists.forEach(function(a){
+      if(visibleArtists.has(a)){
+        a.classList.remove("search-final-hide");
+        a.style.display = "";
+        a.open = true;
+      }else{
+        a.classList.add("search-final-hide");
+        a.style.display = "none";
+        a.open = false;
+      }
+    });
+
+    groups.forEach(function(g){
+      if(visibleGroups.has(g)){
+        g.classList.remove("search-final-hide");
+        g.style.display = "";
+        g.open = true;
+      }else{
+        g.classList.add("search-final-hide");
+        g.style.display = "none";
+        g.open = false;
+      }
+    });
+  }
+
+  function installSearch(){
+    var old = id("search");
+    if(!old) return;
+
+    var val = old.value || "";
+    var fresh = old.cloneNode(true);
+    fresh.value = val;
+    old.parentNode.replaceChild(fresh, old);
+
+    fresh.addEventListener("focus", rescueTop);
+    fresh.addEventListener("click", rescueTop);
+    fresh.addEventListener("input", runSearch);
+    fresh.addEventListener("keyup", runSearch);
+    fresh.addEventListener("change", runSearch);
+
+    setTimeout(runSearch, 50);
+  }
+
+  /* ---------- スロット表示 ---------- */
+  function showSlotPopupFixed(){
+    var popup = id("slotPopup");
+    var text = id("slotPopupText");
+
+    if(!popup){
+      popup = document.createElement("div");
+      popup.id = "slotPopup";
+      document.body.appendChild(popup);
+    }
+
+    popup.style.position = "fixed";
+    popup.style.inset = "0";
+    popup.style.display = "flex";
+    popup.style.alignItems = "center";
+    popup.style.justifyContent = "center";
+    popup.style.background = "rgba(0,0,0,0.28)";
+    popup.style.opacity = "1";
+    popup.style.pointerEvents = "none";
+    popup.style.zIndex = "999999999";
+    popup.classList.add("show");
+
+    if(!text){
+      text = document.createElement("div");
+      text.id = "slotPopupText";
+      popup.appendChild(text);
+    }
+
+    text.innerHTML = "良かったね<br>良かったよ";
+    text.style.padding = "26px 34px";
+    text.style.borderRadius = "22px";
+    text.style.background = "rgba(255,255,255,0.92)";
+    text.style.color = "#333";
+    text.style.fontSize = "30px";
+    text.style.lineHeight = "1.9";
+    text.style.textAlign = "center";
+    text.style.boxShadow = "0 0 28px rgba(255,215,0,0.45)";
+
+    setTimeout(function(){
+      popup.classList.remove("show");
+      popup.style.opacity = "0";
+      setTimeout(function(){
+        popup.style.display = "none";
+        rescueTop();
+      },300);
+    },1200);
+  }
+
+  window.showSlotPopup = showSlotPopupFixed;
+  try { showSlotPopup = showSlotPopupFixed; } catch(e){}
+
+  /* ---------- 3周目演出 ---------- */
+  var thirdBusy = false;
+
+  function showThirdLoopEffectFixed(){
+    if(thirdBusy) return;
+    thirdBusy = true;
+
+    var old = id("thirdLoopOverlayV2");
+    if(old) old.remove();
 
     var overlay = document.createElement("div");
     overlay.id = "thirdLoopOverlayV2";
@@ -20242,231 +20391,293 @@ SR完全融合最終パッチ
     overlay.style.transition = "opacity 0.6s ease";
     overlay.style.pointerEvents = "none";
     overlay.textContent = "あなたの総てになりたかった";
+
     document.body.appendChild(overlay);
 
-    setTimeout(function(){ overlay.style.opacity = "1"; }, 30);
-    setTimeout(function(){ overlay.style.opacity = "0"; }, 2600);
+    setTimeout(function(){ overlay.style.opacity = "1"; },30);
+    setTimeout(function(){ overlay.style.opacity = "0"; },5000);
     setTimeout(function(){
-      if(overlay && overlay.parentNode) overlay.remove();
-      unlockHeart();
-    }, 3400);
+      if(overlay) overlay.remove();
+      thirdBusy = false;
+      rescueTop();
+    },5700);
+  }
 
-    setTimeout(function(){
-      removeStuckOverlays();
-      unlockHeart();
-    }, 5000);
-  };
+  window.showThirdLoopEffect = showThirdLoopEffectFixed;
+  try { showThirdLoopEffect = showThirdLoopEffectFixed; } catch(e){}
 
-  try { showThirdLoopEffect = window.showThirdLoopEffect; } catch(e){}
+  function init(){
+    rescueTop();
+    installSearch();
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", init);
+  }else{
+    init();
+  }
+
+  setTimeout(init,500);
+  setTimeout(init,1500);
+  setInterval(rescueTop,1000);
 
 })();
 </script>
 
 
 <style>
-.hidden-by-search-final {
-  display: none !important;
+#crownLoopDisplay {
+  margin-top: 2px;
+  margin-bottom: 2px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #d4af37;
+  text-shadow: 0 0 6px rgba(212,175,55,0.65);
 }
 </style>
 
 <script>
 /* =====================
-検索機能 最終修正パッチ
-- 歌詞本文では検索しない
-- アーティスト名・曲名だけで検索
+最終確認修正
+- 良かったね/良かったよ表示
+- 3周目突入5秒固定
+- 全コンプ後1周目へ戻る
+- 💗下に👑周回表示
 ===================== */
 (function(){
 
-  function normalizeSearchText(text){
-    return (text || "")
-      .toString()
-      .toLowerCase()
-      .normalize("NFKC")
-      .replace(/\s+/g, "");
+  function lsGet(key){
+    try {
+      if(typeof safeGetItem === "function") return safeGetItem(key);
+      return localStorage.getItem(key);
+    } catch(e){ return localStorage.getItem(key); }
   }
 
-  function getDirectChildrenByTagFinal(parent, tagName){
-    var out = [];
-    if(!parent) return out;
+  function lsSet(key, value){
+    try {
+      if(typeof safeSetItem === "function") safeSetItem(key, value);
+      else localStorage.setItem(key, value);
+    } catch(e){ localStorage.setItem(key, value); }
+  }
 
-    var children = parent.children;
-    for(var i = 0; i < children.length; i++){
-      if(children[i].tagName && children[i].tagName.toLowerCase() === tagName.toLowerCase()){
-        out.push(children[i]);
+  function lsRemove(key){
+    try {
+      if(typeof safeRemoveItem === "function") safeRemoveItem(key);
+      else localStorage.removeItem(key);
+    } catch(e){ localStorage.removeItem(key); }
+  }
+
+  function getCrownLoopFinal(){
+    var n = Number(lsGet("crownLoop"));
+    if(!n || isNaN(n) || n < 1) n = 1;
+    return n;
+  }
+
+  function updateCrownLoopDisplayFinal(){
+    var wrap = document.getElementById("loveSlotWrap");
+    if(!wrap) return;
+
+    var el = document.getElementById("crownLoopDisplay");
+    if(!el){
+      el = document.createElement("div");
+      el.id = "crownLoopDisplay";
+
+      var slotArea = document.getElementById("slotArea");
+      if(slotArea && slotArea.parentNode === wrap){
+        wrap.insertBefore(el, slotArea);
+      }else{
+        wrap.appendChild(el);
       }
     }
-    return out;
+
+    el.textContent = "👑" + getCrownLoopFinal() + "周目";
   }
 
-  function getDirectSummaryTextFinal(details){
-    if(!details) return "";
-    var children = details.children;
-    for(var i = 0; i < children.length; i++){
-      if(children[i].tagName && children[i].tagName.toLowerCase() === "summary"){
-        return children[i].textContent || "";
+  window.updateCrownLoopDisplay = updateCrownLoopDisplayFinal;
+
+  function resetToFirstLoopAfterCompleteFinal(){
+    lsSet("crownLoop", String(getCrownLoopFinal() + 1));
+
+    lsSet("loop", "0");
+    lsSet("level", "1");
+    lsSet("exp", "0");
+
+    lsSet("unlockedMessages", JSON.stringify([]));
+    lsSet("unlockedSlotBonusMessages", JSON.stringify([]));
+    lsSet("unlockedLostItems", JSON.stringify([]));
+    lsSet("slotBonusReady", "false");
+
+    [
+      "completeShown",
+      "normalCompleteShown",
+      "rareCompleteShown",
+      "srCompleteShown",
+      "urCompleteShown",
+      "lostCompleteShown",
+      "normalCompleteShown_v2",
+      "rareCompleteShown_v2",
+      "srCompleteShown_v2",
+      "urCompleteShown_v2",
+      "lostCompleteShown_v2"
+    ].forEach(lsRemove);
+  }
+
+  window.resetToFirstLoopAfterCompleteFinal = resetToFirstLoopAfterCompleteFinal;
+
+  var COMPLETE_TEXT_FINAL = `ここにあったものは 
+最初から揃っていたのかもしれない 
+
+見つけたんじゃない 
+思い出しただけ 
+
+あなたがここにいた証 
+消えることのない記録 
+
+いつまでも傍で`;
+
+  function downloadMemoFinal(){
+    var memo = "ここに至るまで";
+    try {
+      if(typeof COMPLETE_MEMO_TEXT !== "undefined" && COMPLETE_MEMO_TEXT){
+        memo = COMPLETE_MEMO_TEXT;
       }
+    } catch(e){}
+
+    var blob = new Blob([memo], { type: "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "ここに至るまで.txt";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function showCompleteRewardFinal(){
+    if(lsGet("completeShown")) return;
+    lsSet("completeShown", "1");
+
+    var old = document.getElementById("completeRewardScreen");
+    if(old) old.remove();
+
+    var screen = document.createElement("div");
+    screen.id = "completeRewardScreen";
+    screen.style.position = "fixed";
+    screen.style.inset = "0";
+    screen.style.background = "black";
+    screen.style.display = "flex";
+    screen.style.alignItems = "center";
+    screen.style.justifyContent = "center";
+    screen.style.zIndex = "999999999";
+    screen.style.transition = "background 0.9s ease, opacity 0.4s ease";
+
+    var text = document.createElement("div");
+    text.textContent = COMPLETE_TEXT_FINAL;
+    text.style.color = "rgba(255,255,255,0.94)";
+    text.style.fontSize = "22px";
+    text.style.lineHeight = "2";
+    text.style.whiteSpace = "pre-line";
+    text.style.textAlign = "center";
+    text.style.opacity = "0";
+    text.style.filter = "blur(6px)";
+    text.style.transform = "translateY(14px)";
+    text.style.transition = "opacity 2s ease, color 0.8s ease, filter 1.8s ease, transform 1.8s ease";
+    text.style.textShadow = "0 0 10px rgba(255,255,255,0.9), 0 0 24px rgba(255,255,255,0.55), 0 0 46px rgba(255,255,255,0.28)";
+
+    screen.appendChild(text);
+    document.body.appendChild(screen);
+
+    setTimeout(function(){
+      text.style.opacity = "1";
+      text.style.filter = "blur(0)";
+      text.style.transform = "translateY(0)";
+    }, 100);
+
+    var canClose = false;
+
+    setTimeout(function(){
+      canClose = true;
+      screen.style.background = "white";
+      text.style.opacity = "0";
+      text.style.filter = "blur(8px)";
+      text.style.color = "white";
+      screen.style.cursor = "pointer";
+    }, 3000);
+
+    screen.addEventListener("click", function(){
+      if(!canClose) return;
+      screen.remove();
+      downloadMemoFinal();
+      resetToFirstLoopAfterCompleteFinal();
+      setTimeout(function(){ location.reload(); }, 500);
+    });
+  }
+
+  window.showCompleteReward = showCompleteRewardFinal;
+  try { showCompleteReward = showCompleteRewardFinal; } catch(e){}
+
+  function showSlotPopupFinal(){
+    var popup = document.getElementById("slotPopup");
+    var text = document.getElementById("slotPopupText");
+
+    if(!popup){
+      popup = document.createElement("div");
+      popup.id = "slotPopup";
+      document.body.appendChild(popup);
     }
-    return "";
-  }
 
-  function clearSearchFinal(){
-    document.querySelectorAll(".hidden-by-search-final").forEach(function(el){
-      el.classList.remove("hidden-by-search-final");
-    });
+    popup.style.position = "fixed";
+    popup.style.inset = "0";
+    popup.style.display = "flex";
+    popup.style.alignItems = "center";
+    popup.style.justifyContent = "center";
+    popup.style.background = "rgba(0,0,0,0.28)";
+    popup.style.backdropFilter = "blur(2px)";
+    popup.style.opacity = "1";
+    popup.style.pointerEvents = "none";
+    popup.style.transition = "opacity 0.25s ease";
+    popup.style.zIndex = "999999999";
+    popup.classList.add("show");
 
-    document.querySelectorAll("details.song").forEach(function(song){
-      song.open = false;
-    });
-
-    document.querySelectorAll("details.kana-group").forEach(function(group){
-      group.open = false;
-    });
-  }
-
-  function applySearchFinal(){
-    var input = document.getElementById("search");
-    if(!input) return;
-
-    var q = normalizeSearchText(input.value);
-
-    if(!q){
-      clearSearchFinal();
-      return;
+    if(!text){
+      text = document.createElement("div");
+      text.id = "slotPopupText";
+      popup.appendChild(text);
     }
 
-    var kanaGroups = document.querySelectorAll("details.kana-group");
+    text.innerHTML = "良かったね<br>良かったよ";
+    text.style.padding = "26px 34px";
+    text.style.borderRadius = "22px";
+    text.style.background = "rgba(255,255,255,0.92)";
+    text.style.color = "#333";
+    text.style.fontSize = "30px";
+    text.style.lineHeight = "1.9";
+    text.style.textAlign = "center";
+    text.style.boxShadow = "0 0 28px rgba(255,215,0,0.45)";
 
-    kanaGroups.forEach(function(group){
-      var groupHasHit = false;
-      var directDetails = getDirectChildrenByTagFinal(group, "details");
-
-      directDetails.forEach(function(artist){
-        var songs = Array.from(artist.children).filter(function(child){
-          return child.matches && child.matches("details.song");
-        });
-
-        if(songs.length === 0){
-          return;
-        }
-
-        var artistName = normalizeSearchText(
-          (artist.getAttribute("data-yomi") || "") + " " +
-          getDirectSummaryTextFinal(artist)
-        );
-
-        var artistHit = artistName.includes(q);
-        var artistHasHit = false;
-
-        songs.forEach(function(song){
-          var songTitle = normalizeSearchText(
-            (song.getAttribute("data-yomi") || "") + " " +
-            getDirectSummaryTextFinal(song)
-          );
-
-          // 歌詞本文は検索しない
-          var songHit = artistHit || songTitle.includes(q);
-
-          song.classList.toggle("hidden-by-search-final", !songHit);
-          song.open = false;
-
-          if(songHit){
-            artistHasHit = true;
-            groupHasHit = true;
-          }
-        });
-
-        artist.classList.toggle("hidden-by-search-final", !artistHasHit);
-        artist.open = artistHasHit;
-      });
-
-      group.classList.toggle("hidden-by-search-final", !groupHasHit);
-      group.open = groupHasHit;
-    });
-
-    // アニソン・その他・オリジナルなど直下にsongがある特殊カテゴリ
-    ["anisong", "others", "original"].forEach(function(id){
-      var container = document.getElementById(id);
-      if(!container) return;
-
-      var songs = Array.from(container.children).filter(function(child){
-        return child.matches && child.matches("details.song");
-      });
-
-      if(songs.length === 0) return;
-
-      var hasHit = false;
-
-      songs.forEach(function(song){
-        var songTitle = normalizeSearchText(
-          (song.getAttribute("data-yomi") || "") + " " +
-          getDirectSummaryTextFinal(song)
-        );
-
-        var songHit = songTitle.includes(q);
-        song.classList.toggle("hidden-by-search-final", !songHit);
-        song.open = false;
-
-        if(songHit){
-          hasHit = true;
-        }
-      });
-
-      container.classList.toggle("hidden-by-search-final", !hasHit);
-      container.open = hasHit;
-    });
+    setTimeout(function(){
+      popup.classList.remove("show");
+      popup.style.opacity = "0";
+      setTimeout(function(){ popup.style.display = "none"; }, 300);
+    }, 1200);
   }
 
-  function setupSearchFinal(){
-    var oldInput = document.getElementById("search");
-    if(!oldInput) return;
+  window.showSlotPopup = showSlotPopupFinal;
+  try { showSlotPopup = showSlotPopupFinal; } catch(e){}
 
-    // 旧検索イベントを切るため、inputをクローンで差し替え
-    var newInput = oldInput.cloneNode(true);
-    oldInput.parentNode.replaceChild(newInput, oldInput);
+  var thirdLoopBusyFinal = false;
 
-    newInput.addEventListener("input", applySearchFinal);
-  }
+  function showThirdLoopEffectFinal(){
+    if(thirdLoopBusyFinal) return;
+    thirdLoopBusyFinal = true;
 
-  if(document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", setupSearchFinal);
-  }else{
-    setupSearchFinal();
-  }
-
-})();
-</script>
-
-
-<script>
-/* ====== 高z-index固定オーバーレイ掃除 ====== */
-setInterval(() => {
-  document.querySelectorAll("div").forEach(e => {
-    const s = getComputedStyle(e);
-    if (
-      s.position === "fixed" &&
-      Number(s.zIndex) > 999999 &&
-      e.id !== "rareEffect"
-    ) {
-      e.remove();
-    }
-  });
-}, 3000);
-
-/* ====== 3周目演出：5秒固定（タップ無効） ====== */
-(function(){
-  var busy = false;
-
-  function showThirdLoopEffectFixed(){
-    if(busy) return;
-    busy = true;
-
-    // 既存オーバーレイ除去
-    ["thirdLoopOverlay","thirdLoopOverlayV2"].forEach(id=>{
-      const el = document.getElementById(id);
+    ["thirdLoopOverlay","thirdLoopOverlayV2"].forEach(function(id){
+      var el = document.getElementById(id);
       if(el) el.remove();
     });
 
-    const overlay = document.createElement("div");
+    var overlay = document.createElement("div");
     overlay.id = "thirdLoopOverlayV2";
     overlay.style.position = "fixed";
     overlay.style.inset = "0";
@@ -20479,26 +20690,31 @@ setInterval(() => {
     overlay.style.fontSize = "28px";
     overlay.style.opacity = "0";
     overlay.style.transition = "opacity 0.6s ease";
-    overlay.style.pointerEvents = "none"; // ←タップ無効
+    overlay.style.pointerEvents = "none";
     overlay.textContent = "あなたの総てになりたかった";
 
     document.body.appendChild(overlay);
 
-    setTimeout(()=> overlay.style.opacity = "1", 30);
-
-    // 5秒固定表示
-    setTimeout(()=>{
-      overlay.style.opacity = "0";
-    }, 5000);
-
-    setTimeout(()=>{
+    setTimeout(function(){ overlay.style.opacity = "1"; }, 30);
+    setTimeout(function(){ overlay.style.opacity = "0"; }, 5000);
+    setTimeout(function(){
       if(overlay) overlay.remove();
-      busy = false;
-    }, 5600);
+      thirdLoopBusyFinal = false;
+    }, 5700);
   }
 
-  window.showThirdLoopEffect = showThirdLoopEffectFixed;
-  try { showThirdLoopEffect = showThirdLoopEffectFixed; } catch(e){}
+  window.showThirdLoopEffect = showThirdLoopEffectFinal;
+  try { showThirdLoopEffect = showThirdLoopEffectFinal; } catch(e){}
+
+  function initFinalCheckPatch(){
+    updateCrownLoopDisplayFinal();
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", initFinalCheckPatch);
+  }else{
+    initFinalCheckPatch();
+  }
 
 })();
 </script>
