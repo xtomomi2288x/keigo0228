@@ -18546,7 +18546,7 @@ URは今チューニング中 先にSRどうぞ
 
 
 
-忘れもの一覧
+落とし物一覧
     \"表現者の眼鏡\",表現者の眼鏡（三輪啓悟は路上のときだけ特別な眼鏡をかける）
     \"飲みかけのミルクティー\",飲みかけのミルクティー(路上ライブでは必ずミルクティーを飲む)
     \"時間の止まった定期券\",(啓悟さんの期限が切れている定期。なんと駅に無料で出入りできる…これのお陰で駅での路上ライブでトイレに行ける)
@@ -20021,6 +20021,80 @@ SR完全融合最終パッチ
   setTimeout(removeDebugUI, 100);
   setTimeout(removeDebugUI, 500);
   setTimeout(removeDebugUI, 1200);
+})();
+</script>
+
+
+<script>
+/* =====================
+3周目突入エフェクト 安定化パッチ
+- 連打対策（短時間ロック）
+- 黒画面オーバーレイは必ず除去（フォールバックタイマー付き）
+===================== */
+(function(){
+  var __thirdLoopBusy = false;
+
+  function removeExistingOverlays(){
+    var ids = ["thirdLoopOverlay", "thirdLoopOverlayV2"];
+    ids.forEach(function(id){
+      var el = document.getElementById(id);
+      if(el && el.parentNode) el.parentNode.removeChild(el);
+    });
+  }
+
+  function createOverlay(){
+    var overlay = document.createElement("div");
+    overlay.id = "thirdLoopOverlayV2";
+    overlay.style.position = "fixed";
+    overlay.style.inset = "0";
+    overlay.style.background = "black";
+    overlay.style.color = "white";
+    overlay.style.display = "flex";
+    overlay.style.alignItems = "center";
+    overlay.style.justifyContent = "center";
+    overlay.style.zIndex = "999999999";
+    overlay.style.fontSize = "28px";
+    overlay.style.opacity = "0";
+    overlay.style.transition = "opacity 0.6s ease";
+    overlay.style.pointerEvents = "none";
+    overlay.textContent = "あなたの総てになりたかった";
+    return overlay;
+  }
+
+  function safeShowThirdLoopEffect(){
+    if(__thirdLoopBusy) return;
+    __thirdLoopBusy = true;
+
+    removeExistingOverlays();
+
+    var overlay = createOverlay();
+    document.body.appendChild(overlay);
+
+    // フェードイン
+    setTimeout(function(){ overlay.style.opacity = "1"; }, 30);
+
+    // 3秒後フェードアウト
+    setTimeout(function(){
+      overlay.style.opacity = "0";
+    }, 3000);
+
+    // 確実に消す（通常）
+    setTimeout(function(){
+      if(overlay && overlay.parentNode) overlay.remove();
+      __thirdLoopBusy = false;
+    }, 3800);
+
+    // フォールバック（万一残った場合）
+    setTimeout(function(){
+      removeExistingOverlays();
+      __thirdLoopBusy = false;
+    }, 6000);
+  }
+
+  // 既存関数があれば上書き
+  window.showThirdLoopEffect = safeShowThirdLoopEffect;
+  try { showThirdLoopEffect = safeShowThirdLoopEffect; } catch(e){}
+
 })();
 </script>
 
