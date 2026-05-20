@@ -711,6 +711,115 @@ body.night-mode .chord-token .chord-name {
 
 </style>
 </head>
+
+<script>
+/* =====================
+超安全ストレージ層
+- file:// や Chrome の制限で localStorage が死んでも画面を壊さない
+- 保存できる環境では localStorage を使う
+- 保存できない環境では一時メモリに逃がす
+===================== */
+(function(){
+  var memoryStore = {};
+
+  function canUseLocalStorage(){
+    try {
+      if(typeof window.localStorage === "undefined") return false;
+      var k = "__miwa_storage_test__";
+      window.localStorage.setItem(k, "1");
+      window.localStorage.removeItem(k);
+      return true;
+    } catch(e) {
+      return false;
+    }
+  }
+
+  window.MIWA_CAN_USE_LOCAL_STORAGE = canUseLocalStorage();
+
+  window.safeGetItem = function(key){
+    try {
+      if(window.MIWA_CAN_USE_LOCAL_STORAGE) return window.localStorage.getItem(key);
+    } catch(e){}
+    return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
+  };
+
+  window.safeSetItem = function(key, value){
+    value = String(value);
+    try {
+      if(window.MIWA_CAN_USE_LOCAL_STORAGE){
+        window.localStorage.setItem(key, value);
+        return;
+      }
+    } catch(e){}
+    memoryStore[key] = value;
+  };
+
+  window.safeRemoveItem = function(key){
+    try {
+      if(window.MIWA_CAN_USE_LOCAL_STORAGE){
+        window.localStorage.removeItem(key);
+        return;
+      }
+    } catch(e){}
+    delete memoryStore[key];
+  };
+
+  window.safeClearOnlyMiwa = function(){
+    var keys = [
+      "heartCount","rareCount","urCount","exp","level","loop",
+      "unlockedMessages","unlockedSlotBonusMessages","unlockedLostItems",
+      "slotBonusReady","blackoutCooldown","completeCrownLoop","titleProgressOffset",
+      "normalCompleteShown","rareCompleteShown","srCompleteShown","urCompleteShown","lostCompleteShown",
+      "normalCompleteShown_v6","rareCompleteShown_v6","srCompleteShown_v6","urCompleteShown_v6","lostCompleteShown_v6","slotCompleteShown_v6",
+      "completeShown"
+    ];
+    keys.forEach(function(k){ window.safeRemoveItem(k); });
+  };
+
+  window.exportMiwaData = function(){
+    var keys = [
+      "heartCount","rareCount","urCount","exp","level","loop",
+      "unlockedMessages","unlockedSlotBonusMessages","unlockedLostItems",
+      "slotBonusReady","blackoutCooldown","completeCrownLoop","titleProgressOffset",
+      "normalCompleteShown","rareCompleteShown","srCompleteShown","urCompleteShown","lostCompleteShown",
+      "normalCompleteShown_v6","rareCompleteShown_v6","srCompleteShown_v6","urCompleteShown_v6","lostCompleteShown_v6","slotCompleteShown_v6",
+      "completeShown"
+    ];
+
+    var data = {};
+    keys.forEach(function(k){
+      data[k] = window.safeGetItem(k);
+    });
+
+    data.__note = "三輪啓悟ライブラリ backup";
+    data.__savedAt = new Date().toISOString();
+
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "miwa_library_backup.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  };
+
+  window.importMiwaDataObject = function(data){
+    if(!data || typeof data !== "object") return false;
+
+    Object.keys(data).forEach(function(k){
+      if(k.indexOf("__") === 0) return;
+      if(data[k] === null || typeof data[k] === "undefined") window.safeRemoveItem(k);
+      else window.safeSetItem(k, data[k]);
+    });
+
+    return true;
+  };
+
+})();
+</script>
+
 <body>
 <h1 id="mainTitle">🎸三輪啓悟ライブラリ🎸</h1>
 <input id="search" placeholder="検索" type="text"/><br/>
@@ -20802,8 +20911,11 @@ SR完全融合最終パッチ
 
 <style>
 /* =====================
-FINAL STABLE PATCH
+データ保護・復旧・バックアップUI
 ===================== */
+#backupBtn,
+#importBtn,
+#restoreCountBtn,
 #rescueBtn {
   display: inline-block !important;
   visibility: visible !important;
@@ -20817,71 +20929,56 @@ FINAL STABLE PATCH
   z-index: 2147483647 !important;
 }
 
-#crownLoopDisplay {
-  margin-top: 2px;
-  margin-bottom: 2px;
-  font-size: 16px;
-  font-weight: bold;
-  color: #d4af37;
-  text-shadow: 0 0 6px rgba(212,175,55,0.6);
+#storageWarning {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border: 1px solid #d4af37;
+  background: rgba(255,248,210,0.95);
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #6b4b00;
 }
 </style>
 
 <script>
 /* =====================
-完全安定版パッチ
-- 60100回前後で止まる問題対策
-- 称号周回を heartCount 基準で補正
-- 3周目突入を5秒固定
-- 全コンプ後は称号進行だけリセットして👑+1
-- N/R/SR/UR/？？？/運命記録コンプ通知を5秒固定
-- 復旧ボタンはデータを消さず透明壁だけ除去
+データ保護・完全安定パッチ
+- データを消さない
+- 復旧ボタン強化
+- バックアップ/復元ボタン追加
+- クリック回数の手動復元
+- 1周目固定の補正
 ===================== */
 (function(){
 
-  /* ---------- safe localStorage ---------- */
   function lsGet(key){
-    try {
-      if(typeof safeGetItem === "function") return safeGetItem(key);
-      return localStorage.getItem(key);
-    } catch(e){ return localStorage.getItem(key); }
+    try { return safeGetItem(key); } catch(e){ return null; }
   }
-
   function lsSet(key, value){
-    try {
-      if(typeof safeSetItem === "function") safeSetItem(key, value);
-      else localStorage.setItem(key, value);
-    } catch(e){ localStorage.setItem(key, value); }
+    try { safeSetItem(key, value); } catch(e){}
   }
-
   function lsRemove(key){
-    try {
-      if(typeof safeRemoveItem === "function") safeRemoveItem(key);
-      else localStorage.removeItem(key);
-    } catch(e){ localStorage.removeItem(key); }
+    try { safeRemoveItem(key); } catch(e){}
   }
-
-  function getNum(key, fallback){
-    var n = Number(lsGet(key));
-    return isNaN(n) ? fallback : n;
-  }
-
   function getJSON(key){
-    try { return JSON.parse(lsGet(key)) || []; }
-    catch(e){ return []; }
+    try { return JSON.parse(lsGet(key)) || []; } catch(e){ return []; }
   }
-
   function uniq(arr){
     return Array.from(new Set(arr || []));
   }
-
   function allIncluded(all, owned){
     all = uniq(all);
     owned = uniq(owned);
     return all.length > 0 && all.every(function(x){ return owned.includes(x); });
   }
+  function getCurrentHeartCount(){
+    try {
+      if(typeof heartCount !== "undefined") return Number(heartCount) || 0;
+    } catch(e){}
+    return Number(lsGet("heartCount")) || 0;
+  }
 
-  /* ---------- ロック/透明壁管理 ---------- */
   function unlockHeart(){
     var heart = document.getElementById("heart");
     if(heart){
@@ -20893,137 +20990,157 @@ FINAL STABLE PATCH
     try { window.heartLocked = false; } catch(e){}
   }
 
-  function makeTimedLock(id, ms){
-    ms = ms || 5000;
-    var old = document.getElementById(id);
-    if(old) old.remove();
-
-    var lock = document.createElement("div");
-    lock.id = id;
-    lock.dataset.expireAt = String(Date.now() + ms + 800);
-    lock.style.position = "fixed";
-    lock.style.inset = "0";
-    lock.style.zIndex = "2147483647";
-    lock.style.background = "transparent";
-    lock.style.pointerEvents = "all";
-    document.body.appendChild(lock);
-
-    setTimeout(function(){
-      if(lock && lock.parentNode) lock.remove();
-      unlockHeart();
-    }, ms);
-
-    return lock;
-  }
-
-  function cleanupExpiredLocks(){
-    var now = Date.now();
-
+  function forceRescue(){
     [
-      "finalSafetyLock",
-      "milestoneLock",
-      "milestoneFiveSecondLock",
-      "thirdLoopFiveSecondLock",
-      "finalCompleteLock",
-      "rescueTempLock"
-    ].forEach(function(id){
-      var el = document.getElementById(id);
-      if(!el) return;
-      var expire = Number(el.dataset.expireAt || 0);
-      if(!expire || now > expire){
-        el.remove();
-      }
-    });
-
-    ["slotPopup", "lostItemOverlay", "milestonePopup"].forEach(function(id){
-      var el = document.getElementById(id);
-      if(el && !el.classList.contains("show")){
-        el.style.pointerEvents = "none";
-      }
-    });
-
-    unlockHeart();
-  }
-
-  /* ---------- データ維持復旧 ---------- */
-  function rescueTouch(){
-    [
-      "finalSafetyLock",
-      "milestoneLock",
-      "milestoneFiveSecondLock",
-      "thirdLoopFiveSecondLock",
-      "finalCompleteLock",
-      "finalLockScreen",
-      "finalSafetyLock",
-      "milestonePopup",
-      "thirdLoopOverlay",
-      "thirdLoopOverlayV2",
-      "completeRewardScreen"
+      "finalSafetyLock","milestoneLock","milestoneFiveSecondLock",
+      "thirdLoopFiveSecondLock","finalCompleteLock","finalLockScreen",
+      "milestonePopup","thirdLoopOverlay","thirdLoopOverlayV2",
+      "completeRewardScreen","srFixedFlash","srFlashEffect"
     ].forEach(function(id){
       var el = document.getElementById(id);
       if(el) el.remove();
     });
 
+    ["slotPopup","lostItemOverlay"].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el){
+        el.classList.remove("show");
+        el.style.opacity = "0";
+        el.style.pointerEvents = "none";
+        el.style.display = "none";
+      }
+    });
+
+    ["collectionBox","titleCollectionBox","slotRecordBox","lostCollectionBox"].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.style.display = "none";
+    });
+
+    document.documentElement.style.pointerEvents = "auto";
     document.body.style.pointerEvents = "auto";
 
-    ["search","heart","bookBtn","titleBtn","slotRecordBtn","lostBtn","resetBtn","rescueBtn"].forEach(function(id){
+    ["mainTitle","search","heart","bookBtn","titleBtn","slotRecordBtn","lostBtn","resetBtn","rescueBtn","backupBtn","importBtn","restoreCountBtn","loveSlotWrap","buttonArea","counter","level","title"].forEach(function(id){
       var el = document.getElementById(id);
       if(el){
         el.style.pointerEvents = "auto";
         el.style.position = "relative";
         el.style.zIndex = "2147483647";
+        el.style.opacity = "";
       }
     });
 
-    var slot = document.getElementById("slotPopup");
-    if(slot && !slot.classList.contains("show")){
-      slot.style.display = "none";
-      slot.style.pointerEvents = "none";
-    }
-
-    var lost = document.getElementById("lostItemOverlay");
-    if(lost && !lost.classList.contains("show")){
-      lost.style.pointerEvents = "none";
-    }
-
     unlockHeart();
 
-    alert("復旧したよ！💗回数・称号・図鑑は消してないよ");
+    alert("復旧したよ。データは消してないよ");
   }
 
-  window.rescueTouch = rescueTouch;
+  window.rescueTouch = forceRescue;
+  window.forceRescueV2 = forceRescue;
 
-  function addRescueButton(){
-    if(document.getElementById("rescueBtn")) return;
+  function addDataButtons(){
     var area = document.getElementById("buttonArea");
     if(!area) return;
 
-    var btn = document.createElement("button");
-    btn.id = "rescueBtn";
-    btn.type = "button";
-    btn.textContent = "🧯復旧";
-    btn.addEventListener("click", rescueTouch);
-    area.appendChild(btn);
+    if(!document.getElementById("rescueBtn")){
+      var rescue = document.createElement("button");
+      rescue.id = "rescueBtn";
+      rescue.type = "button";
+      rescue.textContent = "🧯復旧";
+      rescue.onclick = forceRescue;
+      area.appendChild(rescue);
+    }
+
+    if(!document.getElementById("backupBtn")){
+      var backup = document.createElement("button");
+      backup.id = "backupBtn";
+      backup.type = "button";
+      backup.textContent = "💾バックアップ";
+      backup.onclick = function(){
+        if(typeof exportMiwaData === "function") exportMiwaData();
+      };
+      area.appendChild(backup);
+    }
+
+    if(!document.getElementById("importBtn")){
+      var input = document.createElement("input");
+      input.type = "file";
+      input.accept = "application/json";
+      input.id = "importFileInput";
+      input.style.display = "none";
+      input.onchange = function(ev){
+        var file = ev.target.files && ev.target.files[0];
+        if(!file) return;
+        var reader = new FileReader();
+        reader.onload = function(){
+          try {
+            var data = JSON.parse(reader.result);
+            if(typeof importMiwaDataObject === "function" && importMiwaDataObject(data)){
+              alert("復元したよ。ページを再読み込みするね");
+              location.reload();
+            }
+          } catch(e){
+            alert("バックアップファイルを読めなかったよ");
+          }
+        };
+        reader.readAsText(file, "utf-8");
+      };
+      area.appendChild(input);
+
+      var imp = document.createElement("button");
+      imp.id = "importBtn";
+      imp.type = "button";
+      imp.textContent = "📂復元";
+      imp.onclick = function(){ input.click(); };
+      area.appendChild(imp);
+    }
+
+    if(!document.getElementById("restoreCountBtn")){
+      var restore = document.createElement("button");
+      restore.id = "restoreCountBtn";
+      restore.type = "button";
+      restore.textContent = "💗回数復元";
+      restore.onclick = function(){
+        var current = getCurrentHeartCount();
+        var v = prompt("戻したい💗回数を入れてね", String(current || 110000));
+        if(v === null) return;
+        v = Number(String(v).replace(/[^\d]/g, ""));
+        if(!v || isNaN(v)){
+          alert("数字が読めなかったよ");
+          return;
+        }
+
+        lsSet("heartCount", String(v));
+        try { heartCount = v; } catch(e){}
+
+        // 称号進行も総クリックから補正
+        lsSet("titleProgressOffset", "0");
+        syncTitleLoopFromHeart();
+
+        if(typeof updateCounter === "function") updateCounter();
+        if(typeof updateCrownLoopDisplay === "function") updateCrownLoopDisplay();
+
+        alert("💗回数を " + v + " 回に戻したよ");
+      };
+      area.appendChild(restore);
+    }
+
+    if(!window.MIWA_CAN_USE_LOCAL_STORAGE && !document.getElementById("storageWarning")){
+      var warning = document.createElement("div");
+      warning.id = "storageWarning";
+      warning.textContent = "注意：この開き方だと保存が不安定です。こまめに💾バックアップしてね。";
+      area.parentNode.insertBefore(warning, area);
+    }
   }
 
-  /* ---------- 称号周回をheartCount基準で補正 ---------- */
   function getTitleOffset(){
     var offset = Number(lsGet("titleProgressOffset"));
     if(isNaN(offset)) offset = 0;
     return offset;
   }
 
-  function getCurrentHeartCount(){
-    try {
-      if(typeof heartCount !== "undefined") return Number(heartCount) || 0;
-    } catch(e){}
-    return Number(lsGet("heartCount")) || 0;
-  }
-
   function syncTitleLoopFromHeart(){
     var total = getCurrentHeartCount();
     var offset = getTitleOffset();
-
     if(total < offset){
       offset = 0;
       lsSet("titleProgressOffset", "0");
@@ -21033,7 +21150,7 @@ FINAL STABLE PATCH
     var levelIndex = Math.floor(progress / 150);
     var newExp = progress % 150;
     var absoluteLoop = Math.floor(levelIndex / 200);
-    var displayLoop = absoluteLoop % 3; // 0=1周目,1=2周目,2=3周目
+    var displayLoop = absoluteLoop % 3;
     var newLevel = (levelIndex % 200) + 1;
 
     try { exp = newExp; } catch(e){}
@@ -21051,19 +21168,7 @@ FINAL STABLE PATCH
 
     if(typeof getCurrentTitle === "function"){
       var titleBox = document.getElementById("title");
-      if(titleBox){
-        titleBox.textContent = "称号：" + getCurrentTitle();
-      }
-    }
-
-    // 3周目突入時だけ1回演出
-    var cycle = Math.floor(absoluteLoop / 3);
-    var thirdKey = "thirdLoopShown_cycle_" + cycle;
-    if(displayLoop === 2 && newLevel === 1 && !lsGet(thirdKey)){
-      lsSet(thirdKey, "1");
-      setTimeout(function(){
-        if(typeof showThirdLoopEffect === "function") showThirdLoopEffect();
-      }, 80);
+      if(titleBox) titleBox.textContent = "称号：" + getCurrentTitle();
     }
   }
 
@@ -21076,7 +21181,6 @@ FINAL STABLE PATCH
   };
   try { updateLevel = window.updateLevel; } catch(e){}
 
-  /* ---------- 👑表示 ---------- */
   window.updateCrownLoopDisplay = function(){
     var crownLoop = Number(lsGet("completeCrownLoop")) || 1;
     var wrap = document.getElementById("loveSlotWrap");
@@ -21087,309 +21191,39 @@ FINAL STABLE PATCH
       el = document.createElement("div");
       el.id = "crownLoopDisplay";
       var slotMessage = document.getElementById("slotMessage");
-      if(slotMessage && slotMessage.parentNode === wrap){
-        wrap.insertBefore(el, slotMessage);
-      }else{
-        wrap.appendChild(el);
-      }
+      if(slotMessage && slotMessage.parentNode === wrap) wrap.insertBefore(el, slotMessage);
+      else wrap.appendChild(el);
     }
-
     el.textContent = "👑" + crownLoop + "周目";
+    el.style.marginTop = "2px";
+    el.style.marginBottom = "2px";
+    el.style.fontSize = "16px";
+    el.style.fontWeight = "bold";
+    el.style.color = "#d4af37";
+    el.style.textShadow = "0 0 6px rgba(212,175,55,0.6)";
   };
   try { updateCrownLoopDisplay = window.updateCrownLoopDisplay; } catch(e){}
 
-  /* ---------- 3周目突入：5秒固定 ---------- */
-  window.showThirdLoopEffect = function(){
-    makeTimedLock("thirdLoopFiveSecondLock", 5000);
-
-    ["thirdLoopEffect","thirdLoopOverlay","thirdLoopOverlayV2"].forEach(function(id){
-      var old = document.getElementById(id);
-      if(old) old.remove();
-    });
-
-    var overlay = document.createElement("div");
-    overlay.id = "thirdLoopOverlayV2";
-    overlay.style.position = "fixed";
-    overlay.style.inset = "0";
-    overlay.style.background = "black";
-    overlay.style.color = "white";
-    overlay.style.display = "flex";
-    overlay.style.alignItems = "center";
-    overlay.style.justifyContent = "center";
-    overlay.style.zIndex = "2147483646";
-    overlay.style.fontSize = "32px";
-    overlay.style.opacity = "0";
-    overlay.style.transition = "opacity 0.8s ease";
-    overlay.style.pointerEvents = "all";
-    overlay.textContent = "あなたの総てになりたかった";
-
-    document.body.appendChild(overlay);
-
-    setTimeout(function(){ overlay.style.opacity = "1"; }, 30);
-    setTimeout(function(){ overlay.style.opacity = "0"; }, 5000);
-    setTimeout(function(){
-      if(overlay && overlay.parentNode) overlay.remove();
-      unlockHeart();
-    }, 5800);
-  };
-  try { showThirdLoopEffect = window.showThirdLoopEffect; } catch(e){}
-
-  /* ---------- コンプメッセージ ---------- */
-  window.PARTIAL_COMPLETE_MESSAGES = Object.assign({}, window.PARTIAL_COMPLETE_MESSAGES || {}, {
-    normal: `使ってくれてありがとう！
-ライブラリとして役立ててね`,
-    rare: `あなたの努力は全部知ってるよ
-いつでも応援してる`,
-    sr: `あなたは私の憧れ
-いつまでも背中を追わせてほしい`,
-    ur: `隣に立つのに相応しい人間になりたい
-あなたの傍で生きていたい`,
-    lost: `忘れ物を全て拾ってくれてありがとう
-風化しない思い出をまた積み重ねて`,
-    slot: `僕らが出会ったのは偶然ではなく必然
-
-運命なんか信じないけど、あなたとなら`
-  });
-
-  function showMilestonePopupFinal(message){
-    makeTimedLock("milestoneFiveSecondLock", 5000);
-
-    var old = document.getElementById("milestonePopup");
-    if(old) old.remove();
-
-    var overlay = document.createElement("div");
-    overlay.id = "milestonePopup";
-    overlay.style.position = "fixed";
-    overlay.style.inset = "0";
-    overlay.style.display = "flex";
-    overlay.style.alignItems = "center";
-    overlay.style.justifyContent = "center";
-    overlay.style.background = "rgba(0,0,0,0.42)";
-    overlay.style.backdropFilter = "blur(2px)";
-    overlay.style.zIndex = "2147483646";
-    overlay.style.opacity = "0";
-    overlay.style.transition = "opacity 0.45s ease";
-    overlay.style.pointerEvents = "all";
-
-    var card = document.createElement("div");
-    card.textContent = message;
-    card.style.maxWidth = "86vw";
-    card.style.padding = "26px 32px";
-    card.style.borderRadius = "20px";
-    card.style.background = "rgba(255,255,255,0.94)";
-    card.style.color = "#222";
-    card.style.fontSize = "22px";
-    card.style.lineHeight = "1.9";
-    card.style.textAlign = "center";
-    card.style.whiteSpace = "pre-line";
-    card.style.boxShadow = "0 0 28px rgba(255,215,0,0.35)";
-    card.style.opacity = "0";
-    card.style.transform = "translateY(14px) scale(0.98)";
-    card.style.transition = "opacity 0.45s ease, transform 0.45s ease";
-
-    overlay.appendChild(card);
-    document.body.appendChild(overlay);
-
-    setTimeout(function(){
-      overlay.style.opacity = "1";
-      card.style.opacity = "1";
-      card.style.transform = "translateY(0) scale(1)";
-    }, 30);
-
-    setTimeout(function(){
-      overlay.style.opacity = "0";
-      card.style.opacity = "0";
-      card.style.transform = "translateY(-10px) scale(0.98)";
-      setTimeout(function(){
-        if(overlay && overlay.parentNode) overlay.remove();
-      }, 500);
-    }, 5000);
-  }
-
-  window.showMilestonePopup = showMilestonePopupFinal;
-  try { showMilestonePopup = showMilestonePopupFinal; } catch(e){}
-
-  function normalComplete(){ return allIncluded(window.heartMessages || heartMessages || [], getJSON("unlockedMessages")); }
-  function rareComplete(){ return allIncluded(window.rareMessages || rareMessages || [], getJSON("unlockedMessages")); }
-  function srComplete(){ return allIncluded(window.srMessages || srMessages || [], getJSON("unlockedMessages")); }
-  function urComplete(){ return allIncluded(window.urMessages || urMessages || [], getJSON("unlockedMessages")); }
-  function lostComplete(){ return allIncluded(window.lostItems || lostItems || [], getJSON("unlockedLostItems")); }
-  function slotComplete(){ return allIncluded(window.SLOT_BONUS_MESSAGES || SLOT_BONUS_MESSAGES || [], getJSON("unlockedSlotBonusMessages")); }
-
-  var oldCheckCompletionRewards = window.checkCompletionRewards || (typeof checkCompletionRewards !== "undefined" ? checkCompletionRewards : null);
-
-  window.checkCompletionRewards = function(){
-    try {
-      if(typeof isAllComplete === "function" && isAllComplete()){
-        if(typeof showCompleteReward === "function") showCompleteReward();
-        return;
-      }
-    } catch(e){}
-
-    var queue = [];
-
-    if(normalComplete() && !lsGet("normalCompleteShown_v6")){
-      lsSet("normalCompleteShown_v6", "1");
-      queue.push(window.PARTIAL_COMPLETE_MESSAGES.normal);
-    }
-    if(rareComplete() && !lsGet("rareCompleteShown_v6")){
-      lsSet("rareCompleteShown_v6", "1");
-      queue.push(window.PARTIAL_COMPLETE_MESSAGES.rare);
-    }
-    if(srComplete() && !lsGet("srCompleteShown_v6")){
-      lsSet("srCompleteShown_v6", "1");
-      queue.push(window.PARTIAL_COMPLETE_MESSAGES.sr);
-    }
-    if(urComplete() && !lsGet("urCompleteShown_v6")){
-      lsSet("urCompleteShown_v6", "1");
-      queue.push(window.PARTIAL_COMPLETE_MESSAGES.ur);
-    }
-    if(lostComplete() && !lsGet("lostCompleteShown_v6")){
-      lsSet("lostCompleteShown_v6", "1");
-      queue.push(window.PARTIAL_COMPLETE_MESSAGES.lost);
-    }
-    if(slotComplete() && !lsGet("slotCompleteShown_v6")){
-      lsSet("slotCompleteShown_v6", "1");
-      queue.push(window.PARTIAL_COMPLETE_MESSAGES.slot);
-    }
-
-    if(queue.length){
-      queue.forEach(function(msg, i){
-        setTimeout(function(){ showMilestonePopupFinal(msg); }, i * 5600);
-      });
-      return;
-    }
-
-    if(typeof oldCheckCompletionRewards === "function"){
-      try { oldCheckCompletionRewards(); } catch(e){}
-    }
-  };
-  try { checkCompletionRewards = window.checkCompletionRewards; } catch(e){}
-
-  /* 運命記録は保存直後にも判定 */
-  var oldUnlockSlotBonusMessage = window.unlockSlotBonusMessage || (typeof unlockSlotBonusMessage !== "undefined" ? unlockSlotBonusMessage : null);
-  if(typeof oldUnlockSlotBonusMessage === "function"){
-    window.unlockSlotBonusMessage = function(msg){
-      var result = oldUnlockSlotBonusMessage(msg);
-      setTimeout(function(){
-        if(typeof checkCompletionRewards === "function") checkCompletionRewards();
-      }, 80);
-      setTimeout(function(){
-        if(typeof checkCompletionRewards === "function") checkCompletionRewards();
-      }, 500);
-      return result;
-    };
-    try { unlockSlotBonusMessage = window.unlockSlotBonusMessage; } catch(e){}
-  }
-
-  /* ---------- スロットポップアップ ---------- */
-  window.showSlotPopup = function(){
-    var slotPopup = document.getElementById("slotPopup");
-    var slotPopupText = document.getElementById("slotPopupText");
-
-    if(!slotPopup){
-      slotPopup = document.createElement("div");
-      slotPopup.id = "slotPopup";
-      document.body.appendChild(slotPopup);
-    }
-
-    slotPopup.style.position = "fixed";
-    slotPopup.style.inset = "0";
-    slotPopup.style.display = "flex";
-    slotPopup.style.alignItems = "center";
-    slotPopup.style.justifyContent = "center";
-    slotPopup.style.background = "rgba(0,0,0,0.28)";
-    slotPopup.style.backdropFilter = "blur(2px)";
-    slotPopup.style.opacity = "1";
-    slotPopup.style.pointerEvents = "none";
-    slotPopup.style.transition = "opacity 0.25s ease";
-    slotPopup.style.zIndex = "999999997";
-    slotPopup.classList.add("show");
-
-    if(!slotPopupText){
-      slotPopupText = document.createElement("div");
-      slotPopupText.id = "slotPopupText";
-      slotPopup.appendChild(slotPopupText);
-    }
-
-    slotPopupText.innerHTML = "良かったね<br>良かったよ";
-
-    setTimeout(function(){
-      slotPopup.classList.remove("show");
-      slotPopup.style.opacity = "0";
-      setTimeout(function(){
-        slotPopup.style.display = "none";
-        unlockHeart();
-      }, 300);
-    }, 1200);
-  };
-  try { showSlotPopup = window.showSlotPopup; } catch(e){}
-
-  /* ---------- 全コンプ後のリセット補強 ---------- */
-  var oldResetTitles = window.resetTitlesOnlyForNextCrownLoop || (typeof resetTitlesOnlyForNextCrownLoop !== "undefined" ? resetTitlesOnlyForNextCrownLoop : null);
-  window.resetTitlesOnlyForNextCrownLoop = function(){
-    var crownLoop = Number(lsGet("completeCrownLoop")) || 1;
-    lsSet("completeCrownLoop", String(crownLoop + 1));
-
-    // 次周の称号進行開始地点を現在の総クリック回数にする
-    lsSet("titleProgressOffset", String(getCurrentHeartCount()));
-
-    lsSet("level", "1");
-    lsSet("exp", "0");
-    lsSet("loop", "0");
-
-    lsSet("unlockedMessages", JSON.stringify([]));
-    lsSet("unlockedSlotBonusMessages", JSON.stringify([]));
-    lsSet("unlockedLostItems", JSON.stringify([]));
-    lsSet("slotBonusReady", "false");
-
-    [
-      "normalCompleteShown",
-      "rareCompleteShown",
-      "srCompleteShown",
-      "urCompleteShown",
-      "lostCompleteShown",
-      "completeShown",
-      "normalCompleteShown_v6",
-      "rareCompleteShown_v6",
-      "srCompleteShown_v6",
-      "urCompleteShown_v6",
-      "lostCompleteShown_v6",
-      "slotCompleteShown_v6"
-    ].forEach(lsRemove);
-
-    setTimeout(function(){ location.reload(); }, 500);
-  };
-  try { resetTitlesOnlyForNextCrownLoop = window.resetTitlesOnlyForNextCrownLoop; } catch(e){}
-
-  /* ---------- 初期化 ---------- */
-  function initFinal(){
-    addRescueButton();
-    cleanupExpiredLocks();
+  function initSafe(){
+    addDataButtons();
+    forceRescue();
     syncTitleLoopFromHeart();
+    if(typeof updateCounter === "function") updateCounter();
     if(typeof updateCrownLoopDisplay === "function") updateCrownLoopDisplay();
   }
 
   if(document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", initFinal);
-  }else{
-    initFinal();
+    document.addEventListener("DOMContentLoaded", initSafe);
+  } else {
+    setTimeout(initSafe, 50);
   }
 
-  setTimeout(initFinal, 500);
-  setTimeout(initFinal, 1500);
-  setInterval(cleanupExpiredLocks, 2500);
-
-  // 連打ツール対策：一定クリックごとに表示同期
-  var heartEl = document.getElementById("heart");
-  if(heartEl){
-    heartEl.addEventListener("click", function(){
-      setTimeout(syncTitleLoopFromHeart, 0);
-      setTimeout(function(){
-        if(typeof checkCompletionRewards === "function") checkCompletionRewards();
-      }, 100);
-    });
-  }
+  setTimeout(initSafe, 500);
+  setInterval(function(){
+    // alertは出さず軽く復旧だけ
+    document.body.style.pointerEvents = "auto";
+    unlockHeart();
+  }, 5000);
 
 })();
 </script>
