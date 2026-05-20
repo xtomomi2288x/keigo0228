@@ -18681,10 +18681,6 @@ URは今チューニング中 先にSRどうぞ
 あなたの傍で生きていたい`,
     lost: `忘れ物を全て拾ってくれてありがとう
 風化しない思い出をまた積み重ねて`
-  ,
-    slot: `僕らが出会ったのは偶然ではなく必然
-
-運命なんか信じないけど、あなたとなら`
   };
 
   function lsGet(key){
@@ -18778,15 +18774,6 @@ URは今チューニング中 先にSRどうぞ
     var old = document.getElementById("milestonePopup");
     if (old) old.remove();
 
-    var lock = document.createElement("div");
-    lock.id = "milestoneLock";
-    lock.style.position = "fixed";
-    lock.style.inset = "0";
-    lock.style.zIndex = "999999999";
-    lock.style.background = "transparent";
-    lock.style.pointerEvents = "all";
-    document.body.appendChild(lock);
-
     var overlay = document.createElement("div");
     overlay.id = "milestonePopup";
     overlay.style.position = "fixed";
@@ -18799,7 +18786,7 @@ URは今チューニング中 先にSRどうぞ
     overlay.style.zIndex = "999999998";
     overlay.style.opacity = "0";
     overlay.style.transition = "opacity 0.45s ease";
-    overlay.style.pointerEvents = "all";
+    overlay.style.pointerEvents = "none";
 
     var card = document.createElement("div");
     card.style.maxWidth = "86vw";
@@ -18830,11 +18817,8 @@ URは今チューニング中 先にSRどうぞ
       overlay.style.opacity = "0";
       card.style.opacity = "0";
       card.style.transform = "translateY(-10px) scale(0.98)";
-      setTimeout(function(){
-        if (overlay && overlay.parentNode) overlay.remove();
-        if (lock && lock.parentNode) lock.remove();
-      }, 500);
-    }, 5000);
+      setTimeout(function(){ overlay.remove(); }, 500);
+    }, 2100);
   }
 
   function showCompleteReward(){
@@ -20818,9 +20802,50 @@ SR完全融合最終パッチ
 
 <script>
 /* =====================
-動作完全安定化 最終パッチ
+2026-05-20 動作完全安定版 追加パッチ
+- N/R/SR/UR/？？？/運命記録コンプ通知を5秒固定
+- 運命記録コンプメッセージ追加
+- 1周目から👑1周目を表示
+- 3周目突入を5秒固定
+- スロット「良かったね/良かったよ」維持
 ===================== */
 (function(){
+
+  function lsGetFinal(key){
+    try {
+      if(typeof safeGetItem === "function") return safeGetItem(key);
+      return localStorage.getItem(key);
+    } catch(e){ return localStorage.getItem(key); }
+  }
+
+  function lsSetFinal(key, value){
+    try {
+      if(typeof safeSetItem === "function") safeSetItem(key, value);
+      else localStorage.setItem(key, value);
+    } catch(e){ localStorage.setItem(key, value); }
+  }
+
+  function lsRemoveFinal(key){
+    try {
+      if(typeof safeRemoveItem === "function") safeRemoveItem(key);
+      else localStorage.removeItem(key);
+    } catch(e){ localStorage.removeItem(key); }
+  }
+
+  function getJSONFinal(key){
+    try { return JSON.parse(lsGetFinal(key)) || []; }
+    catch(e){ return []; }
+  }
+
+  function uniqueFinal(arr){
+    return Array.from(new Set(arr || []));
+  }
+
+  function allIncludedFinal(all, owned){
+    all = uniqueFinal(all);
+    owned = uniqueFinal(owned);
+    return all.length > 0 && all.every(function(x){ return owned.includes(x); });
+  }
 
   function unlockHeartFinal(){
     var heart = document.getElementById("heart");
@@ -20833,12 +20858,12 @@ SR完全融合最終パッチ
     try { window.heartLocked = false; } catch(e){}
   }
 
-  function makeLock(ms){
-    var old = document.getElementById("finalSafetyLock");
+  function createFiveSecondLockFinal(id){
+    var old = document.getElementById(id);
     if(old) old.remove();
 
     var lock = document.createElement("div");
-    lock.id = "finalSafetyLock";
+    lock.id = id;
     lock.style.position = "fixed";
     lock.style.inset = "0";
     lock.style.zIndex = "999999999";
@@ -20849,12 +20874,175 @@ SR完全融合最終パッチ
     setTimeout(function(){
       if(lock && lock.parentNode) lock.remove();
       unlockHeartFinal();
-    }, ms || 5000);
+    }, 5000);
+
+    return lock;
   }
 
-  /* 3周目突入：5秒固定。💗を触っても進まない */
+  window.PARTIAL_COMPLETE_MESSAGES = Object.assign({}, window.PARTIAL_COMPLETE_MESSAGES || {}, {
+    normal: `使ってくれてありがとう！
+ライブラリとして役立ててね`,
+    rare: `あなたの努力は全部知ってるよ
+いつでも応援してる`,
+    sr: `あなたは私の憧れ
+いつまでも背中を追わせてほしい`,
+    ur: `隣に立つのに相応しい人間になりたい
+あなたの傍で生きていたい`,
+    lost: `忘れ物を全て拾ってくれてありがとう
+風化しない思い出をまた積み重ねて`,
+    slot: `僕らが出会ったのは偶然ではなく必然
+
+運命なんか信じないけど、あなたとなら`
+  });
+
+  function showMilestonePopupFinal(message){
+    createFiveSecondLockFinal("milestoneFiveSecondLock");
+
+    var old = document.getElementById("milestonePopup");
+    if(old) old.remove();
+
+    var overlay = document.createElement("div");
+    overlay.id = "milestonePopup";
+    overlay.style.position = "fixed";
+    overlay.style.inset = "0";
+    overlay.style.display = "flex";
+    overlay.style.alignItems = "center";
+    overlay.style.justifyContent = "center";
+    overlay.style.background = "rgba(0,0,0,0.42)";
+    overlay.style.backdropFilter = "blur(2px)";
+    overlay.style.zIndex = "999999998";
+    overlay.style.opacity = "0";
+    overlay.style.transition = "opacity 0.45s ease";
+    overlay.style.pointerEvents = "all";
+
+    var card = document.createElement("div");
+    card.textContent = message;
+    card.style.maxWidth = "86vw";
+    card.style.padding = "26px 32px";
+    card.style.borderRadius = "20px";
+    card.style.background = "rgba(255,255,255,0.94)";
+    card.style.color = "#222";
+    card.style.fontSize = "22px";
+    card.style.lineHeight = "1.9";
+    card.style.textAlign = "center";
+    card.style.whiteSpace = "pre-line";
+    card.style.boxShadow = "0 0 28px rgba(255,215,0,0.35)";
+    card.style.opacity = "0";
+    card.style.transform = "translateY(14px) scale(0.98)";
+    card.style.transition = "opacity 0.45s ease, transform 0.45s ease";
+
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    setTimeout(function(){
+      overlay.style.opacity = "1";
+      card.style.opacity = "1";
+      card.style.transform = "translateY(0) scale(1)";
+    }, 30);
+
+    setTimeout(function(){
+      overlay.style.opacity = "0";
+      card.style.opacity = "0";
+      card.style.transform = "translateY(-10px) scale(0.98)";
+      setTimeout(function(){
+        if(overlay && overlay.parentNode) overlay.remove();
+      }, 500);
+    }, 5000);
+  }
+
+  window.showMilestonePopup = showMilestonePopupFinal;
+  try { showMilestonePopup = showMilestonePopupFinal; } catch(e){}
+
+  function normalCompleteFinal(){ return allIncludedFinal(window.heartMessages || heartMessages || [], getJSONFinal("unlockedMessages")); }
+  function rareCompleteFinal(){ return allIncludedFinal(window.rareMessages || rareMessages || [], getJSONFinal("unlockedMessages")); }
+  function srCompleteFinal(){ return allIncludedFinal(window.srMessages || srMessages || [], getJSONFinal("unlockedMessages")); }
+  function urCompleteFinal(){ return allIncludedFinal(window.urMessages || urMessages || [], getJSONFinal("unlockedMessages")); }
+  function lostCompleteFinal(){ return allIncludedFinal(window.lostItems || lostItems || [], getJSONFinal("unlockedLostItems")); }
+  function slotCompleteFinal(){ return allIncludedFinal(window.SLOT_BONUS_MESSAGES || SLOT_BONUS_MESSAGES || [], getJSONFinal("unlockedSlotBonusMessages")); }
+
+  var oldCheckCompletionRewards = window.checkCompletionRewards;
+
+  window.checkCompletionRewards = function(){
+    try {
+      if(typeof isAllComplete === "function" && isAllComplete()){
+        if(typeof showCompleteReward === "function") showCompleteReward();
+        return;
+      }
+    } catch(e){}
+
+    var queue = [];
+
+    if(normalCompleteFinal() && !lsGetFinal("normalCompleteShown_v4")){
+      lsSetFinal("normalCompleteShown_v4", "1");
+      queue.push(window.PARTIAL_COMPLETE_MESSAGES.normal);
+    }
+    if(rareCompleteFinal() && !lsGetFinal("rareCompleteShown_v4")){
+      lsSetFinal("rareCompleteShown_v4", "1");
+      queue.push(window.PARTIAL_COMPLETE_MESSAGES.rare);
+    }
+    if(srCompleteFinal() && !lsGetFinal("srCompleteShown_v4")){
+      lsSetFinal("srCompleteShown_v4", "1");
+      queue.push(window.PARTIAL_COMPLETE_MESSAGES.sr);
+    }
+    if(urCompleteFinal() && !lsGetFinal("urCompleteShown_v4")){
+      lsSetFinal("urCompleteShown_v4", "1");
+      queue.push(window.PARTIAL_COMPLETE_MESSAGES.ur);
+    }
+    if(lostCompleteFinal() && !lsGetFinal("lostCompleteShown_v4")){
+      lsSetFinal("lostCompleteShown_v4", "1");
+      queue.push(window.PARTIAL_COMPLETE_MESSAGES.lost);
+    }
+    if(slotCompleteFinal() && !lsGetFinal("slotCompleteShown_v4")){
+      lsSetFinal("slotCompleteShown_v4", "1");
+      queue.push(window.PARTIAL_COMPLETE_MESSAGES.slot);
+    }
+
+    if(queue.length){
+      queue.forEach(function(msg, i){
+        setTimeout(function(){ showMilestonePopupFinal(msg); }, i * 5600);
+      });
+      return;
+    }
+
+    if(typeof oldCheckCompletionRewards === "function"){
+      try { oldCheckCompletionRewards(); } catch(e){}
+    }
+  };
+
+  try { checkCompletionRewards = window.checkCompletionRewards; } catch(e){}
+
+  /* 👑1周目から表示 */
+  window.updateCrownLoopDisplay = function(){
+    var crownLoop = Number(lsGetFinal("completeCrownLoop")) || 1;
+    var wrap = document.getElementById("loveSlotWrap");
+    if(!wrap) return;
+
+    var el = document.getElementById("crownLoopDisplay");
+    if(!el){
+      el = document.createElement("div");
+      el.id = "crownLoopDisplay";
+      var slotMessage = document.getElementById("slotMessage");
+      if(slotMessage && slotMessage.parentNode === wrap){
+        wrap.insertBefore(el, slotMessage);
+      }else{
+        wrap.appendChild(el);
+      }
+    }
+
+    el.textContent = "👑" + crownLoop + "周目";
+    el.style.marginTop = "2px";
+    el.style.marginBottom = "2px";
+    el.style.fontSize = "16px";
+    el.style.fontWeight = "bold";
+    el.style.color = "#d4af37";
+    el.style.textShadow = "0 0 6px rgba(212,175,55,0.6)";
+  };
+
+  try { updateCrownLoopDisplay = window.updateCrownLoopDisplay; } catch(e){}
+
+  /* 3周目突入：5秒固定 */
   window.showThirdLoopEffect = function(){
-    makeLock(5000);
+    createFiveSecondLockFinal("thirdLoopFiveSecondLock");
 
     ["thirdLoopEffect","thirdLoopOverlay","thirdLoopOverlayV2"].forEach(function(id){
       var old = document.getElementById(id);
@@ -20886,9 +21074,10 @@ SR完全融合最終パッチ
       unlockHeartFinal();
     }, 5800);
   };
+
   try { showThirdLoopEffect = window.showThirdLoopEffect; } catch(e){}
 
-  /* スロット揃い：「良かったね / 良かったよ」 */
+  /* 良かったね/良かったよ */
   window.showSlotPopup = function(){
     var slotPopup = document.getElementById("slotPopup");
     var slotPopupText = document.getElementById("slotPopupText");
@@ -20929,227 +21118,21 @@ SR完全融合最終パッチ
       }, 300);
     }, 1200);
   };
+
   try { showSlotPopup = window.showSlotPopup; } catch(e){}
 
-  /* 起動時・復帰時に透明壁を解除 */
-  function cleanupBlockingLayers(){
-    ["finalSafetyLock","milestoneLock"].forEach(function(id){
-      var el = document.getElementById(id);
-      if(el && el.style.opacity === "0") el.remove();
-    });
-
-    ["slotPopup","lostItemOverlay"].forEach(function(id){
-      var el = document.getElementById(id);
-      if(el && !el.classList.contains("show")){
-        el.style.pointerEvents = "none";
-      }
-    });
-
+  function initFinalPatch(){
+    if(typeof updateCrownLoopDisplay === "function") updateCrownLoopDisplay();
     unlockHeartFinal();
   }
 
   if(document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", cleanupBlockingLayers);
+    document.addEventListener("DOMContentLoaded", initFinalPatch);
   }else{
-    cleanupBlockingLayers();
+    initFinalPatch();
   }
-
-  setTimeout(cleanupBlockingLayers, 500);
-  setTimeout(cleanupBlockingLayers, 1500);
-
-})();
-</script>
-
-
-<script>
-/* =====================
-最終追加パッチ：
-- 運命記録コンプメッセージ追加
-- N/R/SR/UR/？？？/運命記録コンプ通知を5秒固定
-===================== */
-(function(){
-
-  function safeGet(key){
-    try {
-      if(typeof safeGetItem === "function") return safeGetItem(key);
-      return localStorage.getItem(key);
-    } catch(e){ return localStorage.getItem(key); }
-  }
-
-  function safeSet(key, value){
-    try {
-      if(typeof safeSetItem === "function") safeSetItem(key, value);
-      else localStorage.setItem(key, value);
-    } catch(e){ localStorage.setItem(key, value); }
-  }
-
-  function arr(name){
-    try { if(window[name]) return window[name]; } catch(e){}
-    try { return eval(name); } catch(e){ return []; }
-  }
-
-  function getJSON(key){
-    try { return JSON.parse(safeGet(key)) || []; } catch(e){ return []; }
-  }
-
-  function uniq(a){
-    return Array.from(new Set(a || []));
-  }
-
-  function hasAll(all, owned){
-    all = uniq(all);
-    owned = uniq(owned);
-    return all.length > 0 && all.every(function(x){ return owned.includes(x); });
-  }
-
-  window.PARTIAL_COMPLETE_MESSAGES = Object.assign({}, window.PARTIAL_COMPLETE_MESSAGES || {}, {
-    normal: `使ってくれてありがとう！
-ライブラリとして役立ててね`,
-    rare: `あなたの努力は全部知ってるよ
-いつでも応援してる`,
-    sr: `あなたは私の憧れ
-いつまでも背中を追わせてほしい`,
-    ur: `隣に立つのに相応しい人間になりたい
-あなたの傍で生きていたい`,
-    lost: `忘れ物を全て拾ってくれてありがとう
-風化しない思い出をまた積み重ねて`,
-    slot: `僕らが出会ったのは偶然ではなく必然
-
-運命なんか信じないけど、あなたとなら`
-  });
-
-  function showMilestonePopupFinal5(message){
-    var old = document.getElementById("milestonePopup");
-    if(old) old.remove();
-
-    var oldLock = document.getElementById("milestoneLock");
-    if(oldLock) oldLock.remove();
-
-    var lock = document.createElement("div");
-    lock.id = "milestoneLock";
-    lock.style.position = "fixed";
-    lock.style.inset = "0";
-    lock.style.zIndex = "999999999";
-    lock.style.background = "transparent";
-    lock.style.pointerEvents = "all";
-    document.body.appendChild(lock);
-
-    var overlay = document.createElement("div");
-    overlay.id = "milestonePopup";
-    overlay.style.position = "fixed";
-    overlay.style.inset = "0";
-    overlay.style.display = "flex";
-    overlay.style.alignItems = "center";
-    overlay.style.justifyContent = "center";
-    overlay.style.background = "rgba(0,0,0,0.42)";
-    overlay.style.backdropFilter = "blur(2px)";
-    overlay.style.zIndex = "999999998";
-    overlay.style.opacity = "0";
-    overlay.style.transition = "opacity 0.45s ease";
-    overlay.style.pointerEvents = "all";
-
-    var card = document.createElement("div");
-    card.style.maxWidth = "86vw";
-    card.style.padding = "26px 32px";
-    card.style.borderRadius = "20px";
-    card.style.background = "rgba(255,255,255,0.94)";
-    card.style.color = "#222";
-    card.style.fontSize = "22px";
-    card.style.lineHeight = "1.9";
-    card.style.textAlign = "center";
-    card.style.whiteSpace = "pre-line";
-    card.style.boxShadow = "0 0 28px rgba(255,215,0,0.35)";
-    card.style.opacity = "0";
-    card.style.transform = "translateY(14px) scale(0.98)";
-    card.style.transition = "opacity 0.45s ease, transform 0.45s ease";
-    card.textContent = message;
-
-    overlay.appendChild(card);
-    document.body.appendChild(overlay);
-
-    setTimeout(function(){
-      overlay.style.opacity = "1";
-      card.style.opacity = "1";
-      card.style.transform = "translateY(0) scale(1)";
-    }, 30);
-
-    setTimeout(function(){
-      overlay.style.opacity = "0";
-      card.style.opacity = "0";
-      card.style.transform = "translateY(-10px) scale(0.98)";
-      setTimeout(function(){
-        if(overlay && overlay.parentNode) overlay.remove();
-        if(lock && lock.parentNode) lock.remove();
-        try { heartLocked = false; } catch(e){}
-        try { window.heartLocked = false; } catch(e){}
-        var heart = document.getElementById("heart");
-        if(heart){
-          heart.classList.remove("locked");
-          heart.style.pointerEvents = "auto";
-          heart.style.opacity = "";
-        }
-      }, 500);
-    }, 5000);
-  }
-
-  window.showMilestonePopup = showMilestonePopupFinal5;
-  try { showMilestonePopup = showMilestonePopupFinal5; } catch(e){}
-
-  function normalComplete(){ return hasAll(arr("heartMessages"), getJSON("unlockedMessages")); }
-  function rareComplete(){ return hasAll(arr("rareMessages"), getJSON("unlockedMessages")); }
-  function srComplete(){ return hasAll(arr("srMessages"), getJSON("unlockedMessages")); }
-  function urComplete(){ return hasAll(arr("urMessages"), getJSON("unlockedMessages")); }
-  function lostComplete(){ return hasAll(arr("lostItems"), getJSON("unlockedLostItems")); }
-  function slotComplete(){ return hasAll(arr("SLOT_BONUS_MESSAGES"), getJSON("unlockedSlotBonusMessages")); }
-
-  var oldCheck = window.checkCompletionRewards;
-
-  window.checkCompletionRewards = function(){
-    // 全コンプがある時は既存の全コンプ優先
-    try {
-      if(typeof isAllComplete === "function" && isAllComplete()){
-        if(typeof showCompleteReward === "function") showCompleteReward();
-        return;
-      }
-    } catch(e){}
-
-    var q = [];
-
-    if(normalComplete() && !safeGet("normalCompleteShown_v3")){
-      safeSet("normalCompleteShown_v3", "1");
-      q.push(window.PARTIAL_COMPLETE_MESSAGES.normal);
-    }
-    if(rareComplete() && !safeGet("rareCompleteShown_v3")){
-      safeSet("rareCompleteShown_v3", "1");
-      q.push(window.PARTIAL_COMPLETE_MESSAGES.rare);
-    }
-    if(srComplete() && !safeGet("srCompleteShown_v3")){
-      safeSet("srCompleteShown_v3", "1");
-      q.push(window.PARTIAL_COMPLETE_MESSAGES.sr);
-    }
-    if(urComplete() && !safeGet("urCompleteShown_v3")){
-      safeSet("urCompleteShown_v3", "1");
-      q.push(window.PARTIAL_COMPLETE_MESSAGES.ur);
-    }
-    if(lostComplete() && !safeGet("lostCompleteShown_v3")){
-      safeSet("lostCompleteShown_v3", "1");
-      q.push(window.PARTIAL_COMPLETE_MESSAGES.lost);
-    }
-    if(slotComplete() && !safeGet("slotCompleteShown_v3")){
-      safeSet("slotCompleteShown_v3", "1");
-      q.push(window.PARTIAL_COMPLETE_MESSAGES.slot);
-    }
-
-    q.forEach(function(msg, i){
-      setTimeout(function(){ showMilestonePopupFinal5(msg); }, i * 5600);
-    });
-
-    if(q.length === 0 && typeof oldCheck === "function"){
-      try { oldCheck(); } catch(e){}
-    }
-  };
-
-  try { checkCompletionRewards = window.checkCompletionRewards; } catch(e){}
+  setTimeout(initFinalPatch, 500);
+  setTimeout(initFinalPatch, 1500);
 
 })();
 </script>
