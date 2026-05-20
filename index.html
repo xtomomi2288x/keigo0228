@@ -19956,5 +19956,227 @@ body.night-debug-mode input,body.night-debug-mode button{background:rgba(255,255
 })();
 </script>
 
+
+<style>
+/* v9 ナイト表示・全コンプ・？？？演出修正 */
+body.night-debug-mode #counter,
+body.night-debug-mode #level,
+body.night-debug-mode #title {
+  color:#fff !important;
+  text-shadow:0 0 6px rgba(255,255,255,.35) !important;
+}
+body.night-debug-mode #titleCollectionBox,
+body.night-debug-mode #slotRecordBox,
+body.night-debug-mode #lostCollectionBox,
+body.night-debug-mode #collectionBox {
+  background:rgba(255,255,255,.96) !important;
+  color:#222 !important;
+}
+body.night-debug-mode .unlocked { color:#222 !important; text-shadow:none !important; }
+body.night-debug-mode .locked { color:#555 !important; text-shadow:none !important; }
+
+body.final-complete-playing > *:not(#finalCompleteScreen) {
+  opacity:0 !important;
+  visibility:hidden !important;
+}
+body.final-complete-playing #finalCompleteScreen,
+body.final-complete-playing #finalCompleteScreen * {
+  opacity:1 !important;
+  visibility:visible !important;
+}
+#finalCompleteScreen { z-index:2147483646 !important; }
+
+#lostEffectV9 {
+  position:fixed;
+  inset:0;
+  z-index:999999997;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+  background:rgba(0,0,0,.18);
+}
+#lostEffectV9.show { display:flex; }
+#lostEffectV9 .lost-effect-card {
+  padding:22px 30px;
+  border-radius:18px;
+  border:1px solid #d4af37;
+  background:rgba(255,248,210,.96);
+  color:#6b4b00;
+  font-size:22px;
+  font-weight:bold;
+  line-height:1.8;
+  text-align:center;
+  white-space:pre-line;
+  box-shadow:0 0 12px rgba(255,255,255,.9),0 0 26px rgba(212,175,55,.55),0 0 46px rgba(212,175,55,.25);
+  animation:lostEffectFloatV9 1.2s ease-in-out infinite alternate;
+}
+@keyframes lostEffectFloatV9 {
+  from { transform:translateY(0); opacity:.94; }
+  to { transform:translateY(-5px); opacity:1; }
+}
+</style>
+
+<script>
+(function(){
+  const NIGHT_ONLY_LOST_ITEMS_V9 = ["結ばれたゴミ袋","1時から夜明けまで","眠れぬ夜の子守唄"];
+
+  function isNightV9(){
+    const h = new Date().getHours();
+    return document.body.classList.contains("night-debug-mode") || (h >= 1 && h < 4);
+  }
+  function arrV9(key){
+    try { return JSON.parse(localStorage.getItem(key)) || []; } catch(e){ return []; }
+  }
+  function setArrV9(key, arr){
+    localStorage.setItem(key, JSON.stringify(Array.from(new Set(arr || []))));
+  }
+  function allIncludedV9(all, owned){
+    all = Array.from(new Set(all || []));
+    owned = Array.from(new Set(owned || []));
+    return all.length > 0 && all.every(x => owned.includes(x));
+  }
+
+  function showLostEffectV9(item){
+    let overlay = document.getElementById("lostEffectV9");
+    if(overlay) overlay.remove();
+    overlay = document.createElement("div");
+    overlay.id = "lostEffectV9";
+    const card = document.createElement("div");
+    card.className = "lost-effect-card";
+    card.textContent = "落とし物を拾った\n" + item;
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+    setTimeout(() => overlay.classList.add("show"), 20);
+    setTimeout(() => {
+      overlay.classList.remove("show");
+      setTimeout(() => { if(overlay && overlay.parentNode) overlay.remove(); }, 250);
+    }, 2200);
+  }
+
+  window.getLostReward = function(){
+    let pool = lostItems.slice();
+    if(isNightV9()) pool = [...pool, ...NIGHT_ONLY_LOST_ITEMS_V9];
+    const item = pool[Math.floor(Math.random() * pool.length)];
+    let owned = arrV9("unlockedLostItems");
+    if(!owned.includes(item)){
+      owned.push(item);
+      setArrV9("unlockedLostItems", owned);
+      try { unlockedLostItems = owned; } catch(e){}
+    }
+    showRandomMessage("落とし物を拾った：\n" + item);
+    showLostEffectV9(item);
+  };
+
+  window.renderLost = function(){
+    const box = document.getElementById("lostCollectionBox");
+    if(!box) return;
+    let list = lostItems.slice();
+    if(isNightV9()) list = [...list, ...NIGHT_ONLY_LOST_ITEMS_V9];
+
+    const ownedList = arrV9("unlockedLostItems");
+    try { unlockedLostItems = ownedList; } catch(e){}
+    const owned = list.filter(m => ownedList.includes(m)).length;
+    const rate = list.length ? Math.floor(owned / list.length * 100) : 0;
+
+    box.innerHTML = `<div class="collection-header">？？？<br>収集率：${owned} / ${list.length}（${rate}%）</div>`;
+    const grid = document.createElement("div");
+    grid.className = "lost-grid";
+    list.forEach(item => {
+      const got = ownedList.includes(item);
+      const div = document.createElement("div");
+      div.className = "lost-item-card " + (got ? "unlocked" : "locked");
+      div.textContent = got ? `🧩 ${item}` : "💀未所持";
+      grid.appendChild(div);
+    });
+    box.appendChild(grid);
+  };
+
+  function showFinalCompleteScreenV9(){
+    if(localStorage.getItem("allMainCompleteShown_v9")) return;
+    localStorage.setItem("allMainCompleteShown_v9", "1");
+    noticeLocked = true;
+    document.body.classList.add("final-complete-playing");
+    document.querySelectorAll(".sparkle,.effect-flash,#rareEffect,#lostEffectV9,#centerNoticeBox,#completeInlineNotice").forEach(e => { if(e) e.remove(); });
+
+    let screen = document.getElementById("finalCompleteScreen");
+    if(screen) screen.remove();
+    screen = document.createElement("div");
+    screen.id = "finalCompleteScreen";
+    const text = document.createElement("div");
+    text.id = "finalCompleteText";
+    text.textContent = `ここにあったものは
+最初から揃っていたのかもしれない
+
+見つけたんじゃない
+思い出しただけ
+
+あなたがここにいた証
+消えることのない記録
+
+いつまでも傍で`;
+    screen.appendChild(text);
+    document.body.appendChild(screen);
+    setTimeout(() => screen.classList.add("show"), 30);
+    setTimeout(() => {
+      screen.classList.remove("show");
+      setTimeout(() => {
+        if(screen && screen.parentNode) screen.remove();
+        document.body.classList.remove("final-complete-playing");
+        noticeLocked = false;
+        const blob = new Blob([COMPLETE_MEMO_TEXT], {type:"text/plain;charset=utf-8"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "ここに至るまで.txt";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }, 900);
+    }, 5000);
+  }
+  window.showFinalCompleteScreenV9 = showFinalCompleteScreenV9;
+
+  const oldCheckCompleteNoticesV9 = window.checkCompleteNotices;
+  window.checkCompleteNotices = function(){
+    if(typeof centerNoticeBusyV7 !== "undefined" && centerNoticeBusyV7) return;
+    if(typeof noticeLocked !== "undefined" && noticeLocked) return;
+
+    const p = getProgress();
+    const titleComplete = p.levelIndex >= MAX_LEVEL * MAX_LOOP - 1;
+    const normalComplete = allIncludedV9(heartMessages, arrV9("unlockedMessages"));
+    const rareComplete = allIncludedV9(rareMessages, arrV9("unlockedMessages"));
+    const srComplete = allIncludedV9(srMessages, arrV9("unlockedMessages"));
+    const urComplete = allIncludedV9(urMessages, arrV9("unlockedMessages"));
+    const lostComplete = allIncludedV9(lostItems, arrV9("unlockedLostItems"));
+    const slotComplete = allIncludedV9(SLOT_BONUS_MESSAGES, arrV9("unlockedSlotBonusMessages"));
+
+    if(normalComplete && rareComplete && srComplete && urComplete && titleComplete && lostComplete && slotComplete){
+      showFinalCompleteScreenV9();
+      return;
+    }
+
+    if(titleComplete && !localStorage.getItem("titleCompleteShown_v9")){
+      localStorage.setItem("titleCompleteShown_v9", "1");
+      showCenterNoticeV7("他に何もいらない", 5000);
+      return;
+    }
+
+    if(typeof oldCheckCompleteNoticesV9 === "function") oldCheckCompleteNoticesV9();
+  };
+
+  const nightBtn = document.getElementById("nightModeBtn");
+  if(nightBtn){
+    const oldClick = nightBtn.onclick;
+    nightBtn.onclick = function(){
+      if(typeof oldClick === "function") oldClick.call(this);
+      const lostBox = document.getElementById("lostCollectionBox");
+      if(lostBox && lostBox.style.display === "block") renderLost();
+    };
+  }
+})();
+</script>
+
 </body>
 </html>
