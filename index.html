@@ -17427,5 +17427,549 @@ updateDisplay();
 })();
 </script>
 
+
+<style>
+/* =====================
+完成仕様復元パッチ
+図鑑・称号・？？？の見た目／コンプ通知／演出調整
+===================== */
+
+#collectionBox,
+#titleCollectionBox,
+#lostCollectionBox,
+#slotRecordBox {
+  display: none;
+  position: static !important;
+  transform: none !important;
+  width: 95vw;
+  max-width: 1200px;
+  box-sizing: border-box;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  z-index: 1;
+  margin-top: 12px;
+}
+
+.collection-header {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+.collection-grid,
+.slot-record-grid,
+.lost-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 12px;
+  align-items: start;
+}
+
+.collection-item,
+.slot-record-item,
+.lost-item-card {
+  padding: 5px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(120,120,120,0.25);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.collection-item.locked,
+.slot-record-item.locked,
+.lost-item-card.locked,
+.title-item.locked {
+  color: #999;
+  background: rgba(120,120,120,0.08);
+}
+
+.collection-item.unlocked,
+.slot-record-item.unlocked,
+.lost-item-card.unlocked,
+.title-item.unlocked {
+  color: inherit;
+  background: rgba(255,215,0,0.08);
+  border-color: rgba(212,175,55,0.45);
+}
+
+.collection-item.rare-item {
+  border: 1px solid #d4af37;
+  border-radius: 6px;
+  background: rgba(255,215,0,0.08);
+}
+
+.collection-item.sr-item {
+  border: 1px solid #4da6ff;
+  border-radius: 6px;
+  background: rgba(77,166,255,0.08);
+  box-shadow:
+    0 0 6px rgba(77,166,255,0.35),
+    0 0 12px rgba(77,166,255,0.18);
+}
+
+.collection-item.ur-item {
+  border: 1px solid #b000ff;
+  border-radius: 6px;
+  background: rgba(190,0,255,0.08);
+}
+
+.title-three-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 14px;
+  align-items: start;
+}
+
+.title-column {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.title-column h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.title-item {
+  padding: 5px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(120,120,120,0.18);
+  margin-bottom: 5px;
+  overflow-wrap: anywhere;
+}
+
+#completeNoticeOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999999998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.42);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+#completeNoticeOverlay.show {
+  opacity: 1;
+}
+
+#completeNoticeCard {
+  max-width: 86vw;
+  padding: 26px 32px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.96);
+  color: #222;
+  font-size: 22px;
+  line-height: 1.9;
+  text-align: center;
+  white-space: pre-line;
+  box-shadow: 0 0 28px rgba(255,215,0,0.35);
+}
+
+@media (max-width: 700px) {
+  .collection-grid,
+  .slot-record-grid,
+  .lost-grid,
+  .title-three-columns {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+<script>
+/* =====================
+完成仕様復元パッチ
+===================== */
+(function(){
+
+const COMPLETE_MEMO_TEXT_FINAL = "あなたのギターの掻き鳴らす\nあなたのぎ　たあのかきなら　すおとたち　やいてこがれて　くちびるをかむ\n\n🎼あなたのギターの掻き鳴らす音たち　妬いて焦がれて　唇を噛む(短歌)\n\n👻指触れる　わざとじゃないよ　わざとだよ　友達以上恋人未満(短歌)\n\n\n隠してる　ドラッグ選択表示にて　まだ隠しごと　僕と同じだ(短歌？)↓\n🎸三輪啓悟ライブラリ🎸を反転表示したらメッセージが変わることを示唆\n\n\n二周目\nconst secondTitles = [\n  { level:1, title:\"転生しました\" },\n  { level:5, title:\"来世モード突入\" },\n  { level:10, title:\"隣の家に引っ越し\" },\n  { level:20, title:\"親同士が仲良し\" },\n  { level:30, title:\"一緒にピアノ教室\" },\n  { level:50, title:\"小学校が一緒\" },\n  { level:60, title:\"三輪啓悟が中学に上がり疎遠に\" },\n  { level:70, title:\"高校受験について三輪啓悟に相談\" },\n  { level:80, title:\"晴れて同じ大学に入学\" },\n  { level:90, title:\"三輪啓悟、留年\" },\n  { level:100, title:\"創作音楽サークルにて2人で無双\" },\n  { level:110, title:\"なぜか一緒に卒業\" },\n  { level:120, title:\"別々の就職先へ\" },\n  { level:130, title:\"社会人生活は忙しい\" },\n  { level:140, title:\"月2で飲み会\" },\n  { level:150, title:\"小学生以来に部屋に上がる\" },\n  { level:200, title:\"三輪啓悟「ずっと好きだった」\" },\n  { level:250, title:\"来世でも嫁END\" }\n];\n\n\nUR\n\n\n綺麗な指とキラキラギターを表現したい　どんな音よりもキラキラしてた\n↓\n彩る夜音色煌めき零れ落つ 光さえ霞む繊細な指〇\n\n声で殴る 歌で殴る ギターで殴る ボコボコにされる\nでも見蕩れてしまう↓\n\n名前を呼ぶのも憚られる　美しくも残酷な音たち\n三輪啓悟の武器、鎌　何もかもを切り裂くほどの音\n一生敵わない　誰も敵わない　勿論私も\nそれでも優しさがある　だけど聴いたら(敵わなくて)絶望する\n\n\n鮮烈な魂を刈り取る鎌余りにも 誰も追いつかぬ\n追随を許さぬ鎌が振り下ろし尚 優しさ携える絶望\n追随を許さぬ鎌振り下ろし尚 優しさ携える絶望〇\n振り下ろす鎌あまりにも残酷な 優しさ携える絶望\n振り下ろす鎌あまりにも残酷な 優しさ携える絶望\n\n音の雨あまりにも残酷な 名前さえ呼べなかった〇\n名前を呼ぶのも憚られる　残酷な音たち\nあなたの音は近いようで寄り添うようでいてあまりにも遠い\n\n\n\n神様がいるのならきっと どこまでもあなたの形をしている〇\n\n\n透明なキャンバス(白ではない 透明度の高い純真無垢をイメージ\n自由自在に操る　羨ましい　ずるい　どう足掻いても勝てない\n↓\n\n透明なキャンバス一筋の祈り \nただただあなたが幸せであるように祈る(過去形ぽい？)\n白いキャンパスではない　透明度の高い純粋な透明のキャンバス\nあなたは自由に描き　それにわたしは祈るしかなく、憧れるしかなく、跪くよりほかない\n↓\n\n透明なキャンバス一筋の  祈り、憧憬、跪く深く深く\n魂の色透明なキャンバスに 祈りのことば 憧れている\nキャンバスの透明に乗る旋律に 祈り、憧憬、跪くしか\n無垢なキャンバスの自由透き通る  祈り、憧憬、 跪くしか\n透き通るキャンバスに描く自由  祈り、憧憬、跪くしか〇\n\n\n啓悟さんそのもの↓\n\n矛盾さえ覆す魂の暴力 叫ぶ 叫べよ 終わりない歌\n明け方の魂の暴力 叫ぶ 叫べよ 終わらない歌〇\n\n\n\n彩る夜音色煌めき零れ落つ 光さえ霞む繊細な指 1\n追随を許さぬ鎌振り下ろし尚 優しさ携える絶望  3\n音の雨あまりにも残酷な 名前さえ呼べなかった2\n透き通るキャンバスに描く自由  祈り、憧憬、跪くしか  4\n明け方の魂の暴力 叫ぶ 叫べよ 終わらない歌6\n神様がいるのならきっと どこまでもあなたの形をしている5\n\n\n何度繰り返してもあなたを選ぶ↓\nもしもなんて要らない何度でも僕は　あなたを選び続ける×\n\n\n\n「人を神にする」んじゃなくて\n「神という概念を、人の形で理解する」\n\n\n  \"👑💎✨ 啓悟は僕だけのものだよ ✨💎👑\",\n  \"💖🌟この世界で一番大切な人🌟💖\",\n  \"🎀🌌運命なんて言葉じゃ足りない\"🌌🎀,\n  \"🍓🫀全部あげるよ、啓悟のものだよ🫀🍓\",\n  \"⛄💟三輪啓悟、存在が奇跡💟⛄\",\n   \"🔮🎆忘れないあなたのこと　誰よりも愛してる🎆🔮\",\n   \"🎵🎼あなたのギターの掻き鳴らす音たち　妬いて焦がれて　唇を噛む(短歌)🎼🎵\",\n   \"🌃👻指触れる　わざとじゃないよ　わざとだよ　友達以上恋人未満(短歌)👻🌃\",\n   \"🫧🦊隠してる　ドラッグ選択表示にて　まだ隠しごと　僕と同じだ(短歌？)🦊🫧\",\n   \"💫🌌彩る夜音色煌めき零れ落つ 光さえ霞む繊細な指(短歌)🌌💫\",\n   \"🌧️☔音の雨あまりにも残酷な 名前さえ呼べなかった(短歌)☔🌧️\",\n   \"☠️🗡️追随を許さぬ鎌振り下ろし尚 優しさ携える絶望(短歌)🗡️☠️\",\n   \"🎨🖍透き通るキャンバスに描く自由  祈り、憧憬、跪くしか(短歌)🖍🎨\",\n   \"💚🌙神様がいるのならきっと どこまでもあなたの形をしている(短歌)🌙💚\",\n   \"🌅🎸明け方の魂の暴力 叫ぶ 叫べよ 終わらない歌(短歌)🎸🌅\",\n\nSR\nギャグ枠です　とはいえSRだからね？！\nそう簡単にUR出されてたまるか\n残念！SRでした！！でも愛はたっぷりだから！\nUR狙ってる顔してたね？物欲センサーってやつ\nSRもちゃんと当たりだよ、そっぽ向かないでね\nSRだけど、気持ちはUR寄り\n惜しいようで惜しくない これがSRの味です\n焦りすぎ焦りすぎ　SRもちゃんと価値あるから\nその押し方、ちょっと好き だからSRあげる\nこれ、地味にいいやつ SRの中では当たり\nその連打、気合いは認める とりあえずSR置いとくね\n引きはいい 欲が強いだけ\n惜しいね〜って言いたいところだけど SRは普通に当たり\nまだ物語の途中だよ とりあえずSR\nその手、止めないで SRでもちゃんと進んでる\nロマンは簡単には来ない\nそらultraは滅多に出ない\nここでSR引けるの、寧ろいい これは後で効いてくるやつ\n今の一音、ちゃんと拾ったよ だからSR\n路上ライブの残滓　誰もいない朝\nちょっと走ったね でもそれもライブっぽい\n完璧じゃないのがいい SRってそういうとこ\n最近間の取り方がとても素敵 SRあげるね\n今のはちょっと雑だったね 僕にしかわからない優越感\n自転車に飛び乗って空を探したけど、雨\n幻だったぜ\n1幻で1URとかどうですか\n下は音響がいいから……。\nMCが下手な三輪啓悟\nうろ覚えのSOUL LOVE\nURはまだステージ裏 今日はSRで我慢して\nまだクライマックスじゃない ここはSRで繋ぐところ\nCメロがわからない　一回休み\nURは今チューニング中 先にSRどうぞ\n今はまだイントロ SRで繋いでいこう\n今晩はオリジナル無しかあ…\n\n\n\n3週目\n③最終稿\n\n{ level: 1, title: \"まだ言葉になる前\" },\n{ level: 5, title: \"名前のない関係\" },\n{ level: 10, title: \"意味になる前の感情\" },\n{ level: 20, title: \"偶然で片付けられない\" },\n{ level: 30, title: \"触れられない距離\" },\n{ level: 40, title: \"定義できないもの\" },\n{ level: 50, title: \"理由の及ばぬ領域\" },\n{ level: 60, title: \"気づいてしまった事実\" },\n{ level: 70, title: \"切り離せない構造\" },\n{ level: 80, title: \"既に成立している\" },\n{ level: 90, title: \"後戻りの不在\" },\n{ level: 100, title: \"確定した帰路\" },\n{ level: 110, title: \"残滓を抱えたまま\" },\n{ level: 120, title: \"介在することなく\" },\n{ level: 130, title: \"ここに至る必然\" },\n{ level: 140, title: \"前提としての君\" },\n{ level: 150, title: \"選ばれ続けること\" },\n{ level: 160, title: \"愛と呼ばれる前のなにか\" },\n{ level: 170, title: \"説明を必要としない\" },\n{ level: 180, title: \"何も足さなくていい\" },\n{ level: 190, title: \"残り続ける概念\" },\n{ level: 200, title: \"ただ在る\" }\n\n\n②\n{ level: 1, title: \"まだ言葉になる前\" },\n{ level: 5, title: \"名前のない関係\" },\n{ level: 10, title: \"意味になる前の感情\" },\n{ level: 20, title: \"偶然で片付けられない\" },\n{ level: 30, title: \"触れられない距離\" },\n{ level: 40, title: \"定義できないもの\" },\n{ level: 50, title: \"理由の外側\" },\n{ level: 60, title: \"気づいてしまった事実\" },\n{ level: 70, title: \"切り離せない構造\" },\n{ level: 80, title: \"既に成立している\" },\n{ level: 80, title: \"後戻りの不在\"},\n{ level: 90, title: \"不可逆性の帰結\" },\n{ level: 100, title: \"残滓を抱えたまま\" },\n{ level: 110, title: \"介在することなく\" },\n{ level: 120, title: \"ここに至る必然\" },\n{ level: 130, title: \"前提としての君\" },\n{ level: 140, title: \"選ばれ続けること\" },\n{ level: 150, title: \"愛と呼ばれる前のなにか\" },\n{ level: 160, title: \"説明を必要としない\" },\n{ level: 170, title: \"何も足さなくていい\" },\n{ level: 180, title: \"残り続ける概念\" },\n{ level: 190, title: \"ただ在る\" }\n\n①\n{ level: 1, title: \"まだ言葉になる前\" }, \n{ level: 5, title: \"名前のない関係\" }, \n{ level: 10, title: \"意味になる前の感情\" }, \n{ level: 20, title: \"触れられない距離\" }, \n{ level: 30, title: \"偶然で片付けられない\" }, \n{ level: 40, title: \"定義できないもの\" }, \n{ level: 50, title: \"気づいてしまった事実\" }, \n{ level: 60, title: \"切り離せない構造\" }, \n{ level: 70, title: \"消えない選択肢\" }, \n{ level: 80, title: \"理由の外側\" }, \n{ level: 90, title: \"既に成立している\" }, \n{ level: 100, title: \"残滓を抱えたまま\" }, \n{ level: 110, title: \"戻らないという選択\" }, \n{ level: 120, title: \"例外であり続ける\" }, \n{ level: 130, title: \"ここに至る必然\" }, \n{ level: 140, title: \"前提としての君\" }, \n{ level: 150, title: \"選ばれ続けること\" }, \n{ level: 160, title: \"愛と呼ばれる前の何か\" }, \n{ level: 170, title: \"何も足さなくていい\" }, \n{ level: 180, title: \"説明を必要としない\" }, \n{ level: 190, title: \"残り続ける概念\" }, \n{ level: 200, title: \"ただ在る\" }\n\n不可逆性の帰結\n戻らない帰結\n戻らない帰結のなか\n不可逆性のなにか\n規定された領域\n規定された枠組み\n\n\n\n落とし物一覧\n    \"表現者の眼鏡\",表現者の眼鏡（三輪啓悟は路上のときだけ特別な眼鏡をかける）\n\n    \"飲みかけのミルクティー\",飲みかけのミルクティー(路上ライブでは必ずミルクティーを飲む)\n\n    \"時間の止まった定期券\",(啓悟さんの期限が切れている定期。なんと駅に無料で出入りできる…これのお陰で駅での路上ライブでトイレに行ける)\n\n    \"丸めて捨てられた弦\",(啓悟さんは力いっぱい弾くせいか、ありえんくらい弦が切れる)\n\n    \"路上での座布団\",(路上ライブで使うようにしてくれた折り畳みの座布団。寒くないように、お尻が痛くないように)\n\n    \"捨てられない吸い殻四つ\",(付き合う前、まだギリ演者とお客さんだった頃 電話します？って言われて長電話したことがあった でも正直演者とお客さんだったら電話　　　します？なんて聞かないし長電話しないよなｗｗｗ \n　そんとき話しながら緊張しながら吸ったアイコスの吸い殻4本、今でも取ってある……)\n\n    \"用事のふりをした散歩\",（椅子探すという名目で毎週散歩していた）離婚してくれる前、お客さんと演者のすこし先、よく啓悟さんの路上ライブで使う用の)椅子を探しに何度も遠くまで散歩した。散歩は2人にとってかなり大事な思い出。だから今も散歩は特別\n\n    \"まだ帰りたくなかった夜\",(路上ライブの後毎回家まで送ってくれて お互い恋人じゃないけど2人とも帰りたくなくて 4時過ぎまでずっと家の近くで話してた)\n\n    \"セブンティーンアイス\",セブンティーンアイス(まだ付き合う前、道端で買って一緒に食べた。アイス食べたいって私が前にいってたことを覚えててくれて、家の近くの自販機で買ってくれた)\n\n    \"手作りのてるてる坊主\",(路上の日雨が降らないように作った) \n\n    \"奇跡の即興\",(啓悟さんはよくその人の悩みや起こった事を聞いてカクテルのように処方薬のように即興で歌詞と音楽を作る　一瞬で曲を作ってしまう　天才　特にあの日のことは奇跡って呼んでる)\n\n    \"今日のReason\",(啓悟さんのオリジナル曲。ストレートすぎるけど、路上ライブの時私が死ぬほどリクエストして、その度に即興で演奏法や歌詞、メロも変えてくれて毎回違って面白くて「リクエストは？」「今日のReason！！」ってやり取りを何度もした。毎回通って深夜まで居た頃。私にとっての青春が書き換えられたちなみに今のReasonは30回目ぐらい)\n\n    \"曲のようなラブレター\",曲のようなラブレター(ラブレターが欲しいと言ったら逆に「原稿用紙に書いて」といわれた。原稿用紙とまではいかないけど詩のようなものを書いた　「曲じゃんｗ」といわれた　今はもう(私が)どこかになくしてしまった)\n\n    \"一番最初のキス\",(恋人未満だった時に「キスしてほしい」「それはできないよ」「悲しい」の、悲しいが効いたのか、一番最初のキスをした　デルパラ)\n\n    \"明かせなかった関係\",どれだけ好きでも路上では「痛いファン」でしかない。たかしとゆいぴが来て2人並んで恋人同士として聴いてるのが凄く羨ましくて悲しくなった　\n\n    \"へたくそなお守り\",へたくそなお守り(手作りのお守り。あなたの夢が叶い続けますようにと入ってる 啓悟さんの夢は自分の歌で誰かが少しでも心が軽くなったらいい、らしい) \n\n    \"温めるための手\",(体温が高い啓悟さんは、あなたの手を温めるために俺の手はあるんだよって言ってくれた)\n\n    \"戻って来られた歌\",(統合失調症が再発して、幻覚幻聴、啓悟の声を聴くと頭がわんわんする、って時があった。その時に呼び戻してくれた啓悟の歌がある 即興で、「お守りになるような歌」をやってくれた 「きっと君が見たこの日の幻覚も 　その先に浮かび上がる閃光もきっと そのまま信じて君がそれを手に取って　いつの日か掴み取るその日まで 忘れられないようなその光の先を　暗闇の中で今も手を伸ばし続けながら 」 「嘘みたいだって　馬鹿話をして　笑いあったその絵が今君の心の奥で 思い出したその現象も幻覚も全部　僕が君を守るための布石 」)\n\n    \"幻なんかじゃないぜ\",（幻なんかじゃないぜ（元々「anything（エニシング）」という曲(にする予定だった。)肯定文（何でも・どんなことでも）: 制限がないことを指す。「You can do anything.（何でもできる）」を意味するタイトル　ただ「幻なんかじゃないぜ！」って歌詞が印象的すぎてそう呼んでる。何度も何度も聴いて、私の心に寄り添うような、「幻なんかじゃないぜ」を即興で毎回作ってくれて、最早anythingじゃなくて「幻なんかじゃないぜ」と本人含め全員呼んでる。命がけで歌ってる、と本人が言うくらい。「間違いだらけでいいから　君自身を責めないでよ 　答えはきっと一つなんかじゃないこと 　わかってるでしょう 」「幻なんかじゃないぜ　君が今こうして紡いでる世界は　手放さないで　繋ぎ合わせてゆこうぜ　これから先もずっと　君の唄を歌って　忘れられないこの日々をこれから紡ぎ続けていこうぜ」\n\n    \"形の揃わない蕎麦\",(伊豆旅行のときに2人で蕎麦打ちをした　まだ体調の治らない頃　楽しかったなあ)\n\n    \"クラゲのサンキャッチャー\",クラゲのサンキャッチャ―(七夕祭りで買って貰った。今日という日を忘れたくないね、って話した) \n\n    \"聖夜に見た光\",(クリスマスにイルミネーションを見た　2年連続で同じ場所で同じような写真を撮った)\n\n    \"生まれた日の歌\",（誕生日に毎年曲を作ってくれる。今年「生きててくれてありがとう」「生まれてくれてありがとう」「共に今日まで生きてきた事祝おうぜ」「思い出すだけで笑える日になるように」去年「愛してる」「足りない　足りない　伝え足りない」「いつまでも歌うよ　君の心が溢れるまで」）\n\n    \"新雪に付けた死体\",(雪が降った日、誰も踏んでない、真っ白な綺麗な雪に寝転がって死体の痕みたいのを付けた\n\n    \"山口への切符\",山口への切符(啓悟さんの実家、山口へ行った　フグやラーメンを食べた　啓悟さんのご両親に会った　まだ喧嘩していた)\n\n    \"出来立てのメンチカツ\",(啓悟さんと結婚してから、肉屋さんを回って揚げたてのコロッケ、メンチをよく食べることが多い)\n\n    \"完結しない小説\",完結しない小説(私は過去の(既に終わった)恋愛を小説みたいに書いてる。啓悟さんとの関係はまだ終わってないから書けない、という話をした) \n\n    \"1時から夜明けまで\",(深夜だけ出るのを示唆。1時からっていうのは電車が終わってしんとする、カバーやらずに好きなオリジナルだけ出来るフィーバータイム　その時間が好きで、いつもその時間だけ啓悟さんのオリジナル曲をリクエストをする)\n\n    \"ホタルイカの軟骨\",(落とし物っぽいというか最早ゴミ　啓悟さんは旬の時期はほぼ毎日、私のためにホタルイカの目玉、くちばし、軟骨を取ってくれる）\n\n    \"片割れのアクセサリー\",(そんな大事なもん落とすか？お揃いで買ってもらったペンダント、私が買ったお揃いのバングル　なんかいい言い方ないかな～)\n\n    \"夜にだけ手に入るもの\",(1時過ぎないと出ないということを示唆する　1時-4:00までしか出ない　まだ離婚前、夜だけが私の啓悟さんだった)\n\n    \"結ばれたゴミ袋\",(深夜限定メッセージ啓悟さんは路上ライブの後、必ず自分の周り広範囲のゴミを拾う。真面目で好き)\n\n    \"眠れぬ夜の子守唄\"(深夜限定めっせージ　私が眠れないとき、何度か歌を歌ってもらった　そして寝落ちした)\n\n    \"1時から夜明けまで\"(深夜限定メッセージ　1時からのフィーバータイム　色んな人が夜中までお酒をのみながら、話をしながら、明け方まで居た　本当に楽しかった　確かに青春だった)\n\n\n隣じゃなかった頃の靴(啓悟さんと恋人になる前、離婚してくれる前、お客さんと演者のすこし先、よく啓悟さんの路上ライブで使う用の椅子を探しに何度も遠くまで散歩した。散歩は2人にとってかなり大事な思い出。だから今も毎日散歩する\n用事のふりをした散歩とカブるので没\n\nどれも増やすなら3の倍数で\n\n\n\nここにあったものは \n最初から揃っていたのかもしれない \n\n見つけたんじゃない 思い出しただけ \n\nあなたがここにいた証 \n増え続けるメモリー\n\n\nいつまでも傍で\n\n\nこにあったものは \n最初から揃っていたのかもしれない \n\n見つけたんじゃない \n思い出しただけ \n\nあなたがここにいた証 \n消えることのない記録 \n続いて行くもの \n\n\nいつまでも傍で";
+
+let noticeLocked = false;
+
+const COMPLETE_MESSAGES_FINAL = {
+  collection: `使ってくれてありがとう！
+ライブラリとして役立ててね`,
+  title: `すべての称号を見届けてくれてありがとう
+ここまで一緒に来てくれて嬉しい`,
+  lost: `忘れ物を全て拾ってくれてありがとう
+風化しない思い出をまた積み重ねて`,
+  all: `ここにあったものは
+最初から揃っていたのかもしれない
+
+見つけたんじゃない
+思い出しただけ
+
+あなたがここにいた証
+消えることのない記録
+
+いつまでも傍で`
+};
+
+function uniqueFinal(arr){
+  return Array.from(new Set(arr || []));
+}
+
+function getArrFinal(key){
+  try { return JSON.parse(localStorage.getItem(key)) || []; }
+  catch(e) { return []; }
+}
+
+function setArrFinal(key, arr){
+  localStorage.setItem(key, JSON.stringify(uniqueFinal(arr)));
+}
+
+function allIncludedFinal(all, owned){
+  all = uniqueFinal(all);
+  owned = uniqueFinal(owned);
+  return all.length > 0 && all.every(x => owned.includes(x));
+}
+
+function showFixedNoticeFinal(message, after){
+  noticeLocked = true;
+
+  let overlay = document.getElementById("completeNoticeOverlay");
+  if(overlay) overlay.remove();
+
+  overlay = document.createElement("div");
+  overlay.id = "completeNoticeOverlay";
+
+  const card = document.createElement("div");
+  card.id = "completeNoticeCard";
+  card.textContent = message;
+
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+
+  setTimeout(() => overlay.classList.add("show"), 20);
+
+  setTimeout(() => {
+    overlay.classList.remove("show");
+    setTimeout(() => {
+      if(overlay && overlay.parentNode) overlay.remove();
+      noticeLocked = false;
+      if(typeof after === "function") after();
+    }, 450);
+  }, 5000);
+}
+
+function downloadCompleteMemoFinal(){
+  const blob = new Blob([COMPLETE_MEMO_TEXT_FINAL], {type:"text/plain;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "ここに至るまで.txt";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function collectionCompleteFinal(){
+  const all = [...heartMessages, ...rareMessages, ...srMessages, ...urMessages];
+  return allIncludedFinal(all, getArrFinal("unlockedMessages"));
+}
+
+function lostCompleteFinal(){
+  return allIncludedFinal(lostItems, getArrFinal("unlockedLostItems"));
+}
+
+function titleCompleteFinal(){
+  // 3周目Lv200まで到達で称号コンプ
+  const levelIndex = Math.floor(heartCount / NEED);
+  return levelIndex >= (MAX_LEVEL * MAX_LOOP - 1);
+}
+
+function allMainCompleteFinal(){
+  return collectionCompleteFinal() && titleCompleteFinal() && lostCompleteFinal();
+}
+
+function checkCompleteNoticesFinal(){
+  if(noticeLocked) return;
+
+  if(collectionCompleteFinal() && !localStorage.getItem("collectionCompleteShown_final")){
+    localStorage.setItem("collectionCompleteShown_final", "1");
+    showFixedNoticeFinal(COMPLETE_MESSAGES_FINAL.collection);
+    return;
+  }
+
+  if(titleCompleteFinal() && !localStorage.getItem("titleCompleteShown_final")){
+    localStorage.setItem("titleCompleteShown_final", "1");
+    showFixedNoticeFinal(COMPLETE_MESSAGES_FINAL.title);
+    return;
+  }
+
+  if(lostCompleteFinal() && !localStorage.getItem("lostCompleteShown_final")){
+    localStorage.setItem("lostCompleteShown_final", "1");
+    showFixedNoticeFinal(COMPLETE_MESSAGES_FINAL.lost);
+    return;
+  }
+
+  if(allMainCompleteFinal() && !localStorage.getItem("allMainCompleteShown_final")){
+    localStorage.setItem("allMainCompleteShown_final", "1");
+    showFixedNoticeFinal(COMPLETE_MESSAGES_FINAL.all, downloadCompleteMemoFinal);
+    return;
+  }
+}
+
+/* ---------- 演出文言の確認・統一 ---------- */
+function showRareTextFinal(text, color, shadow){
+  const rareEffect = document.getElementById("rareEffect") || document.createElement("div");
+  rareEffect.id = "rareEffect";
+  if(!rareEffect.parentNode) document.body.appendChild(rareEffect);
+  rareEffect.textContent = text;
+  rareEffect.style.color = color;
+  rareEffect.style.textShadow = shadow;
+  rareEffect.classList.remove("show");
+  void rareEffect.offsetWidth;
+  rareEffect.classList.add("show");
+  setTimeout(() => rareEffect.classList.remove("show"), 1200);
+}
+
+window.showRareVisual = function(){
+  const msg = document.getElementById("randomMsg");
+  if(msg){
+    msg.classList.remove("sr-reward","ur-glow");
+    msg.classList.add("rare");
+  }
+  showRareTextFinal(
+    "👑RARE!!👑",
+    "gold",
+    "0 0 10px #fff, 0 0 20px gold, 0 0 40px orange, 0 0 80px yellow"
+  );
+  if(typeof spawnSparkles === "function") spawnSparkles();
+};
+
+window.showSRVisual = function(){
+  const msg = document.getElementById("randomMsg");
+  if(msg){
+    msg.classList.remove("rare","ur-glow");
+    msg.classList.add("sr-reward");
+  }
+  showRareTextFinal(
+    "🧊💙 SUPER RARE!! 💙🧊",
+    "#2f8cff",
+    "0 0 10px #fff, 0 0 20px #4da6ff, 0 0 40px #2f8cff, 0 0 70px #77d5ff"
+  );
+  if(typeof flashScreen === "function") flashScreen("rgba(77,166,255,0.18)");
+};
+
+window.showURVisual = function(){
+  const msg = document.getElementById("randomMsg");
+  if(msg){
+    msg.classList.remove("rare","sr-reward");
+    msg.classList.add("ur-glow");
+  }
+  showRareTextFinal(
+    "👑💎ULTRA RARE!!💎👑",
+    "#ff2a2a",
+    "0 0 10px #fff, 0 0 20px #ff0000, 0 0 40px #ff3333, 0 0 80px #ff0000"
+  );
+  if(typeof flashScreen === "function") flashScreen("rgba(255,0,0,0.18)");
+  if(typeof spawnSparkles === "function") spawnSparkles();
+};
+
+/* ---------- 図鑑：未所持統一 ---------- */
+window.renderCollection = function(){
+  const box = document.getElementById("collectionBox");
+  if(!box) return;
+
+  const all = [...heartMessages, ...rareMessages, ...srMessages, ...urMessages];
+  const ownedList = getArrFinal("unlockedMessages");
+  const owned = all.filter(m => ownedList.includes(m)).length;
+  const rate = all.length ? Math.floor(owned / all.length * 100) : 0;
+
+  box.innerHTML = `<div class="collection-header">📖図鑑<br>収集率：${owned} / ${all.length}（${rate}%）</div>`;
+  const grid = document.createElement("div");
+  grid.className = "collection-grid";
+
+  all.forEach(msg => {
+    const item = document.createElement("div");
+    const got = ownedList.includes(msg);
+    item.className = "collection-item " + (got ? "unlocked" : "locked");
+    if(rareMessages.includes(msg)) item.classList.add("rare-item");
+    if(srMessages.includes(msg)) item.classList.add("sr-item");
+    if(urMessages.includes(msg)) item.classList.add("ur-item");
+    item.textContent = got ? msg : "👿未所持";
+    grid.appendChild(item);
+  });
+
+  box.appendChild(grid);
+};
+
+/* ---------- 称号：3列、未所持統一 ---------- */
+window.renderTitleCollection = function(){
+  const box = document.getElementById("titleCollectionBox");
+  if(!box) return;
+
+  const p = getProgress();
+  const sets = [
+    { name:"1周目", list:firstTitles, base:0 },
+    { name:"2周目", list:secondTitles, base:MAX_LEVEL },
+    { name:"3周目", list:thirdTitles, base:MAX_LEVEL * 2 }
+  ];
+
+  box.innerHTML = `<div class="collection-header">🏆称号一覧<br>現在：${p.loop + 1}周目 / Lv.${p.level}</div>`;
+
+  const wrap = document.createElement("div");
+  wrap.className = "title-three-columns";
+
+  sets.forEach(set => {
+    const col = document.createElement("div");
+    col.className = "title-column";
+    const h = document.createElement("h3");
+    h.textContent = set.name;
+    col.appendChild(h);
+
+    set.list.forEach(item => {
+      const requiredIndex = set.base + item.level - 1;
+      const unlocked = p.levelIndex >= requiredIndex;
+      const div = document.createElement("div");
+      div.className = "title-item " + (unlocked ? "unlocked" : "locked");
+      div.textContent = unlocked ? `Lv.${item.level} ${item.title}` : `Lv.${item.level} 🔒未所持`;
+      col.appendChild(div);
+    });
+
+    wrap.appendChild(col);
+  });
+
+  box.appendChild(wrap);
+};
+
+/* ---------- ？？？：未所持統一 ---------- */
+window.renderLost = function(){
+  const box = document.getElementById("lostCollectionBox");
+  if(!box) return;
+
+  const ownedList = getArrFinal("unlockedLostItems");
+  const owned = lostItems.filter(m => ownedList.includes(m)).length;
+  const rate = lostItems.length ? Math.floor(owned / lostItems.length * 100) : 0;
+
+  box.innerHTML = `<div class="collection-header">？？？<br>収集率：${owned} / ${lostItems.length}（${rate}%）</div>`;
+  const grid = document.createElement("div");
+  grid.className = "lost-grid";
+
+  lostItems.forEach(item => {
+    const got = ownedList.includes(item);
+    const div = document.createElement("div");
+    div.className = "lost-item-card " + (got ? "unlocked" : "locked");
+    div.textContent = got ? `🧩 ${item}` : "💀未所持";
+    grid.appendChild(div);
+  });
+
+  box.appendChild(grid);
+};
+
+/* ---------- 運命記録：スロット揃いメッセージ ---------- */
+window.showSlotMessage = function(text){
+  const slotMessage = document.getElementById("slotMessage");
+  if(!slotMessage) return;
+  slotMessage.textContent = text;
+  slotMessage.classList.add("show");
+};
+
+/* ---------- 排出率・抽選を元仕様に固定 ---------- */
+window.rollRewardFinal = function(){
+  const roll = Math.random();
+  if(roll < 1/12000) getLostReward();
+  else if(roll < 1/12000 + 1/10000) getURReward();
+  else if(roll < 1/12000 + 1/10000 + 1/2000) getSRReward();
+  else if(roll < 1/12000 + 1/10000 + 1/2000 + 1/1000) getRareReward();
+  else getNormalReward();
+};
+
+/* ---------- 報酬関数も演出付きで再固定 ---------- */
+window.getRareReward = function(){
+  rareCount++;
+  localStorage.setItem("rareCount", String(rareCount));
+  const msg = getRandom(rareMessages);
+  unlockMessage(msg);
+  showRandomMessage(msg);
+  showRareVisual();
+};
+
+window.getSRReward = function(){
+  const msg = getRandom(srMessages);
+  unlockMessage(msg);
+  showRandomMessage(msg);
+  showSRVisual();
+};
+
+window.getURReward = function(){
+  urCount++;
+  localStorage.setItem("urCount", String(urCount));
+  const msg = getRandom(urMessages);
+  unlockMessage(msg);
+  showRandomMessage(msg);
+  showURVisual();
+};
+
+/* ---------- 💗クリックを最終仕様に固定 ---------- */
+const heartFinal = document.getElementById("heart");
+if(heartFinal){
+  heartFinal.onclick = function(){
+    if(noticeLocked) return;
+
+    heartCount++;
+    localStorage.setItem("heartCount", String(heartCount));
+
+    if(slotBonusReady){
+      getSlotBonusReward();
+    }else{
+      rollRewardFinal();
+      spinSlot(Math.random() < 1/200);
+    }
+
+    updateDisplay();
+    setTimeout(checkCompleteNoticesFinal, 100);
+  };
+}
+
+/* ---------- ボタン類を最終仕様に固定 ---------- */
+const bookBtnFinal = document.getElementById("bookBtn");
+if(bookBtnFinal){
+  bookBtnFinal.onclick = function(){
+    const box = document.getElementById("collectionBox");
+    const show = box && box.style.display !== "block";
+    closePanels();
+    if(show){ renderCollection(); box.style.display = "block"; }
+  };
+}
+
+const titleBtnFinal = document.getElementById("titleBtn");
+if(titleBtnFinal){
+  titleBtnFinal.onclick = function(){
+    const box = document.getElementById("titleCollectionBox");
+    const show = box && box.style.display !== "block";
+    closePanels();
+    if(show){ renderTitleCollection(); box.style.display = "block"; }
+  };
+}
+
+const lostBtnFinal = document.getElementById("lostBtn");
+if(lostBtnFinal){
+  lostBtnFinal.onclick = function(){
+    const box = document.getElementById("lostCollectionBox");
+    const show = box && box.style.display !== "block";
+    closePanels();
+    if(show){ renderLost(); box.style.display = "block"; }
+  };
+}
+
+setTimeout(checkCompleteNoticesFinal, 500);
+
+})();
+</script>
+
 </body>
 </html>
