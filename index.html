@@ -20178,5 +20178,414 @@ body.final-complete-playing #finalCompleteScreen * {
 })();
 </script>
 
+
+<style>
+/* =====================
+v10 スロット・？？？演出・周回表示修正
+===================== */
+
+/* スロット成立時の絵文字発光 */
+#slotArea.slot-hit-glow {
+  color: #ffd85a !important;
+  font-weight: bold !important;
+  text-shadow:
+    0 0 6px rgba(255,255,255,0.95),
+    0 0 12px rgba(255,216,90,0.95),
+    0 0 24px rgba(255,216,90,0.7),
+    0 0 42px rgba(255,180,0,0.45) !important;
+  animation: slotHitGlowV10 0.42s ease-in-out infinite alternate !important;
+}
+
+@keyframes slotHitGlowV10 {
+  from { opacity: 0.78; transform: scale(1); }
+  to   { opacity: 1; transform: scale(1.08); }
+}
+
+/* 良かったね/良かったよ 中央表示 */
+#slotGoodCenterV10 {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2147483645;
+  display: none;
+  max-width: 86vw;
+  padding: 22px 32px;
+  border: 1px solid #d4af37;
+  border-radius: 18px;
+  background: rgba(255,248,210,0.97);
+  color: #6b4b00;
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 1.8;
+  text-align: center;
+  white-space: pre-line;
+  box-shadow:
+    0 0 12px rgba(255,255,255,0.95),
+    0 0 26px rgba(212,175,55,0.62),
+    0 0 46px rgba(212,175,55,0.32);
+  pointer-events: none;
+}
+
+#slotGoodCenterV10.show {
+  display: block;
+}
+
+/* ？？？取得時：グレー背景＋白文字発光＋下から出る */
+#lostEffectV10 {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483644;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 16vh;
+  pointer-events: none;
+  background: rgba(0,0,0,0.42);
+}
+
+#lostEffectV10.show {
+  display: flex;
+}
+
+#lostEffectV10 .lost-effect-text {
+  max-width: 86vw;
+  color: #fff;
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 1.9;
+  text-align: center;
+  white-space: pre-line;
+  text-shadow:
+    0 0 8px rgba(255,255,255,0.95),
+    0 0 18px rgba(255,255,255,0.72),
+    0 0 34px rgba(255,255,255,0.45);
+  animation: lostRiseV10 0.75s ease-out forwards, lostGlowV10 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes lostRiseV10 {
+  from { transform: translateY(80px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes lostGlowV10 {
+  from { text-shadow: 0 0 8px rgba(255,255,255,0.8), 0 0 16px rgba(255,255,255,0.48); }
+  to   { text-shadow: 0 0 10px rgba(255,255,255,1), 0 0 26px rgba(255,255,255,0.82), 0 0 48px rgba(255,255,255,0.55); }
+}
+
+/* 👑n周目 */
+#crownLoopDisplay {
+  margin-top: 2px;
+  margin-left: 72px;
+  margin-bottom: 2px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #d4af37;
+  text-shadow:
+    0 0 6px rgba(212,175,55,0.8),
+    0 0 14px rgba(212,175,55,0.45);
+  white-space: nowrap;
+}
+</style>
+
+<script>
+/* =====================
+v10 スロット・？？？演出・周回表示修正JS
+===================== */
+(function(){
+
+  const NIGHT_ONLY_LOST_ITEMS_V10 = [
+    "結ばれたゴミ袋",
+    "1時から夜明けまで",
+    "眠れぬ夜の子守唄"
+  ];
+
+  let slotGoodShowingV10 = false;
+  let slotReadyWaitingV10 = localStorage.getItem("slotBonusReady") === "true";
+
+  function arrV10(key){
+    try { return JSON.parse(localStorage.getItem(key)) || []; }
+    catch(e){ return []; }
+  }
+
+  function setArrV10(key, arr){
+    localStorage.setItem(key, JSON.stringify(Array.from(new Set(arr || []))));
+  }
+
+  function isNightV10(){
+    const h = new Date().getHours();
+    return document.body.classList.contains("night-debug-mode") || (h >= 1 && h < 4);
+  }
+
+  function getLostPoolV10(){
+    const base = lostItems.slice();
+    return isNightV10() ? [...base, ...NIGHT_ONLY_LOST_ITEMS_V10] : base;
+  }
+
+  function ensureSlotGoodBoxV10(){
+    let box = document.getElementById("slotGoodCenterV10");
+    if(box) return box;
+    box = document.createElement("div");
+    box.id = "slotGoodCenterV10";
+    document.body.appendChild(box);
+    return box;
+  }
+
+  function showGoodCenterV10(){
+    const box = ensureSlotGoodBoxV10();
+    box.textContent = "良かったね\n良かったよ";
+    box.classList.add("show");
+    slotGoodShowingV10 = true;
+
+    setTimeout(() => {
+      box.classList.remove("show");
+      slotGoodShowingV10 = false;
+    }, 2000);
+  }
+
+  function showSlotUnderMessageV10(text, ms){
+    const el = document.getElementById("slotMessage");
+    if(!el) return;
+    el.textContent = text;
+    el.classList.add("show");
+    if(ms){
+      setTimeout(() => el.classList.remove("show"), ms);
+    }
+  }
+
+  function setSlotGlowV10(on){
+    const area = document.getElementById("slotArea");
+    if(!area) return;
+    area.classList.toggle("slot-hit-glow", !!on);
+  }
+
+  /* スロット成立時：絵文字発光＋中央に良かったね/良かったよ 2秒。
+     この時点ではクリック数は増えない。 */
+  window.showSlotMessage = function(){
+    setSlotGlowV10(true);
+    showGoodCenterV10();
+
+    const under = document.getElementById("slotMessage");
+    if(under){
+      under.textContent = "";
+      under.classList.remove("show");
+    }
+
+    setTimeout(() => {
+      setSlotGlowV10(false);
+    }, 2000);
+  };
+
+  window.spinSlot = function(isHit){
+    const slotArea = document.getElementById("slotArea");
+    if(!slotArea) return;
+
+    let count = 0;
+    const timer = setInterval(() => {
+      count++;
+
+      const a = SLOT_SYMBOLS_FIXED[Math.floor(Math.random() * SLOT_SYMBOLS_FIXED.length)];
+      const b = SLOT_SYMBOLS_FIXED[Math.floor(Math.random() * SLOT_SYMBOLS_FIXED.length)];
+      const c = SLOT_SYMBOLS_FIXED[Math.floor(Math.random() * SLOT_SYMBOLS_FIXED.length)];
+      setSlotDisplay(a,b,c);
+
+      if(count >= 10){
+        clearInterval(timer);
+
+        if(isHit){
+          const hit = SLOT_SYMBOLS_FIXED[Math.floor(Math.random() * SLOT_SYMBOLS_FIXED.length)];
+          setSlotDisplay(hit, hit, hit);
+
+          slotBonusReady = true;
+          slotReadyWaitingV10 = true;
+          localStorage.setItem("slotBonusReady", "true");
+
+          showSlotMessage();
+        }
+      }
+    }, 45);
+  };
+
+  function rollGuaranteedRareOrAboveV10(){
+    // 元確率の比率を保ったままR以上確定
+    const weights = [
+      { type: "lost", w: 1 / 12000 },
+      { type: "ur",   w: 1 / 10000 },
+      { type: "sr",   w: 1 / 2000 },
+      { type: "rare", w: 1 / 1000 }
+    ];
+    const total = weights.reduce((s, x) => s + x.w, 0);
+    let r = Math.random() * total;
+
+    for(const x of weights){
+      r -= x.w;
+      if(r <= 0){
+        if(x.type === "lost") getLostReward();
+        else if(x.type === "ur") getURReward();
+        else if(x.type === "sr") getSRReward();
+        else getRareReward();
+        return;
+      }
+    }
+    getRareReward();
+  }
+
+  function unlockSlotRecordV10(){
+    const owned = arrV10("unlockedSlotBonusMessages");
+    const msg = getRandom(SLOT_BONUS_MESSAGES);
+
+    if(!owned.includes(msg)){
+      owned.push(msg);
+      setArrV10("unlockedSlotBonusMessages", owned);
+      try { unlockedSlotBonusMessages = owned; } catch(e){}
+    }
+
+    showSlotUnderMessageV10(msg, 3000);
+  }
+
+  /* ？？？取得：通常は通常リスト、ナイトモード時だけ指定3種も混ざる */
+  window.getLostReward = function(){
+    const pool = getLostPoolV10();
+    const item = pool[Math.floor(Math.random() * pool.length)];
+
+    const owned = arrV10("unlockedLostItems");
+    if(!owned.includes(item)){
+      owned.push(item);
+      setArrV10("unlockedLostItems", owned);
+      try { unlockedLostItems = owned; } catch(e){}
+    }
+
+    showRandomMessage("落とし物を拾った：\n" + item);
+    showLostEffectV10(item);
+  };
+
+  function showLostEffectV10(item){
+    let overlay = document.getElementById("lostEffectV10");
+    if(overlay) overlay.remove();
+
+    overlay = document.createElement("div");
+    overlay.id = "lostEffectV10";
+
+    const text = document.createElement("div");
+    text.className = "lost-effect-text";
+    text.textContent = "落とし物を拾った\n" + item;
+
+    overlay.appendChild(text);
+    document.body.appendChild(overlay);
+
+    setTimeout(() => overlay.classList.add("show"), 20);
+
+    // 5秒停止
+    setTimeout(() => {
+      overlay.classList.remove("show");
+      setTimeout(() => {
+        if(overlay && overlay.parentNode) overlay.remove();
+      }, 350);
+    }, 5000);
+  }
+
+  window.renderLost = function(){
+    const box = document.getElementById("lostCollectionBox");
+    if(!box) return;
+
+    const list = getLostPoolV10();
+    const ownedList = arrV10("unlockedLostItems");
+    try { unlockedLostItems = ownedList; } catch(e){}
+
+    const owned = list.filter(m => ownedList.includes(m)).length;
+    const rate = list.length ? Math.floor(owned / list.length * 100) : 0;
+
+    box.innerHTML = `<div class="collection-header">？？？<br>収集率：${owned} / ${list.length}（${rate}%）</div>`;
+
+    const grid = document.createElement("div");
+    grid.className = "lost-grid";
+
+    list.forEach(item => {
+      const got = ownedList.includes(item);
+      const div = document.createElement("div");
+      div.className = "lost-item-card " + (got ? "unlocked" : "locked");
+      div.textContent = got ? `🧩 ${item}` : "💀未所持";
+      grid.appendChild(div);
+    });
+
+    box.appendChild(grid);
+  };
+
+  /* 3周目の後は1周目に戻る＋👑n周目表示 */
+  function getCrownLoopV10(){
+    const levelIndex = Math.floor(heartCount / NEED);
+    return Math.floor(levelIndex / (MAX_LEVEL * MAX_LOOP)) + 1;
+  }
+
+  function updateCrownLoopDisplayV10(){
+    const wrap = document.getElementById("loveSlotWrap");
+    if(!wrap) return;
+
+    let el = document.getElementById("crownLoopDisplay");
+    if(!el){
+      el = document.createElement("div");
+      el.id = "crownLoopDisplay";
+      const slotArea = document.getElementById("slotArea");
+      if(slotArea && slotArea.parentNode === wrap){
+        wrap.insertBefore(el, slotArea);
+      }else{
+        wrap.appendChild(el);
+      }
+    }
+
+    el.textContent = "👑" + getCrownLoopV10() + "周目";
+  }
+
+  const oldUpdateDisplayV10 = window.updateDisplay;
+  window.updateDisplay = function(){
+    if(typeof oldUpdateDisplayV10 === "function") oldUpdateDisplayV10();
+    updateCrownLoopDisplayV10();
+  };
+
+  /* 💗クリック：良かったね表示中は無効。表示後、次の💗で運命記録＋R以上確定 */
+  const heartV10 = document.getElementById("heart");
+  if(heartV10){
+    heartV10.onclick = function(){
+      if(noticeLocked || slotGoodShowingV10) return;
+
+      heartCount++;
+      localStorage.setItem("heartCount", String(heartCount));
+
+      if(slotBonusReady || slotReadyWaitingV10){
+        slotBonusReady = false;
+        slotReadyWaitingV10 = false;
+        localStorage.setItem("slotBonusReady", "false");
+
+        unlockSlotRecordV10();
+        rollGuaranteedRareOrAboveV10();
+      }else{
+        rollReward();
+        spinSlot(Math.random() < 1 / 200);
+      }
+
+      updateDisplay();
+      setTimeout(checkCompleteNotices, 120);
+    };
+  }
+
+  /* ナイト切替で？？？を再描画 */
+  const nightBtnV10 = document.getElementById("nightModeBtn");
+  if(nightBtnV10){
+    const oldNightClickV10 = nightBtnV10.onclick;
+    nightBtnV10.onclick = function(){
+      if(typeof oldNightClickV10 === "function") oldNightClickV10.call(this);
+
+      const lostBox = document.getElementById("lostCollectionBox");
+      if(lostBox && lostBox.style.display === "block"){
+        renderLost();
+      }
+    };
+  }
+
+  updateCrownLoopDisplayV10();
+
+})();
+</script>
+
 </body>
 </html>
