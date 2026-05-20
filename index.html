@@ -711,6 +711,115 @@ body.night-mode .chord-token .chord-name {
 
 </style>
 </head>
+
+<script>
+/* =====================
+超安全ストレージ層
+- file:// や Chrome の制限で localStorage が死んでも画面を壊さない
+- 保存できる環境では localStorage を使う
+- 保存できない環境では一時メモリに逃がす
+===================== */
+(function(){
+  var memoryStore = {};
+
+  function canUseLocalStorage(){
+    try {
+      if(typeof window.localStorage === "undefined") return false;
+      var k = "__miwa_storage_test__";
+      window.localStorage.setItem(k, "1");
+      window.localStorage.removeItem(k);
+      return true;
+    } catch(e) {
+      return false;
+    }
+  }
+
+  window.MIWA_CAN_USE_LOCAL_STORAGE = canUseLocalStorage();
+
+  window.safeGetItem = function(key){
+    try {
+      if(window.MIWA_CAN_USE_LOCAL_STORAGE) return window.localStorage.getItem(key);
+    } catch(e){}
+    return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
+  };
+
+  window.safeSetItem = function(key, value){
+    value = String(value);
+    try {
+      if(window.MIWA_CAN_USE_LOCAL_STORAGE){
+        window.localStorage.setItem(key, value);
+        return;
+      }
+    } catch(e){}
+    memoryStore[key] = value;
+  };
+
+  window.safeRemoveItem = function(key){
+    try {
+      if(window.MIWA_CAN_USE_LOCAL_STORAGE){
+        window.localStorage.removeItem(key);
+        return;
+      }
+    } catch(e){}
+    delete memoryStore[key];
+  };
+
+  window.safeClearOnlyMiwa = function(){
+    var keys = [
+      "heartCount","rareCount","urCount","exp","level","loop",
+      "unlockedMessages","unlockedSlotBonusMessages","unlockedLostItems",
+      "slotBonusReady","blackoutCooldown","completeCrownLoop","titleProgressOffset",
+      "normalCompleteShown","rareCompleteShown","srCompleteShown","urCompleteShown","lostCompleteShown",
+      "normalCompleteShown_v6","rareCompleteShown_v6","srCompleteShown_v6","urCompleteShown_v6","lostCompleteShown_v6","slotCompleteShown_v6",
+      "completeShown"
+    ];
+    keys.forEach(function(k){ window.safeRemoveItem(k); });
+  };
+
+  window.exportMiwaData = function(){
+    var keys = [
+      "heartCount","rareCount","urCount","exp","level","loop",
+      "unlockedMessages","unlockedSlotBonusMessages","unlockedLostItems",
+      "slotBonusReady","blackoutCooldown","completeCrownLoop","titleProgressOffset",
+      "normalCompleteShown","rareCompleteShown","srCompleteShown","urCompleteShown","lostCompleteShown",
+      "normalCompleteShown_v6","rareCompleteShown_v6","srCompleteShown_v6","urCompleteShown_v6","lostCompleteShown_v6","slotCompleteShown_v6",
+      "completeShown"
+    ];
+
+    var data = {};
+    keys.forEach(function(k){
+      data[k] = window.safeGetItem(k);
+    });
+
+    data.__note = "三輪啓悟ライブラリ backup";
+    data.__savedAt = new Date().toISOString();
+
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "miwa_library_backup.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  };
+
+  window.importMiwaDataObject = function(data){
+    if(!data || typeof data !== "object") return false;
+
+    Object.keys(data).forEach(function(k){
+      if(k.indexOf("__") === 0) return;
+      if(data[k] === null || typeof data[k] === "undefined") window.safeRemoveItem(k);
+      else window.safeSetItem(k, data[k]);
+    });
+
+    return true;
+  };
+
+})();
+</script>
+
 <body>
 <h1 id="mainTitle">🎸三輪啓悟ライブラリ🎸</h1>
 <input id="search" placeholder="検索" type="text"/><br/>
@@ -20801,137 +20910,320 @@ SR完全融合最終パッチ
 
 
 <style>
-/* ===== UI崩壊防止（最小限） ===== */
-#slotPopup:not(.show),
-#lostItemOverlay:not(.show),
-#milestonePopup:not(.show) {
-  pointer-events: none !important;
+/* =====================
+データ保護・復旧・バックアップUI
+===================== */
+#backupBtn,
+#importBtn,
+#restoreCountBtn,
+#rescueBtn {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  margin-top: 10px;
+  margin-right: 8px !important;
+  padding: 8px 16px !important;
+  font-size: 16px !important;
+  cursor: pointer !important;
+  position: relative !important;
+  z-index: 2147483647 !important;
+}
+
+#storageWarning {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border: 1px solid #d4af37;
+  background: rgba(255,248,210,0.95);
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #6b4b00;
 }
 </style>
 
 <script>
-/* ===== 安全修正版 ===== */
+/* =====================
+データ保護・完全安定パッチ
+- データを消さない
+- 復旧ボタン強化
+- バックアップ/復元ボタン追加
+- クリック回数の手動復元
+- 1周目固定の補正
+===================== */
 (function(){
 
-  function safeGet(k){ try{return localStorage.getItem(k);}catch(e){return null;} }
-  function safeSet(k,v){ try{localStorage.setItem(k,v);}catch(e){} }
+  function lsGet(key){
+    try { return safeGetItem(key); } catch(e){ return null; }
+  }
+  function lsSet(key, value){
+    try { safeSetItem(key, value); } catch(e){}
+  }
+  function lsRemove(key){
+    try { safeRemoveItem(key); } catch(e){}
+  }
+  function getJSON(key){
+    try { return JSON.parse(lsGet(key)) || []; } catch(e){ return []; }
+  }
+  function uniq(arr){
+    return Array.from(new Set(arr || []));
+  }
+  function allIncluded(all, owned){
+    all = uniq(all);
+    owned = uniq(owned);
+    return all.length > 0 && all.every(function(x){ return owned.includes(x); });
+  }
+  function getCurrentHeartCount(){
+    try {
+      if(typeof heartCount !== "undefined") return Number(heartCount) || 0;
+    } catch(e){}
+    return Number(lsGet("heartCount")) || 0;
+  }
 
-  /* ---------- 復旧（最小限・破壊しない） ---------- */
-  function rescueSafe(){
-    [
-      "milestonePopup",
-      "thirdLoopOverlay",
-      "thirdLoopOverlayV2"
-    ].forEach(id=>{
-      const el = document.getElementById(id);
-      if(el) el.remove();
-    });
-
-    const heart = document.getElementById("heart");
+  function unlockHeart(){
+    var heart = document.getElementById("heart");
     if(heart){
       heart.classList.remove("locked");
       heart.style.pointerEvents = "auto";
+      heart.style.opacity = "";
     }
+    try { heartLocked = false; } catch(e){}
+    try { window.heartLocked = false; } catch(e){}
+  }
 
-    try{ heartLocked = false; }catch(e){}
+  function forceRescue(){
+    [
+      "finalSafetyLock","milestoneLock","milestoneFiveSecondLock",
+      "thirdLoopFiveSecondLock","finalCompleteLock","finalLockScreen",
+      "milestonePopup","thirdLoopOverlay","thirdLoopOverlayV2",
+      "completeRewardScreen","srFixedFlash","srFlashEffect"
+    ].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.remove();
+    });
 
+    ["slotPopup","lostItemOverlay"].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el){
+        el.classList.remove("show");
+        el.style.opacity = "0";
+        el.style.pointerEvents = "none";
+        el.style.display = "none";
+      }
+    });
+
+    ["collectionBox","titleCollectionBox","slotRecordBox","lostCollectionBox"].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.style.display = "none";
+    });
+
+    document.documentElement.style.pointerEvents = "auto";
     document.body.style.pointerEvents = "auto";
 
-    alert("復旧したよ（安全版）");
+    ["mainTitle","search","heart","bookBtn","titleBtn","slotRecordBtn","lostBtn","resetBtn","rescueBtn","backupBtn","importBtn","restoreCountBtn","loveSlotWrap","buttonArea","counter","level","title"].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el){
+        el.style.pointerEvents = "auto";
+        el.style.position = "relative";
+        el.style.zIndex = "2147483647";
+        el.style.opacity = "";
+      }
+    });
+
+    unlockHeart();
+
+    alert("復旧したよ。データは消してないよ");
   }
 
-  window.rescueTouch = rescueSafe;
+  window.rescueTouch = forceRescue;
+  window.forceRescueV2 = forceRescue;
 
-  function addBtn(){
-    const area = document.getElementById("buttonArea");
-    if(!area || document.getElementById("rescueBtn")) return;
+  function addDataButtons(){
+    var area = document.getElementById("buttonArea");
+    if(!area) return;
 
-    const btn = document.createElement("button");
-    btn.id = "rescueBtn";
-    btn.textContent = "🧯復旧";
-    btn.onclick = rescueSafe;
+    if(!document.getElementById("rescueBtn")){
+      var rescue = document.createElement("button");
+      rescue.id = "rescueBtn";
+      rescue.type = "button";
+      rescue.textContent = "🧯復旧";
+      rescue.onclick = forceRescue;
+      area.appendChild(rescue);
+    }
 
-    area.appendChild(btn);
-  }
+    if(!document.getElementById("backupBtn")){
+      var backup = document.createElement("button");
+      backup.id = "backupBtn";
+      backup.type = "button";
+      backup.textContent = "💾バックアップ";
+      backup.onclick = function(){
+        if(typeof exportMiwaData === "function") exportMiwaData();
+      };
+      area.appendChild(backup);
+    }
 
-  /* ---------- 運命記録コンプ ---------- */
-  function getJSON(k){
-    try{return JSON.parse(safeGet(k))||[];}catch(e){return[];}
-  }
+    if(!document.getElementById("importBtn")){
+      var input = document.createElement("input");
+      input.type = "file";
+      input.accept = "application/json";
+      input.id = "importFileInput";
+      input.style.display = "none";
+      input.onchange = function(ev){
+        var file = ev.target.files && ev.target.files[0];
+        if(!file) return;
+        var reader = new FileReader();
+        reader.onload = function(){
+          try {
+            var data = JSON.parse(reader.result);
+            if(typeof importMiwaDataObject === "function" && importMiwaDataObject(data)){
+              alert("復元したよ。ページを再読み込みするね");
+              location.reload();
+            }
+          } catch(e){
+            alert("バックアップファイルを読めなかったよ");
+          }
+        };
+        reader.readAsText(file, "utf-8");
+      };
+      area.appendChild(input);
 
-  function allIncluded(all, owned){
-    return all.length>0 && all.every(x=>owned.includes(x));
-  }
+      var imp = document.createElement("button");
+      imp.id = "importBtn";
+      imp.type = "button";
+      imp.textContent = "📂復元";
+      imp.onclick = function(){ input.click(); };
+      area.appendChild(imp);
+    }
 
-  function slotComplete(){
-    try{
-      return allIncluded(SLOT_BONUS_MESSAGES, getJSON("unlockedSlotBonusMessages"));
-    }catch(e){return false;}
-  }
+    if(!document.getElementById("restoreCountBtn")){
+      var restore = document.createElement("button");
+      restore.id = "restoreCountBtn";
+      restore.type = "button";
+      restore.textContent = "💗回数復元";
+      restore.onclick = function(){
+        var current = getCurrentHeartCount();
+        var v = prompt("戻したい💗回数を入れてね", String(current || 110000));
+        if(v === null) return;
+        v = Number(String(v).replace(/[^\d]/g, ""));
+        if(!v || isNaN(v)){
+          alert("数字が読めなかったよ");
+          return;
+        }
 
-  function showMsg(msg){
-    const o = document.createElement("div");
-    o.style.position="fixed";
-    o.style.inset="0";
-    o.style.background="rgba(0,0,0,0.4)";
-    o.style.display="flex";
-    o.style.alignItems="center";
-    o.style.justifyContent="center";
-    o.style.zIndex="999999";
+        lsSet("heartCount", String(v));
+        try { heartCount = v; } catch(e){}
 
-    const c = document.createElement("div");
-    c.textContent=msg;
-    c.style.background="white";
-    c.style.padding="20px";
-    c.style.borderRadius="10px";
-    c.style.whiteSpace="pre-line";
+        // 称号進行も総クリックから補正
+        lsSet("titleProgressOffset", "0");
+        syncTitleLoopFromHeart();
 
-    o.appendChild(c);
-    document.body.appendChild(o);
+        if(typeof updateCounter === "function") updateCounter();
+        if(typeof updateCrownLoopDisplay === "function") updateCrownLoopDisplay();
 
-    setTimeout(()=>o.remove(),5000);
-  }
+        alert("💗回数を " + v + " 回に戻したよ");
+      };
+      area.appendChild(restore);
+    }
 
-  function checkSlot(){
-    if(slotComplete() && !safeGet("slotCompleteShown_safe")){
-      safeSet("slotCompleteShown_safe","1");
-      showMsg(`僕らが出会ったのは偶然ではなく必然
-
-運命なんか信じないけど、あなたとなら`);
+    if(!window.MIWA_CAN_USE_LOCAL_STORAGE && !document.getElementById("storageWarning")){
+      var warning = document.createElement("div");
+      warning.id = "storageWarning";
+      warning.textContent = "注意：この開き方だと保存が不安定です。こまめに💾バックアップしてね。";
+      area.parentNode.insertBefore(warning, area);
     }
   }
 
-  const oldUnlock = window.unlockSlotBonusMessage;
-  if(typeof oldUnlock==="function"){
-    window.unlockSlotBonusMessage=function(msg){
-      const r = oldUnlock(msg);
-      setTimeout(checkSlot,100);
-      return r;
-    };
+  function getTitleOffset(){
+    var offset = Number(lsGet("titleProgressOffset"));
+    if(isNaN(offset)) offset = 0;
+    return offset;
   }
 
-  /* ---------- 3周目固定 ---------- */
-  window.showThirdLoopEffect=function(){
-    const o = document.createElement("div");
-    o.style.position="fixed";
-    o.style.inset="0";
-    o.style.background="black";
-    o.style.color="white";
-    o.style.display="flex";
-    o.style.alignItems="center";
-    o.style.justifyContent="center";
-    o.style.zIndex="999999";
-    o.textContent="あなたの総てになりたかった";
+  function syncTitleLoopFromHeart(){
+    var total = getCurrentHeartCount();
+    var offset = getTitleOffset();
+    if(total < offset){
+      offset = 0;
+      lsSet("titleProgressOffset", "0");
+    }
 
-    document.body.appendChild(o);
+    var progress = Math.max(0, total - offset);
+    var levelIndex = Math.floor(progress / 150);
+    var newExp = progress % 150;
+    var absoluteLoop = Math.floor(levelIndex / 200);
+    var displayLoop = absoluteLoop % 3;
+    var newLevel = (levelIndex % 200) + 1;
 
-    setTimeout(()=>o.remove(),5000);
+    try { exp = newExp; } catch(e){}
+    try { level = newLevel; } catch(e){}
+    try { loop = displayLoop; } catch(e){}
+
+    lsSet("exp", String(newExp));
+    lsSet("level", String(newLevel));
+    lsSet("loop", String(displayLoop));
+
+    var levelBox = document.getElementById("level");
+    if(levelBox){
+      levelBox.textContent = "Lv." + newLevel + "（" + newExp + " / 150）｜" + (displayLoop + 1) + "周目";
+    }
+
+    if(typeof getCurrentTitle === "function"){
+      var titleBox = document.getElementById("title");
+      if(titleBox) titleBox.textContent = "称号：" + getCurrentTitle();
+    }
+  }
+
+  var oldUpdateLevel = window.updateLevel || (typeof updateLevel !== "undefined" ? updateLevel : null);
+  window.updateLevel = function(){
+    try {
+      if(typeof oldUpdateLevel === "function") oldUpdateLevel();
+    } catch(e){}
+    syncTitleLoopFromHeart();
   };
+  try { updateLevel = window.updateLevel; } catch(e){}
 
-  /* ---------- 初期 ---------- */
-  document.addEventListener("DOMContentLoaded",()=>{
-    addBtn();
-  });
+  window.updateCrownLoopDisplay = function(){
+    var crownLoop = Number(lsGet("completeCrownLoop")) || 1;
+    var wrap = document.getElementById("loveSlotWrap");
+    if(!wrap) return;
+
+    var el = document.getElementById("crownLoopDisplay");
+    if(!el){
+      el = document.createElement("div");
+      el.id = "crownLoopDisplay";
+      var slotMessage = document.getElementById("slotMessage");
+      if(slotMessage && slotMessage.parentNode === wrap) wrap.insertBefore(el, slotMessage);
+      else wrap.appendChild(el);
+    }
+    el.textContent = "👑" + crownLoop + "周目";
+    el.style.marginTop = "2px";
+    el.style.marginBottom = "2px";
+    el.style.fontSize = "16px";
+    el.style.fontWeight = "bold";
+    el.style.color = "#d4af37";
+    el.style.textShadow = "0 0 6px rgba(212,175,55,0.6)";
+  };
+  try { updateCrownLoopDisplay = window.updateCrownLoopDisplay; } catch(e){}
+
+  function initSafe(){
+    addDataButtons();
+    forceRescue();
+    syncTitleLoopFromHeart();
+    if(typeof updateCounter === "function") updateCounter();
+    if(typeof updateCrownLoopDisplay === "function") updateCrownLoopDisplay();
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", initSafe);
+  } else {
+    setTimeout(initSafe, 50);
+  }
+
+  setTimeout(initSafe, 500);
+  setInterval(function(){
+    // alertは出さず軽く復旧だけ
+    document.body.style.pointerEvents = "auto";
+    unlockHeart();
+  }, 5000);
 
 })();
 </script>
