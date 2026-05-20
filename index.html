@@ -16886,7 +16886,7 @@ const thirdTitles = [
   { level: 70, title: "切り離せない構造" },
   { level: 80, title: "既に成立している" },
   { level: 90, title: "後戻りの不在" },
-  { level: 100, title: "不可逆性の帰結" },
+  { level: 100, title: "確定した帰路" },
   { level: 110, title: "残滓を抱えたまま" },
   { level: 120, title: "介在することなく" },
   { level: 130, title: "ここに至る必然" },
@@ -17559,6 +17559,610 @@ setupHeart();
 setupSearch();
 setupButtons();
 updateDisplay();
+</script>
+
+
+<style>
+/* =====================
+最終調整パッチ
+- 図鑑をカード型3列に戻す
+- スロット中央寄せ
+- 運命記録の文頭🎰削除
+===================== */
+
+/* 図鑑を前のカード型に戻す */
+#collectionBox .collection-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 10px 12px !important;
+  align-items: start !important;
+}
+
+#collectionBox .collection-item {
+  padding: 5px 8px !important;
+  border-radius: 6px !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+#collectionBox .collection-item.locked {
+  color: #222 !important;
+  background: rgba(255, 248, 230, 0.65) !important;
+  border: 1px solid #d4af37 !important;
+}
+
+#collectionBox .collection-item.locked.sr-item {
+  background: rgba(230, 244, 255, 0.75) !important;
+  border: 1px solid #4da6ff !important;
+  box-shadow: 0 0 6px rgba(77,166,255,0.25) !important;
+}
+
+#collectionBox .collection-item.locked.ur-item {
+  background: rgba(252, 238, 255, 0.75) !important;
+  border: 1px solid #b000ff !important;
+  box-shadow: 0 0 6px rgba(190,0,255,0.22) !important;
+}
+
+#collectionBox .collection-item.unlocked {
+  background: #fff !important;
+  border: 1px solid #ddd !important;
+}
+
+#collectionBox .collection-item.unlocked.rare-item {
+  border: 1px solid #d4af37 !important;
+  background: rgba(255,248,210,0.75) !important;
+  color: #8a6500 !important;
+  font-weight: bold !important;
+}
+
+#collectionBox .collection-item.unlocked.sr-item {
+  border: 1px solid #4da6ff !important;
+  background: rgba(230,244,255,0.9) !important;
+  color: #2f8cff !important;
+  font-weight: bold !important;
+  text-shadow: 0 0 6px rgba(77,166,255,0.35) !important;
+}
+
+#collectionBox .collection-item.unlocked.ur-item {
+  border: 1px solid #b000ff !important;
+  background: rgba(252,238,255,0.9) !important;
+  color: #b000ff !important;
+  font-weight: bold !important;
+  text-shadow: 0 0 8px rgba(190,0,255,0.35) !important;
+}
+
+/* スロットを「一生推します💗」下の中央へ */
+#loveSlotWrap {
+  text-align: center !important;
+}
+
+#slotArea {
+  text-align: center !important;
+  width: 100% !important;
+  display: block !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  letter-spacing: 8px !important;
+}
+
+#slotMessage {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  text-align: center !important;
+}
+</style>
+
+<script>
+/* =====================
+最終調整JS
+- スロット揃い時「良かったね / 良かったよ」2秒固定
+- 次の💗でR以上確定（R/SR/UR/？？？は元確率の比率）
+- 運命記録の表示から文頭🎰削除
+===================== */
+(function(){
+
+  let slotMessageLockedFinal = false;
+
+  function getArrFinal(key){
+    try { return JSON.parse(localStorage.getItem(key)) || []; }
+    catch(e){ return []; }
+  }
+
+  function setArrFinal(key, arr){
+    localStorage.setItem(key, JSON.stringify(Array.from(new Set(arr))));
+  }
+
+  function getRandomFinal(arr){
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function consumeSlotRecordFinal(){
+    let owned = getArrFinal("unlockedSlotBonusMessages");
+    const msg = getRandomFinal(SLOT_BONUS_MESSAGES);
+    if(!owned.includes(msg)){
+      owned.push(msg);
+      setArrFinal("unlockedSlotBonusMessages", owned);
+      try { unlockedSlotBonusMessages = owned; } catch(e){}
+    }
+  }
+
+  function showSlotMessageFinal(text){
+    const slotMessage = document.getElementById("slotMessage");
+    if(!slotMessage) return;
+
+    slotMessageLockedFinal = true;
+    slotMessage.textContent = text;
+    slotMessage.classList.add("show");
+
+    setTimeout(() => {
+      slotMessage.classList.remove("show");
+      slotMessageLockedFinal = false;
+    }, 2000);
+  }
+
+  window.showSlotMessage = showSlotMessageFinal;
+
+  function rollGuaranteedRareOrAboveFinal(){
+    // 元の比率：
+    // ??? 1/12000, UR 1/10000, SR 1/2000, R 1/1000
+    const weights = [
+      { type: "lost", w: 1 / 12000 },
+      { type: "ur",   w: 1 / 10000 },
+      { type: "sr",   w: 1 / 2000 },
+      { type: "rare", w: 1 / 1000 }
+    ];
+
+    const total = weights.reduce((sum, x) => sum + x.w, 0);
+    let r = Math.random() * total;
+
+    for(const x of weights){
+      r -= x.w;
+      if(r <= 0){
+        if(x.type === "lost") getLostReward();
+        else if(x.type === "ur") getURReward();
+        else if(x.type === "sr") getSRReward();
+        else getRareReward();
+        return;
+      }
+    }
+
+    getRareReward();
+  }
+
+  function spinSlotFinal(isHit){
+    const slotArea = document.getElementById("slotArea");
+    if(!slotArea) return;
+
+    let count = 0;
+    const timer = setInterval(() => {
+      count++;
+
+      const a = SLOT_SYMBOLS_FIXED[Math.floor(Math.random() * SLOT_SYMBOLS_FIXED.length)];
+      const b = SLOT_SYMBOLS_FIXED[Math.floor(Math.random() * SLOT_SYMBOLS_FIXED.length)];
+      const c = SLOT_SYMBOLS_FIXED[Math.floor(Math.random() * SLOT_SYMBOLS_FIXED.length)];
+      setSlotDisplay(a,b,c);
+
+      if(count >= 10){
+        clearInterval(timer);
+
+        if(isHit){
+          const hit = SLOT_SYMBOLS_FIXED[Math.floor(Math.random() * SLOT_SYMBOLS_FIXED.length)];
+          setSlotDisplay(hit, hit, hit);
+
+          slotBonusReady = true;
+          localStorage.setItem("slotBonusReady", "true");
+
+          showSlotMessageFinal("良かったね\n良かったよ");
+        }
+      }
+    }, 45);
+  }
+
+  window.spinSlot = spinSlotFinal;
+
+  /* 運命記録：文頭🎰なし */
+  window.renderSlotRecord = function(){
+    const box = document.getElementById("slotRecordBox");
+    if(!box) return;
+
+    const ownedList = getArrFinal("unlockedSlotBonusMessages");
+    try { unlockedSlotBonusMessages = ownedList; } catch(e){}
+
+    const owned = SLOT_BONUS_MESSAGES.filter(m => ownedList.includes(m)).length;
+    const rate = SLOT_BONUS_MESSAGES.length ? Math.floor(owned / SLOT_BONUS_MESSAGES.length * 100) : 0;
+
+    box.innerHTML = `<div class="collection-header">🎰運命記録<br>収集率：${owned} / ${SLOT_BONUS_MESSAGES.length}（${rate}%）</div>`;
+
+    const grid = document.createElement("div");
+    grid.className = "slot-record-grid";
+
+    SLOT_BONUS_MESSAGES.forEach(msg => {
+      const got = ownedList.includes(msg);
+      const item = document.createElement("div");
+      item.className = "slot-record-item " + (got ? "unlocked" : "locked");
+      item.textContent = got ? msg : "🔒未所持";
+      grid.appendChild(item);
+    });
+
+    box.appendChild(grid);
+  };
+
+  /* 図鑑：未所持は👿未所持、カード色はレアリティ別 */
+  window.renderCollection = function(){
+    const box = document.getElementById("collectionBox");
+    if(!box) return;
+
+    const all = [...heartMessages, ...rareMessages, ...srMessages, ...urMessages];
+    const ownedList = getArrFinal("unlockedMessages");
+    try { unlockedMessages = ownedList; } catch(e){}
+
+    const owned = all.filter(m => ownedList.includes(m)).length;
+    const rate = all.length ? Math.floor(owned / all.length * 100) : 0;
+
+    box.innerHTML = `<div class="collection-header">📖図鑑<br>収集率：${owned} / ${all.length}（${rate}%）</div>`;
+
+    const grid = document.createElement("div");
+    grid.className = "collection-grid";
+
+    all.forEach(msg => {
+      const got = ownedList.includes(msg);
+      const item = document.createElement("div");
+      item.className = "collection-item " + (got ? "unlocked" : "locked");
+
+      if(rareMessages.includes(msg)) item.classList.add("rare-item");
+      if(srMessages.includes(msg)) item.classList.add("sr-item");
+      if(urMessages.includes(msg)) item.classList.add("ur-item");
+
+      item.textContent = got ? msg : "👿未所持";
+      grid.appendChild(item);
+    });
+
+    box.appendChild(grid);
+  };
+
+  /* 💗クリックを最終調整版に再接続 */
+  const heartFinal2 = document.getElementById("heart");
+  if(heartFinal2){
+    heartFinal2.onclick = function(){
+      if(noticeLocked || slotMessageLockedFinal) return;
+
+      heartCount++;
+      localStorage.setItem("heartCount", String(heartCount));
+
+      if(slotBonusReady){
+        slotBonusReady = false;
+        localStorage.setItem("slotBonusReady", "false");
+
+        consumeSlotRecordFinal();
+        rollGuaranteedRareOrAboveFinal();
+      }else{
+        rollReward();
+        spinSlotFinal(Math.random() < 1 / 200);
+      }
+
+      updateDisplay();
+      setTimeout(checkCompleteNotices, 100);
+    };
+  }
+
+  /* 運命記録ボタンを再接続 */
+  const slotRecordBtnFinal2 = document.getElementById("slotRecordBtn");
+  if(slotRecordBtnFinal2){
+    slotRecordBtnFinal2.onclick = function(){
+      const box = document.getElementById("slotRecordBox");
+      const show = box && box.style.display !== "block";
+      closePanels();
+      if(show){
+        renderSlotRecord();
+        box.style.display = "block";
+      }
+    };
+  }
+
+})();
+</script>
+
+
+<style>
+/* =====================
+最終表示調整 v3
+- 図鑑：長文で2行になるカードに合わせて高さを確保
+- 一生推します💗は左寄せ
+- スロットは一生推します💗の下で、💗付近の中央に配置
+- 運命記録・？？？の行間を詰める
+===================== */
+
+/* 一生推します💗のまとまりは左寄せ */
+#loveSlotWrap {
+  text-align: left !important;
+  display: inline-block !important;
+  width: auto !important;
+  max-width: 100% !important;
+}
+
+/* スロットだけ、上の「一生推します💗」の中央あたりに置く */
+#slotArea {
+  display: block !important;
+  width: 220px !important;
+  max-width: 220px !important;
+  margin-top: 4px !important;
+  margin-left: 95px !important;
+  margin-right: 0 !important;
+  text-align: center !important;
+  letter-spacing: 8px !important;
+  min-height: 28px !important;
+  line-height: 1.2 !important;
+}
+
+#slotMessage {
+  margin-left: 55px !important;
+  margin-right: 0 !important;
+  text-align: center !important;
+}
+
+/* 図鑑：カード型3列。1行/2行が混ざっても行高さを揃える */
+#collectionBox .collection-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 10px 12px !important;
+  align-items: stretch !important;
+}
+
+#collectionBox .collection-item {
+  display: flex !important;
+  align-items: flex-start !important;
+  padding: 5px 8px !important;
+  border-radius: 6px !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  font-size: 14px !important;
+  line-height: 1.45 !important;
+  min-height: 3.25em !important; /* 2行ぶんのスペース */
+}
+
+/* 図鑑の未所持・所持レアリティ色 */
+#collectionBox .collection-item.locked {
+  color: #222 !important;
+  background: rgba(255, 248, 230, 0.65) !important;
+  border: 1px solid #d4af37 !important;
+}
+
+#collectionBox .collection-item.locked.sr-item {
+  background: rgba(230, 244, 255, 0.75) !important;
+  border: 1px solid #4da6ff !important;
+  box-shadow: 0 0 6px rgba(77,166,255,0.25) !important;
+}
+
+#collectionBox .collection-item.locked.ur-item {
+  background: rgba(252, 238, 255, 0.75) !important;
+  border: 1px solid #b000ff !important;
+  box-shadow: 0 0 6px rgba(190,0,255,0.22) !important;
+}
+
+#collectionBox .collection-item.unlocked {
+  background: #fff !important;
+  border: 1px solid #ddd !important;
+}
+
+#collectionBox .collection-item.unlocked.rare-item {
+  border: 1px solid #d4af37 !important;
+  background: rgba(255,248,210,0.75) !important;
+  color: #8a6500 !important;
+  font-weight: bold !important;
+}
+
+#collectionBox .collection-item.unlocked.sr-item {
+  border: 1px solid #4da6ff !important;
+  background: rgba(230,244,255,0.9) !important;
+  color: #2f8cff !important;
+  font-weight: bold !important;
+  text-shadow: 0 0 6px rgba(77,166,255,0.35) !important;
+}
+
+#collectionBox .collection-item.unlocked.ur-item {
+  border: 1px solid #b000ff !important;
+  background: rgba(252,238,255,0.9) !important;
+  color: #b000ff !important;
+  font-weight: bold !important;
+  text-shadow: 0 0 8px rgba(190,0,255,0.35) !important;
+}
+
+/* 運命記録・？？？は以前のように詰め気味 */
+#slotRecordBox .slot-record-grid,
+#lostCollectionBox .lost-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 4px 12px !important;
+  align-items: start !important;
+}
+
+#slotRecordBox .slot-record-item,
+#lostCollectionBox .lost-item-card {
+  padding: 2px 4px !important;
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 14px !important;
+  line-height: 1.35 !important;
+  min-height: 0 !important;
+}
+
+@media (max-width: 700px) {
+  #slotArea {
+    margin-left: 80px !important;
+  }
+
+  #slotMessage {
+    margin-left: 0 !important;
+    margin-right: auto !important;
+  }
+
+  #collectionBox .collection-grid,
+  #slotRecordBox .slot-record-grid,
+  #lostCollectionBox .lost-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+</style>
+
+<script>
+/* =====================
+最終表示調整 v3 JS
+- 3周目Lv100称号を「確定した帰路」に固定
+- 既存表示関数を再接続
+===================== */
+(function(){
+
+  if (typeof thirdTitles !== "undefined" && Array.isArray(thirdTitles)) {
+    const t = thirdTitles.find(x => x.level === 100);
+    if (t) t.title = "確定した帰路";
+  }
+
+  /* 図鑑カード：2行ぶん高さを確保しつつ表示 */
+  window.renderCollection = function(){
+    const box = document.getElementById("collectionBox");
+    if(!box) return;
+
+    const all = [...heartMessages, ...rareMessages, ...srMessages, ...urMessages];
+    const ownedList = getStoreArray("unlockedMessages");
+    try { unlockedMessages = ownedList; } catch(e){}
+
+    const owned = all.filter(m => ownedList.includes(m)).length;
+    const rate = all.length ? Math.floor(owned / all.length * 100) : 0;
+
+    box.innerHTML = `<div class="collection-header">📖図鑑<br>収集率：${owned} / ${all.length}（${rate}%）</div>`;
+
+    const grid = document.createElement("div");
+    grid.className = "collection-grid";
+
+    all.forEach(msg => {
+      const got = ownedList.includes(msg);
+      const item = document.createElement("div");
+      item.className = "collection-item " + (got ? "unlocked" : "locked");
+
+      if(rareMessages.includes(msg)) item.classList.add("rare-item");
+      if(srMessages.includes(msg)) item.classList.add("sr-item");
+      if(urMessages.includes(msg)) item.classList.add("ur-item");
+
+      item.textContent = got ? msg : "👿未所持";
+      grid.appendChild(item);
+    });
+
+    box.appendChild(grid);
+  };
+
+  /* 称号：3周目の文言を正確に出す */
+  window.renderTitleCollection = function(){
+    const box = document.getElementById("titleCollectionBox");
+    if(!box) return;
+
+    if (typeof thirdTitles !== "undefined" && Array.isArray(thirdTitles)) {
+      const t = thirdTitles.find(x => x.level === 100);
+      if (t) t.title = "確定した帰路";
+    }
+
+    const p = getProgress();
+
+    const sets = [
+      { name:"1周目", list:firstTitles, base:0 },
+      { name:"2周目", list:secondTitles, base:MAX_LEVEL },
+      { name:"3周目", list:thirdTitles, base:MAX_LEVEL * 2 }
+    ];
+
+    box.innerHTML = `<div class="collection-header">🏆獲得称号<br>収集率：${Math.min(p.levelIndex + 1, MAX_LEVEL * MAX_LOOP)} / ${MAX_LEVEL * MAX_LOOP}（${Math.floor(Math.min(p.levelIndex + 1, MAX_LEVEL * MAX_LOOP)/(MAX_LEVEL*MAX_LOOP)*100)}%）</div>`;
+
+    const wrap = document.createElement("div");
+    wrap.className = "title-three-columns";
+
+    sets.forEach(set => {
+      const col = document.createElement("div");
+      col.className = "title-column";
+
+      const h = document.createElement("h3");
+      h.textContent = set.name;
+      col.appendChild(h);
+
+      set.list.forEach(item => {
+        const requiredIndex = set.base + item.level - 1;
+        const unlocked = p.levelIndex >= requiredIndex;
+
+        const div = document.createElement("div");
+        div.className = "title-item " + (unlocked ? "unlocked" : "locked");
+        div.textContent = unlocked ? `🏆 ${item.title}` : "🔒未所持";
+        col.appendChild(div);
+      });
+
+      wrap.appendChild(col);
+    });
+
+    box.appendChild(wrap);
+  };
+
+  /* 運命記録：詰めた表示、文頭🎰なし */
+  window.renderSlotRecord = function(){
+    const box = document.getElementById("slotRecordBox");
+    if(!box) return;
+
+    const ownedList = getStoreArray("unlockedSlotBonusMessages");
+    try { unlockedSlotBonusMessages = ownedList; } catch(e){}
+
+    const owned = SLOT_BONUS_MESSAGES.filter(m => ownedList.includes(m)).length;
+    const rate = SLOT_BONUS_MESSAGES.length ? Math.floor(owned / SLOT_BONUS_MESSAGES.length * 100) : 0;
+
+    box.innerHTML = `<div class="collection-header">🎰運命記録<br>収集率：${owned} / ${SLOT_BONUS_MESSAGES.length}（${rate}%）</div>`;
+
+    const grid = document.createElement("div");
+    grid.className = "slot-record-grid";
+
+    SLOT_BONUS_MESSAGES.forEach(msg => {
+      const got = ownedList.includes(msg);
+      const item = document.createElement("div");
+      item.className = "slot-record-item " + (got ? "unlocked" : "locked");
+      item.textContent = got ? msg : "🔒未所持";
+      grid.appendChild(item);
+    });
+
+    box.appendChild(grid);
+  };
+
+  /* ？？？：詰めた表示 */
+  window.renderLost = function(){
+    const box = document.getElementById("lostCollectionBox");
+    if(!box) return;
+
+    const ownedList = getStoreArray("unlockedLostItems");
+    try { unlockedLostItems = ownedList; } catch(e){}
+
+    const owned = lostItems.filter(m => ownedList.includes(m)).length;
+    const rate = lostItems.length ? Math.floor(owned / lostItems.length * 100) : 0;
+
+    box.innerHTML = `<div class="collection-header">？？？<br>収集率：${owned} / ${lostItems.length}（${rate}%）</div>`;
+
+    const grid = document.createElement("div");
+    grid.className = "lost-grid";
+
+    lostItems.forEach(item => {
+      const got = ownedList.includes(item);
+      const div = document.createElement("div");
+      div.className = "lost-item-card " + (got ? "unlocked" : "locked");
+      div.textContent = got ? `🧩 ${item}` : "💀未所持";
+      grid.appendChild(div);
+    });
+
+    box.appendChild(grid);
+  };
+
+})();
 </script>
 
 </body>
