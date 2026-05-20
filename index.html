@@ -1,25 +1,283 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>三輪啓悟ライブラリ 称号復活版</title>
+<style>
+body {
+  font-family: sans-serif;
+  padding: 20px;
+  line-height: 2;
+}
+
+h1 {
+  font-size: 42px;
+}
+
+#heart {
+  font-size: 70px;
+  cursor: pointer;
+  user-select: none;
+  display: inline-block;
+  transform: rotate(-10deg);
+}
+
+#counter,
+#level,
+#title {
+  margin-top: 8px;
+  font-size: 18px;
+}
+
+#title {
+  font-weight: bold;
+}
+
+button {
+  margin-top: 12px;
+  margin-right: 8px;
+  padding: 8px 14px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#titleBox {
+  display: none;
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  background: #f8f8f8;
+}
+
+.title-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px 14px;
+  font-size: 14px;
+}
+
+.locked-title {
+  color: #999;
+}
+
+.unlocked-title {
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
 <h1>愛してるぜ三輪啓悟</h1>
 
 <div id="heart">💗</div>
-<div id="counter">0</div>
+
+<div id="counter">💗 0回</div>
+<div id="level">Lv.1（0 / 150）｜1周目</div>
+<div id="title">称号：騒音で通報</div>
+
+<button id="titleBtn">🏆称号</button>
+<button id="resetBtn">🗑リセット</button>
+
+<div id="titleBox"></div>
 
 <script>
+/* =====================
+基本データ
+===================== */
+
+const NEED = 150;
+const MAX_LEVEL = 200;
+const MAX_LOOP = 3; // 1〜3周目でループ
+
 let heartCount = Number(localStorage.getItem("heartCount")) || 0;
+
+/* =====================
+称号
+===================== */
+
+const firstTitles = [
+  { level: 1, title: "騒音で通報" },
+  { level: 5, title: "初見です" },
+  { level: 10, title: "たまに止まる" },
+  { level: 20, title: "路上常連" },
+  { level: 30, title: "路上最前死守" },
+  { level: 40, title: "ライブ行きました" },
+  { level: 50, title: "ライブ全通" },
+  { level: 60, title: "ファンサ贔屓" },
+  { level: 70, title: "三輪ファミリー" },
+  { level: 80, title: "最早身内" },
+  { level: 90, title: "公式嫁候補" },
+  { level: 100, title: "婚約者" },
+  { level: 110, title: "結婚しました" },
+  { level: 120, title: "三輪啓悟の嫁" },
+  { level: 130, title: "三輪啓悟、離婚の危機" },
+  { level: 140, title: "三輪啓悟、仲直りする" },
+  { level: 150, title: "夫婦円満" },
+  { level: 160, title: "いつでも一緒" },
+  { level: 170, title: "老後も一緒に" },
+  { level: 180, title: "死ぬまで一緒" },
+  { level: 190, title: "死んでも一緒" },
+  { level: 200, title: "来世も一緒" }
+];
+
+const secondTitles = [
+  { level: 1, title: "もしかしたらの話" },
+  { level: 5, title: "来世モード突入" },
+  { level: 10, title: "隣の家に引っ越し" },
+  { level: 20, title: "親同士が仲良し" },
+  { level: 30, title: "一緒にピアノ教室" },
+  { level: 40, title: "小学校が一緒" },
+  { level: 50, title: "三輪啓悟が中学に上がり疎遠に" },
+  { level: 60, title: "高校受験について三輪啓悟に相談" },
+  { level: 70, title: "晴れて同じ大学に入学" },
+  { level: 80, title: "創作音楽サークルにて2人で無双" },
+  { level: 90, title: "留年のため一緒に卒業" },
+  { level: 100, title: "社会人生活は忙しい" },
+  { level: 110, title: "月1で飲み" },
+  { level: 120, title: "小学生以来に部屋に上げる" },
+  { level: 130, title: "進展もクソもない" },
+  { level: 140, title: "煮え切らない関係" },
+  { level: 150, title: "恋みたいな甘い2人じゃない" },
+  { level: 160, title: "まさかの三角関係突入" },
+  { level: 170, title: "愛とは何か哲学で考える" },
+  { level: 180, title: "愛は配慮・尊重・責任・知識" },
+  { level: 190, title: "三輪啓悟「ずっと好きだった」" },
+  { level: 200, title: "来世でも嫁END" }
+];
+
+const thirdTitles = [
+  { level: 1, title: "まだ言葉になる前" },
+  { level: 5, title: "名前のない関係" },
+  { level: 10, title: "意味になる前の感情" },
+  { level: 20, title: "偶然で片付けられない" },
+  { level: 30, title: "触れられない距離" },
+  { level: 40, title: "定義できないもの" },
+  { level: 50, title: "理由の及ばぬ領域" },
+  { level: 60, title: "気づいてしまった事実" },
+  { level: 70, title: "切り離せない構造" },
+  { level: 80, title: "既に成立している" },
+  { level: 90, title: "後戻りの不在" },
+  { level: 100, title: "不可逆性の帰結" },
+  { level: 110, title: "残滓を抱えたまま" },
+  { level: 120, title: "介在することなく" },
+  { level: 130, title: "ここに至る必然" },
+  { level: 140, title: "前提としての君" },
+  { level: 150, title: "選ばれ続けること" },
+  { level: 160, title: "愛と呼ばれる前のなにか" },
+  { level: 170, title: "説明を必要としない" },
+  { level: 180, title: "何も足さなくていい" },
+  { level: 190, title: "残り続ける概念" },
+  { level: 200, title: "ただ在る" }
+];
+
+function getProgress() {
+  const levelIndex = Math.floor(heartCount / NEED);
+  const exp = heartCount % NEED;
+
+  const absoluteLoop = Math.floor(levelIndex / MAX_LEVEL);
+  const loop = absoluteLoop % MAX_LOOP;
+  const level = (levelIndex % MAX_LEVEL) + 1;
+
+  return { level, exp, loop, absoluteLoop };
+}
+
+function getTitleList(loop) {
+  if (loop === 0) return firstTitles;
+  if (loop === 1) return secondTitles;
+  return thirdTitles;
+}
+
+function getCurrentTitle() {
+  const p = getProgress();
+  const list = getTitleList(p.loop);
+
+  let current = list[0].title;
+  for (const item of list) {
+    if (p.level >= item.level) current = item.title;
+  }
+
+  return current;
+}
+
+/* =====================
+表示更新
+===================== */
 
 const heart = document.getElementById("heart");
 const counter = document.getElementById("counter");
+const levelBox = document.getElementById("level");
+const titleBox = document.getElementById("title");
+const titleBtn = document.getElementById("titleBtn");
+const titleListBox = document.getElementById("titleBox");
+const resetBtn = document.getElementById("resetBtn");
 
-function update() {
-  counter.textContent = heartCount;
+function updateDisplay() {
+  const p = getProgress();
+
+  counter.textContent = `💗 ${heartCount}回`;
+  levelBox.textContent = `Lv.${p.level}（${p.exp} / ${NEED}）｜${p.loop + 1}周目`;
+  titleBox.textContent = `称号：${getCurrentTitle()}`;
+
+  localStorage.setItem("heartCount", String(heartCount));
 }
 
-heart.onclick = () => {
-  heartCount++;
-  localStorage.setItem("heartCount", heartCount);
-  update();
-};
+function renderTitles() {
+  const p = getProgress();
+  const list = getTitleList(p.loop);
 
-update();
+  titleListBox.innerHTML = "";
+
+  const header = document.createElement("div");
+  header.innerHTML = `<b>🏆称号一覧（${p.loop + 1}周目）</b><br>現在：Lv.${p.level}`;
+  titleListBox.appendChild(header);
+
+  const grid = document.createElement("div");
+  grid.className = "title-grid";
+
+  list.forEach(item => {
+    const div = document.createElement("div");
+    const unlocked = p.level >= item.level;
+    div.className = unlocked ? "unlocked-title" : "locked-title";
+    div.textContent = unlocked ? `Lv.${item.level} ${item.title}` : `Lv.${item.level} ？？？`;
+    grid.appendChild(div);
+  });
+
+  titleListBox.appendChild(grid);
+}
+
+/* =====================
+イベント
+===================== */
+
+heart.addEventListener("click", () => {
+  heartCount++;
+  updateDisplay();
+});
+
+titleBtn.addEventListener("click", () => {
+  if (titleListBox.style.display === "block") {
+    titleListBox.style.display = "none";
+    return;
+  }
+
+  renderTitles();
+  titleListBox.style.display = "block";
+});
+
+resetBtn.addEventListener("click", () => {
+  if (!confirm("💗回数をリセットする？")) return;
+  heartCount = 0;
+  localStorage.setItem("heartCount", "0");
+  updateDisplay();
+});
+
+/* =====================
+初期化
+===================== */
+
+updateDisplay();
 </script>
 
 </body>
