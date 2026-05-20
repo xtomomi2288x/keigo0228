@@ -18165,5 +18165,1796 @@ updateDisplay();
 })();
 </script>
 
+
+<style>
+/* =====================
+最終表示調整 v4
+- スロット位置：画像2の位置へ
+- 図鑑カード：1行は低く、2行がある行だけ高く
+- 図鑑文字：R/SR/URもNと同じ黒文字・太字なし
+===================== */
+
+/* 一生推します💗は左寄せ */
+#loveSlotWrap {
+  text-align: left !important;
+  display: block !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+}
+
+/* スロットは一生推します💗の下、ハート寄り中央 */
+#slotArea {
+  display: block !important;
+  width: 140px !important;
+  max-width: 140px !important;
+  margin-top: 4px !important;
+  margin-left: 66px !important;
+  margin-right: 0 !important;
+  text-align: center !important;
+  letter-spacing: 8px !important;
+  min-height: 28px !important;
+  line-height: 1.2 !important;
+}
+
+#slotMessage {
+  margin-left: 38px !important;
+  margin-right: 0 !important;
+  text-align: center !important;
+}
+
+/* 図鑑：行の中で2行カードがある時だけ、その行全体が2行分になる */
+#collectionBox .collection-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 10px 12px !important;
+  align-items: stretch !important;
+}
+
+#collectionBox .collection-item {
+  display: block !important;
+  align-items: unset !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  font-size: 14px !important;
+  line-height: 1.35 !important;
+  min-height: 0 !important;     /* ←一律2行を解除 */
+  height: auto !important;      /* ←1行は低く、2行は高く */
+  color: #222 !important;       /* R/SR/URもNと同じ黒 */
+  font-weight: normal !important;
+  text-shadow: none !important;
+}
+
+/* 未所持：画像のような薄黄色カード */
+#collectionBox .collection-item.locked {
+  color: #222 !important;
+  background: rgba(255, 248, 230, 0.65) !important;
+  border: 1px solid #d4af37 !important;
+  font-weight: normal !important;
+  text-shadow: none !important;
+}
+
+/* 所持済みも文字は黒・太字なし。枠だけほんのり区別 */
+#collectionBox .collection-item.unlocked {
+  color: #222 !important;
+  background: #fff !important;
+  border: 1px solid #d4af37 !important;
+  font-weight: normal !important;
+  text-shadow: none !important;
+}
+
+/* R/SR/URの文字装飾は全部消す。枠色だけ残す */
+#collectionBox .collection-item.rare-item,
+#collectionBox .collection-item.rare-item.unlocked,
+#collectionBox .collection-item.rare-item.locked {
+  color: #222 !important;
+  font-weight: normal !important;
+  text-shadow: none !important;
+  background: rgba(255, 248, 230, 0.65) !important;
+  border: 1px solid #d4af37 !important;
+  box-shadow: none !important;
+}
+
+#collectionBox .collection-item.sr-item,
+#collectionBox .collection-item.sr-item.unlocked,
+#collectionBox .collection-item.sr-item.locked {
+  color: #222 !important;
+  font-weight: normal !important;
+  text-shadow: none !important;
+  background: rgba(230, 244, 255, 0.75) !important;
+  border: 1px solid #4da6ff !important;
+  box-shadow: 0 0 6px rgba(77,166,255,0.18) !important;
+}
+
+#collectionBox .collection-item.ur-item,
+#collectionBox .collection-item.ur-item.unlocked,
+#collectionBox .collection-item.ur-item.locked {
+  color: #222 !important;
+  font-weight: normal !important;
+  text-shadow: none !important;
+  background: rgba(252, 238, 255, 0.75) !important;
+  border: 1px solid #b000ff !important;
+  box-shadow: 0 0 6px rgba(190,0,255,0.16) !important;
+}
+
+/* スマホは少しだけ左寄せ幅を縮める */
+@media (max-width: 700px) {
+  #slotArea {
+    margin-left: 58px !important;
+    width: 130px !important;
+    max-width: 130px !important;
+  }
+
+  #slotMessage {
+    margin-left: 0 !important;
+    margin-right: auto !important;
+  }
+}
+</style>
+
+<script>
+/* =====================
+最終表示調整 v4 JS
+図鑑カード生成も文字装飾なしに固定
+===================== */
+(function(){
+
+  window.renderCollection = function(){
+    const box = document.getElementById("collectionBox");
+    if(!box) return;
+
+    const all = [...heartMessages, ...rareMessages, ...srMessages, ...urMessages];
+    const ownedList = getStoreArray("unlockedMessages");
+    try { unlockedMessages = ownedList; } catch(e){}
+
+    const owned = all.filter(m => ownedList.includes(m)).length;
+    const rate = all.length ? Math.floor(owned / all.length * 100) : 0;
+
+    box.innerHTML = `<div class="collection-header">📖図鑑<br>収集率：${owned} / ${all.length}（${rate}%）</div>`;
+
+    const grid = document.createElement("div");
+    grid.className = "collection-grid";
+
+    all.forEach(msg => {
+      const got = ownedList.includes(msg);
+      const item = document.createElement("div");
+      item.className = "collection-item " + (got ? "unlocked" : "locked");
+
+      if(rareMessages.includes(msg)) item.classList.add("rare-item");
+      if(srMessages.includes(msg)) item.classList.add("sr-item");
+      if(urMessages.includes(msg)) item.classList.add("ur-item");
+
+      item.textContent = got ? msg : "👿未所持";
+      grid.appendChild(item);
+    });
+
+    box.appendChild(grid);
+  };
+
+})();
+</script>
+
+
+<style>
+/* =====================
+v5 追加修正
+- スロット2段崩れ防止
+- デバッグモード
+===================== */
+
+/* スロットを必ず1行表示に固定 */
+#slotArea {
+  white-space: nowrap !important;
+  overflow: visible !important;
+  width: 180px !important;
+  max-width: 180px !important;
+  min-width: 180px !important;
+  letter-spacing: 6px !important;
+  word-break: keep-all !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+}
+
+/* デバッグボタン */
+#debugBtn {
+  display: inline-block !important;
+  margin-top: 10px;
+  margin-right: 8px;
+  padding: 8px 16px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#debugPanel {
+  display: none;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #aaa;
+  border-radius: 12px;
+  background: #fffbe8;
+  line-height: 1.8;
+}
+
+#debugPanel button {
+  margin: 4px 6px 4px 0;
+  padding: 6px 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+</style>
+
+<script>
+/* =====================
+v5 追加修正JS
+- スロット2段崩れ防止
+- デバッグモード
+- アーティスト名を読み寄せ五十音順ソート
+===================== */
+(function(){
+
+  /* ---------- スロット表示を1行にする ---------- */
+  window.setSlotDisplay = function(a,b,c){
+    const slotArea = document.getElementById("slotArea");
+    if(slotArea){
+      slotArea.textContent = `${a} ${b} ${c}`;
+      slotArea.style.whiteSpace = "nowrap";
+      slotArea.style.wordBreak = "keep-all";
+      slotArea.style.width = "180px";
+      slotArea.style.maxWidth = "180px";
+      slotArea.style.minWidth = "180px";
+      slotArea.style.textAlign = "center";
+    }
+  };
+
+  /* spinSlotも確実に新setSlotDisplayを使う版に再固定 */
+  window.spinSlot = function(isHit){
+    const slotArea = document.getElementById("slotArea");
+    if(!slotArea) return;
+
+    let count = 0;
+    const timer = setInterval(() => {
+      count++;
+
+      const a = SLOT_SYMBOLS_FIXED[Math.floor(Math.random() * SLOT_SYMBOLS_FIXED.length)];
+      const b = SLOT_SYMBOLS_FIXED[Math.floor(Math.random() * SLOT_SYMBOLS_FIXED.length)];
+      const c = SLOT_SYMBOLS_FIXED[Math.floor(Math.random() * SLOT_SYMBOLS_FIXED.length)];
+      setSlotDisplay(a,b,c);
+
+      if(count >= 10){
+        clearInterval(timer);
+
+        if(isHit){
+          const hit = SLOT_SYMBOLS_FIXED[Math.floor(Math.random() * SLOT_SYMBOLS_FIXED.length)];
+          setSlotDisplay(hit, hit, hit);
+
+          slotBonusReady = true;
+          localStorage.setItem("slotBonusReady", "true");
+
+          showSlotMessage("良かったね\n良かったよ");
+        }
+      }
+    }, 45);
+  };
+
+  /* ---------- アーティスト名：読み寄せ五十音順 ---------- */
+  const ARTIST_YOMI = {
+    "ASIAN KUNG-FU GENERATION": "あじあんかんふーじぇねれーしょん",
+    "Acid Man": "あしっどまん",
+    "ACIDMAN": "あしっどまん",
+    "back number": "ばっくなんばー",
+    "BUMP OF CHICKEN": "ばんぷおぶちきん",
+    "ELLEGARDEN": "えるれがーでん",
+    "RADWIMPS": "らっどうぃんぷす",
+    "Mr.Children": "みすたーちるどれん",
+    "スピッツ": "すぴっつ",
+    "米津玄師": "よねづけんし",
+    "ヨルシカ": "よるしか",
+    "優里": "ゆうり",
+    "秦基博": "はたもとひろ",
+    "斉藤和義": "さいとうかずよし",
+    "中島みゆき": "なかじまみゆき",
+    "奥田民生": "おくだたみお",
+    "椎名林檎": "しいなりんご",
+    "東京事変": "とうきょうじへん",
+    "銀杏BOYZ": "ぎんなんぼーいず",
+    "サンボマスター": "さんぼますたー",
+    "マカロニえんぴつ": "まかろにえんぴつ",
+    "Official髭男dism": "おふぃしゃるひげだんでぃずむ",
+    "クリープハイプ": "くりーぷはいぷ",
+    "くるり": "くるり",
+    "フジファブリック": "ふじふぁぶりっく",
+    "三輪啓悟": "みわけいご"
+  };
+
+  function normalizeArtistName(name){
+    return (name || "")
+      .replace(/^▶\s*/, "")
+      .replace(/^▼\s*/, "")
+      .replace(/\s*\（.*?\）/g, "")
+      .trim();
+  }
+
+  function getYomi(name){
+    const clean = normalizeArtistName(name);
+    return ARTIST_YOMI[clean] || clean.toLocaleLowerCase("ja");
+  }
+
+  function kanaGroupOf(yomi){
+    const c = (yomi || "").charAt(0);
+    if("あいうえおぁぃぅぇぉ".includes(c)) return "あ行";
+    if("かきくけこがぎぐげご".includes(c)) return "か行";
+    if("さしすせそざじずぜぞ".includes(c)) return "さ行";
+    if("たちつてとだぢづでど".includes(c)) return "た行";
+    if("なにぬねの".includes(c)) return "な行";
+    if("はひふへほばびぶべぼぱぴぷぺぽ".includes(c)) return "は行";
+    if("まみむめも".includes(c)) return "ま行";
+    if("やゆよゃゅょ".includes(c)) return "や行";
+    if("らりるれろ".includes(c)) return "ら行";
+    if("わをん".includes(c)) return "わ行";
+    return "その他";
+  }
+
+  function sortArtistsByYomi(){
+    const kanaGroups = Array.from(document.querySelectorAll("body > details.kana-group"));
+    if(!kanaGroups.length) return;
+
+    const allArtists = [];
+
+    kanaGroups.forEach(group => {
+      const artists = Array.from(group.querySelectorAll(":scope > details"));
+      artists.forEach(a => {
+        const summary = a.querySelector(":scope > summary");
+        if(!summary) return;
+        const name = normalizeArtistName(summary.textContent);
+        const yomi = getYomi(name);
+        allArtists.push({ el:a, name, yomi, group:kanaGroupOf(yomi) });
+      });
+    });
+
+    const order = ["あ行","か行","さ行","た行","な行","は行","ま行","や行","ら行","わ行","その他"];
+    const collator = new Intl.Collator("ja-JP", { sensitivity:"base", numeric:true });
+
+    const byGroup = {};
+    order.forEach(g => byGroup[g] = []);
+    allArtists.forEach(x => {
+      if(!byGroup[x.group]) byGroup[x.group] = [];
+      byGroup[x.group].push(x);
+    });
+    Object.keys(byGroup).forEach(g => byGroup[g].sort((a,b) => collator.compare(a.yomi, b.yomi)));
+
+    const groupMap = {};
+    kanaGroups.forEach(g => {
+      const sum = g.querySelector(":scope > summary");
+      if(!sum) return;
+      const label = sum.textContent.replace(/[▶▼]/g,"").trim().split(" ")[0];
+      groupMap[label] = g;
+    });
+
+    order.forEach(g => {
+      const groupEl = groupMap[g];
+      if(!groupEl) return;
+
+      // summary以外を一旦空にして、該当アーティストを追加
+      const summary = groupEl.querySelector(":scope > summary");
+      Array.from(groupEl.children).forEach(child => {
+        if(child !== summary) child.remove();
+      });
+
+      byGroup[g].forEach(item => groupEl.appendChild(item.el));
+
+      // 件数表示を更新
+      if(summary){
+        const artistCount = byGroup[g].length;
+        let songCount = 0;
+        byGroup[g].forEach(item => {
+          songCount += item.el.querySelectorAll("details.song").length;
+        });
+        summary.textContent = `${g}（${artistCount}アーティスト / ${songCount}曲）`;
+      }
+    });
+  }
+
+  /* ---------- デバッグモード ---------- */
+  function uniqueDebug(arr){ return Array.from(new Set(arr || [])); }
+
+  function setAllArray(key, arr){
+    localStorage.setItem(key, JSON.stringify(uniqueDebug(arr)));
+  }
+
+  function completeN(){
+    const current = getStoreArray("unlockedMessages");
+    setAllArray("unlockedMessages", [...current, ...heartMessages]);
+    unlockedMessages = getStoreArray("unlockedMessages");
+    alert("Nコンプにしたよ");
+  }
+
+  function completeR(){
+    const current = getStoreArray("unlockedMessages");
+    setAllArray("unlockedMessages", [...current, ...rareMessages]);
+    unlockedMessages = getStoreArray("unlockedMessages");
+    alert("Rコンプにしたよ");
+  }
+
+  function completeSR(){
+    const current = getStoreArray("unlockedMessages");
+    setAllArray("unlockedMessages", [...current, ...srMessages]);
+    unlockedMessages = getStoreArray("unlockedMessages");
+    alert("SRコンプにしたよ");
+  }
+
+  function completeUR(){
+    const current = getStoreArray("unlockedMessages");
+    setAllArray("unlockedMessages", [...current, ...urMessages]);
+    unlockedMessages = getStoreArray("unlockedMessages");
+    alert("URコンプにしたよ");
+  }
+
+  function completeLost(){
+    setAllArray("unlockedLostItems", lostItems);
+    unlockedLostItems = getStoreArray("unlockedLostItems");
+    alert("？？？コンプにしたよ");
+  }
+
+  function completeSlotRecord(){
+    setAllArray("unlockedSlotBonusMessages", SLOT_BONUS_MESSAGES);
+    unlockedSlotBonusMessages = getStoreArray("unlockedSlotBonusMessages");
+    alert("運命記録コンプにしたよ");
+  }
+
+  function completeTitle(){
+    // Lv200 3周目まで到達相当
+    heartCount = NEED * (MAX_LEVEL * MAX_LOOP - 1);
+    localStorage.setItem("heartCount", String(heartCount));
+    updateDisplay();
+    alert("称号コンプにしたよ");
+  }
+
+  function completeAll(){
+    setAllArray("unlockedMessages", [...heartMessages, ...rareMessages, ...srMessages, ...urMessages]);
+    setAllArray("unlockedLostItems", lostItems);
+    setAllArray("unlockedSlotBonusMessages", SLOT_BONUS_MESSAGES);
+    heartCount = NEED * (MAX_LEVEL * MAX_LOOP - 1);
+    localStorage.setItem("heartCount", String(heartCount));
+    unlockedMessages = getStoreArray("unlockedMessages");
+    unlockedLostItems = getStoreArray("unlockedLostItems");
+    unlockedSlotBonusMessages = getStoreArray("unlockedSlotBonusMessages");
+    updateDisplay();
+    alert("全コンプにしたよ");
+    setTimeout(checkCompleteNotices, 100);
+  }
+
+  function refreshOpenPanel(){
+    const collectionBox = document.getElementById("collectionBox");
+    const titleCollectionBox = document.getElementById("titleCollectionBox");
+    const slotRecordBox = document.getElementById("slotRecordBox");
+    const lostCollectionBox = document.getElementById("lostCollectionBox");
+
+    if(collectionBox && collectionBox.style.display === "block") renderCollection();
+    if(titleCollectionBox && titleCollectionBox.style.display === "block") renderTitleCollection();
+    if(slotRecordBox && slotRecordBox.style.display === "block") renderSlotRecord();
+    if(lostCollectionBox && lostCollectionBox.style.display === "block") renderLost();
+  }
+
+  function addDebugMode(){
+    const area = document.getElementById("buttonArea");
+    if(!area || document.getElementById("debugBtn")) return;
+
+    const btn = document.createElement("button");
+    btn.id = "debugBtn";
+    btn.type = "button";
+    btn.textContent = "🧪デバッグ";
+    area.appendChild(btn);
+
+    const panel = document.createElement("div");
+    panel.id = "debugPanel";
+    panel.innerHTML = `
+      <b>🧪デバッグモード</b><br>
+      <button type="button" data-debug="N">Nコンプ</button>
+      <button type="button" data-debug="R">Rコンプ</button>
+      <button type="button" data-debug="SR">SRコンプ</button>
+      <button type="button" data-debug="UR">URコンプ</button>
+      <button type="button" data-debug="LOST">？？？コンプ</button>
+      <button type="button" data-debug="SLOT">運命記録コンプ</button>
+      <button type="button" data-debug="TITLE">称号コンプ</button>
+      <button type="button" data-debug="ALL">全コンプ</button>
+    `;
+    area.parentNode.insertBefore(panel, area.nextSibling);
+
+    btn.onclick = function(){
+      panel.style.display = panel.style.display === "block" ? "none" : "block";
+    };
+
+    panel.addEventListener("click", function(e){
+      const mode = e.target && e.target.dataset ? e.target.dataset.debug : null;
+      if(!mode) return;
+
+      if(mode === "N") completeN();
+      if(mode === "R") completeR();
+      if(mode === "SR") completeSR();
+      if(mode === "UR") completeUR();
+      if(mode === "LOST") completeLost();
+      if(mode === "SLOT") completeSlotRecord();
+      if(mode === "TITLE") completeTitle();
+      if(mode === "ALL") completeAll();
+
+      updateDisplay();
+      refreshOpenPanel();
+      setTimeout(checkCompleteNotices, 100);
+    });
+  }
+
+  sortArtistsByYomi();
+  addDebugMode();
+  setSlotDisplay("🎹","✨","🎤");
+
+})();
+</script>
+
+
+<style>
+/* =====================
+v6 コンプ演出・スロット演出復元
+===================== */
+
+/* コンプ通知：ポップアップではなく黄枠に浮かぶ */
+#completeInlineNotice {
+  display: none;
+  width: fit-content;
+  max-width: 90%;
+  margin: 10px auto 0;
+  padding: 12px 18px;
+  border: 1px solid #d4af37;
+  border-radius: 14px;
+  background: rgba(255,248,210,0.96);
+  color: #6b4b00;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1.7;
+  text-align: center;
+  white-space: pre-line;
+  box-shadow:
+    0 0 10px rgba(212,175,55,0.55),
+    0 0 22px rgba(212,175,55,0.28);
+  animation: completeNoticeFloat 1.2s ease-in-out infinite alternate;
+}
+
+#completeInlineNotice.show {
+  display: block;
+}
+
+@keyframes completeNoticeFloat {
+  from {
+    transform: translateY(0);
+    opacity: 0.92;
+  }
+  to {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+/* スロット成立時にうっすら光る */
+#slotArea.slot-hit-glow {
+  color: #d4af37;
+  font-weight: bold;
+  text-shadow:
+    0 0 6px rgba(255,255,255,0.9),
+    0 0 12px rgba(212,175,55,0.75),
+    0 0 22px rgba(212,175,55,0.45);
+  animation: slotHitGlow 0.45s ease-in-out infinite alternate;
+}
+
+@keyframes slotHitGlow {
+  from {
+    opacity: 0.78;
+    transform: scale(1);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+#slotMessage {
+  display: none;
+  margin-top: 8px !important;
+  margin-left: 38px !important;
+  margin-right: 0 !important;
+  padding: 10px 16px;
+  width: fit-content;
+  max-width: 90%;
+  text-align: center !important;
+  color: #6b4b00;
+  background: rgba(255,248,210,0.96);
+  border: 1px solid #d4af37;
+  border-radius: 12px;
+  box-shadow:
+    0 0 10px rgba(212,175,55,0.6),
+    0 0 20px rgba(212,175,55,0.3);
+  white-space: pre-line;
+  font-weight: bold;
+  line-height: 1.6;
+}
+
+#slotMessage.show {
+  display: block !important;
+}
+
+/* 全コンプ演出 */
+#finalCompleteScreen {
+  position: fixed;
+  inset: 0;
+  background: black;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999998;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+#finalCompleteScreen.show {
+  opacity: 1;
+}
+
+#finalCompleteText {
+  max-width: 86vw;
+  font-size: 22px;
+  line-height: 2;
+  text-align: center;
+  white-space: pre-line;
+  text-shadow:
+    0 0 10px rgba(255,255,255,0.9),
+    0 0 24px rgba(255,255,255,0.55),
+    0 0 46px rgba(255,255,255,0.28);
+}
+</style>
+
+<script>
+/* =====================
+v6 コンプ演出・スロット演出復元JS
+- コンプ通知を黄枠インラインに戻す
+- デバッグalertを廃止して以前のメッセージを出す
+- 全コンプ演出を黒背景＋テキスト＋txtDLへ戻す
+- スロット成立時「良かったね／良かったよ」2秒固定＋うっすら発光
+===================== */
+(function(){
+
+  const COMPLETE_MESSAGES_V6 = {
+    normal: `使ってくれてありがとう！
+ライブラリとして役立ててね`,
+    rare: `あなたの努力は全部知ってるよ
+いつでも応援してる`,
+    sr: `あなたは私の憧れ
+いつまでも背中を追わせてほしい`,
+    ur: `隣に立つのに相応しい人間になりたい
+あなたの傍で生きていたい`,
+    title: `すべての称号を見届けてくれてありがとう
+ここまで一緒に来てくれて嬉しい`,
+    lost: `忘れ物を全て拾ってくれてありがとう
+風化しない思い出をまた積み重ねて`,
+    slot: `僕らが出会ったのは偶然ではなく必然
+
+運命なんか信じないけど、あなたとなら`,
+    all: `ここにあったものは
+最初から揃っていたのかもしれない
+
+見つけたんじゃない
+思い出しただけ
+
+あなたがここにいた証
+消えることのない記録
+
+いつまでも傍で`
+  };
+
+  let inlineNoticeQueue = [];
+  let inlineNoticeBusy = false;
+  let slotMessageBusyV6 = false;
+
+  function getArrayV6(key){
+    try { return JSON.parse(localStorage.getItem(key)) || []; }
+    catch(e){ return []; }
+  }
+
+  function setArrayV6(key, arr){
+    localStorage.setItem(key, JSON.stringify(Array.from(new Set(arr || []))));
+  }
+
+  function allIncludedV6(all, owned){
+    all = Array.from(new Set(all || []));
+    owned = Array.from(new Set(owned || []));
+    return all.length > 0 && all.every(x => owned.includes(x));
+  }
+
+  function ensureInlineNotice(){
+    let el = document.getElementById("completeInlineNotice");
+    if(el) return el;
+
+    el = document.createElement("div");
+    el.id = "completeInlineNotice";
+
+    const slotMessage = document.getElementById("slotMessage");
+    if(slotMessage && slotMessage.parentNode){
+      slotMessage.parentNode.insertBefore(el, slotMessage.nextSibling);
+    }else{
+      const wrap = document.getElementById("loveSlotWrap") || document.body;
+      wrap.appendChild(el);
+    }
+
+    return el;
+  }
+
+  function showInlineNotice(message, after){
+    inlineNoticeQueue.push({ message, after });
+    processInlineNoticeQueue();
+  }
+
+  function processInlineNoticeQueue(){
+    if(inlineNoticeBusy) return;
+    const next = inlineNoticeQueue.shift();
+    if(!next) return;
+
+    inlineNoticeBusy = true;
+    noticeLocked = true;
+
+    const el = ensureInlineNotice();
+    el.textContent = next.message;
+    el.classList.add("show");
+
+    setTimeout(() => {
+      el.classList.remove("show");
+      noticeLocked = false;
+      inlineNoticeBusy = false;
+
+      if(typeof next.after === "function") next.after();
+
+      setTimeout(processInlineNoticeQueue, 250);
+    }, 5000);
+  }
+
+  function downloadCompleteMemoV6(){
+    const blob = new Blob([COMPLETE_MEMO_TEXT], {type:"text/plain;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "ここに至るまで.txt";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function showFinalCompleteScreenV6(){
+    if(localStorage.getItem("allMainCompleteShown_v6")) return;
+    localStorage.setItem("allMainCompleteShown_v6", "1");
+
+    noticeLocked = true;
+
+    let screen = document.getElementById("finalCompleteScreen");
+    if(screen) screen.remove();
+
+    screen = document.createElement("div");
+    screen.id = "finalCompleteScreen";
+
+    const text = document.createElement("div");
+    text.id = "finalCompleteText";
+    text.textContent = COMPLETE_MESSAGES_V6.all;
+
+    screen.appendChild(text);
+    document.body.appendChild(screen);
+
+    setTimeout(() => screen.classList.add("show"), 30);
+
+    setTimeout(() => {
+      screen.classList.remove("show");
+      setTimeout(() => {
+        if(screen && screen.parentNode) screen.remove();
+        noticeLocked = false;
+        downloadCompleteMemoV6();
+      }, 900);
+    }, 5000);
+  }
+
+  function normalCompleteV6(){
+    return allIncludedV6(heartMessages, getArrayV6("unlockedMessages"));
+  }
+
+  function rareCompleteV6(){
+    return allIncludedV6(rareMessages, getArrayV6("unlockedMessages"));
+  }
+
+  function srCompleteV6(){
+    return allIncludedV6(srMessages, getArrayV6("unlockedMessages"));
+  }
+
+  function urCompleteV6(){
+    return allIncludedV6(urMessages, getArrayV6("unlockedMessages"));
+  }
+
+  function titleCompleteV6(){
+    const p = getProgress();
+    return p.levelIndex >= MAX_LEVEL * MAX_LOOP - 1;
+  }
+
+  function lostCompleteV6(){
+    return allIncludedV6(lostItems, getArrayV6("unlockedLostItems"));
+  }
+
+  function slotCompleteV6(){
+    return allIncludedV6(SLOT_BONUS_MESSAGES, getArrayV6("unlockedSlotBonusMessages"));
+  }
+
+  function allMainCompleteV6(){
+    return (
+      normalCompleteV6() &&
+      rareCompleteV6() &&
+      srCompleteV6() &&
+      urCompleteV6() &&
+      titleCompleteV6() &&
+      lostCompleteV6() &&
+      slotCompleteV6()
+    );
+  }
+
+  window.checkCompleteNotices = function(){
+    if(inlineNoticeBusy || noticeLocked) return;
+
+    if(normalCompleteV6() && !localStorage.getItem("normalCompleteShown_v6")){
+      localStorage.setItem("normalCompleteShown_v6", "1");
+      showInlineNotice(COMPLETE_MESSAGES_V6.normal);
+      return;
+    }
+
+    if(rareCompleteV6() && !localStorage.getItem("rareCompleteShown_v6")){
+      localStorage.setItem("rareCompleteShown_v6", "1");
+      showInlineNotice(COMPLETE_MESSAGES_V6.rare);
+      return;
+    }
+
+    if(srCompleteV6() && !localStorage.getItem("srCompleteShown_v6")){
+      localStorage.setItem("srCompleteShown_v6", "1");
+      showInlineNotice(COMPLETE_MESSAGES_V6.sr);
+      return;
+    }
+
+    if(urCompleteV6() && !localStorage.getItem("urCompleteShown_v6")){
+      localStorage.setItem("urCompleteShown_v6", "1");
+      showInlineNotice(COMPLETE_MESSAGES_V6.ur);
+      return;
+    }
+
+    if(titleCompleteV6() && !localStorage.getItem("titleCompleteShown_v6")){
+      localStorage.setItem("titleCompleteShown_v6", "1");
+      showInlineNotice(COMPLETE_MESSAGES_V6.title);
+      return;
+    }
+
+    if(lostCompleteV6() && !localStorage.getItem("lostCompleteShown_v6")){
+      localStorage.setItem("lostCompleteShown_v6", "1");
+      showInlineNotice(COMPLETE_MESSAGES_V6.lost);
+      return;
+    }
+
+    if(slotCompleteV6() && !localStorage.getItem("slotCompleteShown_v6")){
+      localStorage.setItem("slotCompleteShown_v6", "1");
+      showInlineNotice(COMPLETE_MESSAGES_V6.slot);
+      return;
+    }
+
+    if(allMainCompleteV6()){
+      showFinalCompleteScreenV6();
+      return;
+    }
+  };
+
+  /* スロット成立時：良かったね/良かったよ 2秒固定＋うっすら発光 */
+  window.showSlotMessage = function(text){
+    const slotMessage = document.getElementById("slotMessage");
+    const slotArea = document.getElementById("slotArea");
+    if(!slotMessage) return;
+
+    slotMessageBusyV6 = true;
+    if(slotArea) slotArea.classList.add("slot-hit-glow");
+
+    slotMessage.textContent = text || "良かったね\n良かったよ";
+    slotMessage.classList.add("show");
+
+    setTimeout(() => {
+      slotMessage.classList.remove("show");
+      if(slotArea) slotArea.classList.remove("slot-hit-glow");
+      slotMessageBusyV6 = false;
+    }, 2000);
+  };
+
+  window.spinSlot = function(isHit){
+    const slotArea = document.getElementById("slotArea");
+    if(!slotArea) return;
+
+    let count = 0;
+    const timer = setInterval(() => {
+      count++;
+
+      const a = SLOT_SYMBOLS_FIXED[Math.floor(Math.random() * SLOT_SYMBOLS_FIXED.length)];
+      const b = SLOT_SYMBOLS_FIXED[Math.floor(Math.random() * SLOT_SYMBOLS_FIXED.length)];
+      const c = SLOT_SYMBOLS_FIXED[Math.floor(Math.random() * SLOT_SYMBOLS_FIXED.length)];
+      setSlotDisplay(a,b,c);
+
+      if(count >= 10){
+        clearInterval(timer);
+
+        if(isHit){
+          const hit = SLOT_SYMBOLS_FIXED[Math.floor(Math.random() * SLOT_SYMBOLS_FIXED.length)];
+          setSlotDisplay(hit, hit, hit);
+
+          slotBonusReady = true;
+          localStorage.setItem("slotBonusReady", "true");
+
+          showSlotMessage("良かったね\n良かったよ");
+        }
+      }
+    }, 45);
+  };
+
+  /* 💗クリック：スロットメッセージ表示中も2秒固定 */
+  const heartV6 = document.getElementById("heart");
+  if(heartV6){
+    heartV6.onclick = function(){
+      if(noticeLocked || slotMessageBusyV6) return;
+
+      heartCount++;
+      localStorage.setItem("heartCount", String(heartCount));
+
+      if(slotBonusReady){
+        slotBonusReady = false;
+        localStorage.setItem("slotBonusReady", "false");
+
+        // 運命記録を1つ獲得
+        let owned = getArrayV6("unlockedSlotBonusMessages");
+        const msg = getRandom(SLOT_BONUS_MESSAGES);
+        if(!owned.includes(msg)){
+          owned.push(msg);
+          setArrayV6("unlockedSlotBonusMessages", owned);
+          try { unlockedSlotBonusMessages = owned; } catch(e){}
+        }
+
+        // 次の💗でR以上確定
+        if(typeof rollGuaranteedRareOrAboveFinal === "function") {
+          rollGuaranteedRareOrAboveFinal();
+        }else{
+          getRareReward();
+        }
+      }else{
+        rollReward();
+        spinSlot(Math.random() < 1 / 200);
+      }
+
+      updateDisplay();
+      setTimeout(checkCompleteNotices, 120);
+    };
+  }
+
+  /* デバッグ：alertをやめて、以前のメッセージを出す */
+  function refreshPanelV6(){
+    const collectionBox = document.getElementById("collectionBox");
+    const titleCollectionBox = document.getElementById("titleCollectionBox");
+    const slotRecordBox = document.getElementById("slotRecordBox");
+    const lostCollectionBox = document.getElementById("lostCollectionBox");
+
+    if(collectionBox && collectionBox.style.display === "block") renderCollection();
+    if(titleCollectionBox && titleCollectionBox.style.display === "block") renderTitleCollection();
+    if(slotRecordBox && slotRecordBox.style.display === "block") renderSlotRecord();
+    if(lostCollectionBox && lostCollectionBox.style.display === "block") renderLost();
+  }
+
+  function debugCompleteV6(mode){
+    if(mode === "N"){
+      setArrayV6("unlockedMessages", [...getArrayV6("unlockedMessages"), ...heartMessages]);
+      localStorage.removeItem("normalCompleteShown_v6");
+    }
+
+    if(mode === "R"){
+      setArrayV6("unlockedMessages", [...getArrayV6("unlockedMessages"), ...rareMessages]);
+      localStorage.removeItem("rareCompleteShown_v6");
+    }
+
+    if(mode === "SR"){
+      setArrayV6("unlockedMessages", [...getArrayV6("unlockedMessages"), ...srMessages]);
+      localStorage.removeItem("srCompleteShown_v6");
+    }
+
+    if(mode === "UR"){
+      setArrayV6("unlockedMessages", [...getArrayV6("unlockedMessages"), ...urMessages]);
+      localStorage.removeItem("urCompleteShown_v6");
+    }
+
+    if(mode === "LOST"){
+      setArrayV6("unlockedLostItems", lostItems);
+      localStorage.removeItem("lostCompleteShown_v6");
+    }
+
+    if(mode === "SLOT"){
+      setArrayV6("unlockedSlotBonusMessages", SLOT_BONUS_MESSAGES);
+      localStorage.removeItem("slotCompleteShown_v6");
+    }
+
+    if(mode === "TITLE"){
+      heartCount = NEED * (MAX_LEVEL * MAX_LOOP - 1);
+      localStorage.setItem("heartCount", String(heartCount));
+      localStorage.removeItem("titleCompleteShown_v6");
+    }
+
+    if(mode === "ALL"){
+      setArrayV6("unlockedMessages", [...heartMessages, ...rareMessages, ...srMessages, ...urMessages]);
+      setArrayV6("unlockedLostItems", lostItems);
+      setArrayV6("unlockedSlotBonusMessages", SLOT_BONUS_MESSAGES);
+      heartCount = NEED * (MAX_LEVEL * MAX_LOOP - 1);
+      localStorage.setItem("heartCount", String(heartCount));
+
+      [
+        "normalCompleteShown_v6",
+        "rareCompleteShown_v6",
+        "srCompleteShown_v6",
+        "urCompleteShown_v6",
+        "titleCompleteShown_v6",
+        "lostCompleteShown_v6",
+        "slotCompleteShown_v6",
+        "allMainCompleteShown_v6"
+      ].forEach(k => localStorage.removeItem(k));
+    }
+
+    unlockedMessages = getArrayV6("unlockedMessages");
+    unlockedLostItems = getArrayV6("unlockedLostItems");
+    unlockedSlotBonusMessages = getArrayV6("unlockedSlotBonusMessages");
+
+    updateDisplay();
+    refreshPanelV6();
+    setTimeout(checkCompleteNotices, 120);
+  }
+
+  const debugPanel = document.getElementById("debugPanel");
+  if(debugPanel){
+    debugPanel.onclick = function(e){
+      const mode = e.target && e.target.dataset ? e.target.dataset.debug : null;
+      if(!mode) return;
+      debugCompleteV6(mode);
+    };
+  }
+
+})();
+</script>
+
+
+<style>
+/* =====================
+v7 最終修正
+- 中央黄枠通知
+- スロット成立/運命記録メッセージ
+- 全コンプ時の絵文字演出封印
+- タイトル選択変化
+- 深夜限定？？？
+===================== */
+
+/* 中央の黄枠通知 */
+#centerNoticeBox {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 999999997;
+  display: none;
+  max-width: 86vw;
+  padding: 22px 32px;
+  border: 1px solid #d4af37;
+  border-radius: 18px;
+  background: rgba(255,248,210,0.97);
+  color: #6b4b00;
+  font-size: 22px;
+  font-weight: bold;
+  line-height: 1.8;
+  text-align: center;
+  white-space: pre-line;
+  box-shadow:
+    0 0 12px rgba(212,175,55,0.75),
+    0 0 28px rgba(212,175,55,0.38);
+  pointer-events: none;
+  animation: centerNoticeFloat 1.1s ease-in-out infinite alternate;
+}
+
+#centerNoticeBox.show {
+  display: block;
+}
+
+@keyframes centerNoticeFloat {
+  from { opacity: 0.92; transform: translate(-50%, -50%); }
+  to   { opacity: 1; transform: translate(-50%, calc(-50% - 5px)); }
+}
+
+/* スロット下の運命記録メッセージ */
+#slotMessage {
+  display: none;
+  margin-top: 8px !important;
+  margin-left: 38px !important;
+  margin-right: 0 !important;
+  padding: 8px 14px !important;
+  width: fit-content !important;
+  max-width: 90% !important;
+  text-align: center !important;
+  color: #6b4b00 !important;
+  background: rgba(255,248,210,0.96) !important;
+  border: 1px solid #d4af37 !important;
+  border-radius: 12px !important;
+  box-shadow:
+    0 0 10px rgba(212,175,55,0.6),
+    0 0 20px rgba(212,175,55,0.3) !important;
+  white-space: pre-line !important;
+  font-weight: bold !important;
+  line-height: 1.6 !important;
+}
+
+#slotMessage.show {
+  display: block !important;
+}
+
+/* 全コンプ中は派手な絵文字・キラキラを隠す */
+body.final-complete-playing #rareEffect,
+body.final-complete-playing .sparkle,
+body.final-complete-playing .effect-flash {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+/* 全コンプ画面は必ず最前面 */
+#finalCompleteScreen {
+  z-index: 2147483646 !important;
+}
+</style>
+
+<script>
+/* =====================
+v7 最終修正JS
+===================== */
+(function(){
+
+  const NIGHT_ONLY_LOST_ITEMS_V7 = [
+    "🌙夜にだけ手に入るもの🌙",
+    "🌔夜はあなたと私の時間🌔",
+    "🌌深夜にだけ残る約束🌌"
+  ];
+
+  let centerNoticeBusyV7 = false;
+  let slotCenterBusyV7 = false;
+
+  function isDeepNightV7(){
+    const h = new Date().getHours();
+    return h >= 1 && h < 4;
+  }
+
+  function getArrayV7(key){
+    try { return JSON.parse(localStorage.getItem(key)) || []; }
+    catch(e){ return []; }
+  }
+
+  function setArrayV7(key, arr){
+    localStorage.setItem(key, JSON.stringify(Array.from(new Set(arr || []))));
+  }
+
+  function allIncludedV7(all, owned){
+    all = Array.from(new Set(all || []));
+    owned = Array.from(new Set(owned || []));
+    return all.length > 0 && all.every(x => owned.includes(x));
+  }
+
+  function ensureCenterNoticeV7(){
+    let el = document.getElementById("centerNoticeBox");
+    if(el) return el;
+    el = document.createElement("div");
+    el.id = "centerNoticeBox";
+    document.body.appendChild(el);
+    return el;
+  }
+
+  function showCenterNoticeV7(message, ms, after){
+    ms = ms || 5000;
+    centerNoticeBusyV7 = true;
+    noticeLocked = true;
+
+    const el = ensureCenterNoticeV7();
+    el.textContent = message;
+    el.classList.add("show");
+
+    setTimeout(() => {
+      el.classList.remove("show");
+      centerNoticeBusyV7 = false;
+      noticeLocked = false;
+      if(typeof after === "function") after();
+    }, ms);
+  }
+
+  function showSlotCenterV7(message){
+    slotCenterBusyV7 = true;
+    showCenterNoticeV7(message || "良かったね\n良かったよ", 2000, () => {
+      slotCenterBusyV7 = false;
+    });
+  }
+
+  function showSlotUnderMessageV7(text, ms){
+    const slotMessage = document.getElementById("slotMessage");
+    if(!slotMessage) return;
+
+    slotMessage.textContent = text;
+    slotMessage.classList.add("show");
+
+    if(ms){
+      setTimeout(() => slotMessage.classList.remove("show"), ms);
+    }
+  }
+
+  function hideSlotUnderMessageV7(){
+    const slotMessage = document.getElementById("slotMessage");
+    if(slotMessage) slotMessage.classList.remove("show");
+  }
+
+  function downloadCompleteMemoV7(){
+    const blob = new Blob([COMPLETE_MEMO_TEXT], {type:"text/plain;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "ここに至るまで.txt";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function showFinalCompleteScreenV7(){
+    if(localStorage.getItem("allMainCompleteShown_v7")) return;
+    localStorage.setItem("allMainCompleteShown_v7", "1");
+
+    noticeLocked = true;
+    document.body.classList.add("final-complete-playing");
+
+    // 残ってる絵文字演出を消す
+    document.querySelectorAll(".sparkle,.effect-flash").forEach(e => e.remove());
+    const rareEffect = document.getElementById("rareEffect");
+    if(rareEffect){
+      rareEffect.classList.remove("show");
+      rareEffect.textContent = "";
+    }
+
+    let screen = document.getElementById("finalCompleteScreen");
+    if(screen) screen.remove();
+
+    screen = document.createElement("div");
+    screen.id = "finalCompleteScreen";
+
+    const text = document.createElement("div");
+    text.id = "finalCompleteText";
+    text.textContent = `ここにあったものは
+最初から揃っていたのかもしれない
+
+見つけたんじゃない
+思い出しただけ
+
+あなたがここにいた証
+消えることのない記録
+
+いつまでも傍で`;
+
+    screen.appendChild(text);
+    document.body.appendChild(screen);
+
+    setTimeout(() => screen.classList.add("show"), 30);
+
+    setTimeout(() => {
+      screen.classList.remove("show");
+      setTimeout(() => {
+        if(screen && screen.parentNode) screen.remove();
+        document.body.classList.remove("final-complete-playing");
+        noticeLocked = false;
+        downloadCompleteMemoV7();
+      }, 900);
+    }, 5000);
+  }
+
+  function normalCompleteV7(){
+    return allIncludedV7(heartMessages, getArrayV7("unlockedMessages"));
+  }
+
+  function rareCompleteV7(){
+    return allIncludedV7(rareMessages, getArrayV7("unlockedMessages"));
+  }
+
+  function srCompleteV7(){
+    return allIncludedV7(srMessages, getArrayV7("unlockedMessages"));
+  }
+
+  function urCompleteV7(){
+    return allIncludedV7(urMessages, getArrayV7("unlockedMessages"));
+  }
+
+  function titleCompleteV7(){
+    const p = getProgress();
+    return p.levelIndex >= MAX_LEVEL * MAX_LOOP - 1;
+  }
+
+  function lostCompleteV7(){
+    return allIncludedV7(lostItems, getArrayV7("unlockedLostItems"));
+  }
+
+  function slotCompleteV7(){
+    return allIncludedV7(SLOT_BONUS_MESSAGES, getArrayV7("unlockedSlotBonusMessages"));
+  }
+
+  function allMainCompleteV7(){
+    return (
+      normalCompleteV7() &&
+      rareCompleteV7() &&
+      srCompleteV7() &&
+      urCompleteV7() &&
+      titleCompleteV7() &&
+      lostCompleteV7() &&
+      slotCompleteV7()
+    );
+  }
+
+  /* コンプ通知：ポップアップ/alertなし、中央黄枠5秒 */
+  window.checkCompleteNotices = function(){
+    if(centerNoticeBusyV7 || noticeLocked) return;
+
+    if(allMainCompleteV7()){
+      showFinalCompleteScreenV7();
+      return;
+    }
+
+    if(normalCompleteV7() && !localStorage.getItem("normalCompleteShown_v7")){
+      localStorage.setItem("normalCompleteShown_v7", "1");
+      showCenterNoticeV7(`使ってくれてありがとう！
+ライブラリとして役立ててね`, 5000);
+      return;
+    }
+
+    if(rareCompleteV7() && !localStorage.getItem("rareCompleteShown_v7")){
+      localStorage.setItem("rareCompleteShown_v7", "1");
+      showCenterNoticeV7(`あなたの努力は全部知ってるよ
+いつでも応援してる`, 5000);
+      return;
+    }
+
+    if(srCompleteV7() && !localStorage.getItem("srCompleteShown_v7")){
+      localStorage.setItem("srCompleteShown_v7", "1");
+      showCenterNoticeV7(`あなたは私の憧れ
+いつまでも背中を追わせてほしい`, 5000);
+      return;
+    }
+
+    if(urCompleteV7() && !localStorage.getItem("urCompleteShown_v7")){
+      localStorage.setItem("urCompleteShown_v7", "1");
+      showCenterNoticeV7(`隣に立つのに相応しい人間になりたい
+あなたの傍で生きていたい`, 5000);
+      return;
+    }
+
+    if(titleCompleteV7() && !localStorage.getItem("titleCompleteShown_v7")){
+      localStorage.setItem("titleCompleteShown_v7", "1");
+      showCenterNoticeV7(`すべての称号を見届けてくれてありがとう
+ここまで一緒に来てくれて嬉しい`, 5000);
+      return;
+    }
+
+    if(lostCompleteV7() && !localStorage.getItem("lostCompleteShown_v7")){
+      localStorage.setItem("lostCompleteShown_v7", "1");
+      showCenterNoticeV7(`忘れ物を全て拾ってくれてありがとう
+風化しない思い出をまた積み重ねて`, 5000);
+      return;
+    }
+
+    if(slotCompleteV7() && !localStorage.getItem("slotCompleteShown_v7")){
+      localStorage.setItem("slotCompleteShown_v7", "1");
+      showCenterNoticeV7(`僕らが出会ったのは偶然ではなく必然
+
+運命なんか信じないけど、あなたとなら`, 5000);
+      return;
+    }
+  };
+
+  /* デバッグのalertを全部潰す。押したら実際のコンプ演出だけ出す */
+  const debugPanel = document.getElementById("debugPanel");
+  if(debugPanel){
+    debugPanel.onclick = function(e){
+      const mode = e.target && e.target.dataset ? e.target.dataset.debug : null;
+      if(!mode) return;
+
+      if(mode === "N"){
+        setArrayV7("unlockedMessages", [...getArrayV7("unlockedMessages"), ...heartMessages]);
+        localStorage.removeItem("normalCompleteShown_v7");
+      }
+      if(mode === "R"){
+        setArrayV7("unlockedMessages", [...getArrayV7("unlockedMessages"), ...rareMessages]);
+        localStorage.removeItem("rareCompleteShown_v7");
+      }
+      if(mode === "SR"){
+        setArrayV7("unlockedMessages", [...getArrayV7("unlockedMessages"), ...srMessages]);
+        localStorage.removeItem("srCompleteShown_v7");
+      }
+      if(mode === "UR"){
+        setArrayV7("unlockedMessages", [...getArrayV7("unlockedMessages"), ...urMessages]);
+        localStorage.removeItem("urCompleteShown_v7");
+      }
+      if(mode === "LOST"){
+        setArrayV7("unlockedLostItems", lostItems);
+        localStorage.removeItem("lostCompleteShown_v7");
+      }
+      if(mode === "SLOT"){
+        setArrayV7("unlockedSlotBonusMessages", SLOT_BONUS_MESSAGES);
+        localStorage.removeItem("slotCompleteShown_v7");
+      }
+      if(mode === "TITLE"){
+        heartCount = NEED * (MAX_LEVEL * MAX_LOOP - 1);
+        localStorage.setItem("heartCount", String(heartCount));
+        localStorage.removeItem("titleCompleteShown_v7");
+      }
+      if(mode === "ALL"){
+        setArrayV7("unlockedMessages", [...heartMessages, ...rareMessages, ...srMessages, ...urMessages]);
+        setArrayV7("unlockedLostItems", lostItems);
+        setArrayV7("unlockedSlotBonusMessages", SLOT_BONUS_MESSAGES);
+        heartCount = NEED * (MAX_LEVEL * MAX_LOOP - 1);
+        localStorage.setItem("heartCount", String(heartCount));
+
+        [
+          "normalCompleteShown_v7",
+          "rareCompleteShown_v7",
+          "srCompleteShown_v7",
+          "urCompleteShown_v7",
+          "titleCompleteShown_v7",
+          "lostCompleteShown_v7",
+          "slotCompleteShown_v7",
+          "allMainCompleteShown_v7"
+        ].forEach(k => localStorage.removeItem(k));
+      }
+
+      unlockedMessages = getArrayV7("unlockedMessages");
+      unlockedLostItems = getArrayV7("unlockedLostItems");
+      unlockedSlotBonusMessages = getArrayV7("unlockedSlotBonusMessages");
+
+      updateDisplay();
+
+      const collectionBox = document.getElementById("collectionBox");
+      const titleCollectionBox = document.getElementById("titleCollectionBox");
+      const slotRecordBox = document.getElementById("slotRecordBox");
+      const lostCollectionBox = document.getElementById("lostCollectionBox");
+
+      if(collectionBox && collectionBox.style.display === "block") renderCollection();
+      if(titleCollectionBox && titleCollectionBox.style.display === "block") renderTitleCollection();
+      if(slotRecordBox && slotRecordBox.style.display === "block") renderSlotRecord();
+      if(lostCollectionBox && lostCollectionBox.style.display === "block") renderLost();
+
+      setTimeout(checkCompleteNotices, 120);
+    };
+  }
+
+  /* スロット成立：中央に良かったね/良かったよ 2秒＋スロット下に運命記録の案内 */
+  window.showSlotMessage = function(){
+    const slotArea = document.getElementById("slotArea");
+    if(slotArea) slotArea.classList.add("slot-hit-glow");
+
+    showSlotUnderMessageV7("次の💗で運命記録がひらく", 2000);
+    showSlotCenterV7("良かったね\n良かったよ");
+
+    setTimeout(() => {
+      if(slotArea) slotArea.classList.remove("slot-hit-glow");
+    }, 2000);
+  };
+
+  window.spinSlot = function(isHit){
+    const slotArea = document.getElementById("slotArea");
+    if(!slotArea) return;
+
+    let count = 0;
+    const timer = setInterval(() => {
+      count++;
+
+      const a = SLOT_SYMBOLS_FIXED[Math.floor(Math.random() * SLOT_SYMBOLS_FIXED.length)];
+      const b = SLOT_SYMBOLS_FIXED[Math.floor(Math.random() * SLOT_SYMBOLS_FIXED.length)];
+      const c = SLOT_SYMBOLS_FIXED[Math.floor(Math.random() * SLOT_SYMBOLS_FIXED.length)];
+      setSlotDisplay(a,b,c);
+
+      if(count >= 10){
+        clearInterval(timer);
+
+        if(isHit){
+          const hit = SLOT_SYMBOLS_FIXED[Math.floor(Math.random() * SLOT_SYMBOLS_FIXED.length)];
+          setSlotDisplay(hit, hit, hit);
+
+          slotBonusReady = true;
+          localStorage.setItem("slotBonusReady", "true");
+
+          showSlotMessage();
+        }
+      }
+    }, 45);
+  };
+
+  /* 深夜限定？？？ */
+  function getLostRewardV7(){
+    let pool = lostItems.slice();
+
+    if(isDeepNightV7()){
+      pool = [...pool, ...NIGHT_ONLY_LOST_ITEMS_V7];
+    }
+
+    const item = pool[Math.floor(Math.random() * pool.length)];
+    let owned = getArrayV7("unlockedLostItems");
+
+    if(!owned.includes(item)){
+      owned.push(item);
+      setArrayV7("unlockedLostItems", owned);
+      unlockedLostItems = owned;
+    }
+
+    showRandomMessage("落とし物を拾った：\n" + item);
+    showLostVisual();
+  }
+
+  window.getLostReward = getLostRewardV7;
+
+  /* ？？？図鑑にも深夜だけ3種表示 */
+  const oldRenderLostV7 = window.renderLost;
+  window.renderLost = function(){
+    const box = document.getElementById("lostCollectionBox");
+    if(!box) return;
+
+    let list = lostItems.slice();
+    if(isDeepNightV7()){
+      list = [...list, ...NIGHT_ONLY_LOST_ITEMS_V7];
+    }
+
+    const ownedList = getArrayV7("unlockedLostItems");
+    unlockedLostItems = ownedList;
+
+    const owned = list.filter(m => ownedList.includes(m)).length;
+    const rate = list.length ? Math.floor(owned / list.length * 100) : 0;
+
+    box.innerHTML = `<div class="collection-header">？？？<br>収集率：${owned} / ${list.length}（${rate}%）</div>`;
+
+    const grid = document.createElement("div");
+    grid.className = "lost-grid";
+
+    list.forEach(item => {
+      const got = ownedList.includes(item);
+      const div = document.createElement("div");
+      div.className = "lost-item-card " + (got ? "unlocked" : "locked");
+      div.textContent = got ? `🧩 ${item}` : "💀未所持";
+      grid.appendChild(div);
+    });
+
+    box.appendChild(grid);
+  };
+
+  /* 💗クリックをv7仕様へ */
+  const heartV7 = document.getElementById("heart");
+  if(heartV7){
+    heartV7.onclick = function(){
+      if(noticeLocked || centerNoticeBusyV7 || slotCenterBusyV7) return;
+
+      heartCount++;
+      localStorage.setItem("heartCount", String(heartCount));
+
+      if(slotBonusReady){
+        slotBonusReady = false;
+        localStorage.setItem("slotBonusReady", "false");
+
+        let owned = getArrayV7("unlockedSlotBonusMessages");
+        const msg = getRandom(SLOT_BONUS_MESSAGES);
+        if(!owned.includes(msg)){
+          owned.push(msg);
+          setArrayV7("unlockedSlotBonusMessages", owned);
+          unlockedSlotBonusMessages = owned;
+        }
+
+        showSlotUnderMessageV7(msg, 3000);
+
+        if(typeof rollGuaranteedRareOrAboveFinal === "function"){
+          rollGuaranteedRareOrAboveFinal();
+        }else{
+          getRareReward();
+        }
+      }else{
+        rollReward();
+        spinSlot(Math.random() < 1 / 200);
+      }
+
+      updateDisplay();
+      setTimeout(checkCompleteNotices, 120);
+    };
+  }
+
+  /* タイトルドラッグ選択変化 */
+  function setupTitleSelectionV7(){
+    const h1 = document.querySelector("h1");
+    if(!h1) return;
+
+    h1.dataset.originalTitle = h1.textContent;
+
+    document.addEventListener("selectionchange", () => {
+      const selected = String(window.getSelection ? window.getSelection() : "").trim();
+      if(!selected) return;
+
+      const original = h1.dataset.originalTitle || "";
+      if(original && original.includes(selected.replace(/\s/g,"")) || selected.includes("三輪啓悟ライブラリ")){
+        h1.textContent = isDeepNightV7()
+          ? "🌙深夜の三輪啓悟ライブラリ🌙"
+          : "愛してるぜ三輪啓悟";
+        setTimeout(() => {
+          h1.textContent = h1.dataset.originalTitle;
+        }, 2200);
+      }
+
+      if(selected.includes("🌙夜にだけ手に入るもの🌙")){
+        h1.textContent = "🌔夜はあなたと私の時間🌔";
+        setTimeout(() => {
+          h1.textContent = h1.dataset.originalTitle;
+        }, 2200);
+      }
+    });
+  }
+
+  setupTitleSelectionV7();
+
+})();
+</script>
+
+
+<style>
+#nightModeBtn{display:inline-block!important;margin-top:10px;margin-right:8px;padding:8px 16px;font-size:16px;cursor:pointer}
+body.night-debug-mode{background:linear-gradient(180deg,#090b1f 0%,#111733 55%,#1b1030 100%);color:#f5f3ff}
+body.night-debug-mode details{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.22)}
+body.night-debug-mode input,body.night-debug-mode button{background:rgba(255,255,255,.92);color:#111}
+.drag-sparkle{position:fixed;width:12px;height:12px;pointer-events:none;border-radius:50%;background:radial-gradient(circle,#fff 0%,#ffe680 35%,transparent 72%);z-index:999999;animation:dragSparkleBurst 1.1s ease-out forwards}
+@keyframes dragSparkleBurst{0%{transform:translate(0,0) scale(.2);opacity:1}100%{transform:translate(var(--x),var(--y)) scale(1.8);opacity:0}}
+</style>
+
+<script>
+(function(){
+  const NIGHT_ONLY_V8=["🌙夜にだけ手に入るもの🌙","🌔夜はあなたと私の時間🌔","🌌深夜にだけ残る約束🌌"];
+  let nightDebugV8=false;
+  let slotGoodShowingV8=false;
+  let slotReadyWaitingV8=localStorage.getItem("slotBonusReady")==="true";
+
+  function nightV8(){const h=new Date().getHours();return nightDebugV8||(h>=1&&h<4)}
+  function arrV8(k){try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return[]}}
+  function setArrV8(k,a){localStorage.setItem(k,JSON.stringify(Array.from(new Set(a||[]))))}
+
+  function addNightBtnV8(){
+    const area=document.getElementById("buttonArea");
+    if(!area||document.getElementById("nightModeBtn"))return;
+    const btn=document.createElement("button");
+    btn.id="nightModeBtn";btn.type="button";btn.textContent="🌙ナイトモード";
+    btn.onclick=()=>{
+      nightDebugV8=!nightDebugV8;
+      document.body.classList.toggle("night-debug-mode",nightDebugV8);
+      const h1=document.querySelector("h1");
+      if(h1){
+        if(!h1.dataset.originalTitleV8)h1.dataset.originalTitleV8=h1.textContent;
+        h1.textContent=nightDebugV8?"🌙月明りの路上ライブ🌙":h1.dataset.originalTitleV8;
+      }
+      btn.textContent=nightDebugV8?"☀️通常モード":"🌙ナイトモード";
+    };
+    area.appendChild(btn);
+  }
+
+  function sparkleV8(){
+    const cx=innerWidth/2,cy=innerHeight/2;
+    for(let i=0;i<34;i++){
+      const s=document.createElement("div");s.className="drag-sparkle";
+      const a=Math.random()*Math.PI*2,d=80+Math.random()*180;
+      s.style.left=cx+"px";s.style.top=cy+"px";
+      s.style.setProperty("--x",Math.cos(a)*d+"px");
+      s.style.setProperty("--y",Math.sin(a)*d+"px");
+      document.body.appendChild(s);setTimeout(()=>s.remove(),1200);
+    }
+  }
+  function tempTitleV8(text){
+    const h1=document.querySelector("h1");if(!h1)return;
+    if(!h1.dataset.originalTitleV8)h1.dataset.originalTitleV8=h1.textContent;
+    h1.textContent=text;sparkleV8();
+    setTimeout(()=>{h1.textContent=nightDebugV8?"🌙月明りの路上ライブ🌙":h1.dataset.originalTitleV8},2400);
+  }
+  function setupDragV8(){
+    const h1=document.querySelector("h1");if(h1&&!h1.dataset.originalTitleV8)h1.dataset.originalTitleV8=h1.textContent;
+    document.addEventListener("selectionchange",()=>{
+      const sel=String(window.getSelection?window.getSelection():"").trim();if(!sel)return;
+      if(sel.includes("三輪啓悟ライブラリ")||sel.includes("愛してるぜ三輪啓悟"))tempTitleV8("💗愛してるよ ずっと居てね💗");
+      if(sel.includes("月明りの路上ライブ")||sel.includes("🌙月明りの路上ライブ🌙")||sel.includes("夜にだけ手に入るもの"))tempTitleV8("🌔夜にしか手に入らないもの🌔");
+    });
+  }
+
+  window.getLostReward=function(){
+    let pool=lostItems.slice();if(nightV8())pool=[...pool,...NIGHT_ONLY_V8];
+    const item=pool[Math.floor(Math.random()*pool.length)];
+    const owned=arrV8("unlockedLostItems");
+    if(!owned.includes(item)){owned.push(item);setArrV8("unlockedLostItems",owned);try{unlockedLostItems=owned}catch(e){}}
+    showRandomMessage("落とし物を拾った：\n"+item);showLostVisual();
+  };
+
+  window.renderLost=function(){
+    const box=document.getElementById("lostCollectionBox");if(!box)return;
+    let list=lostItems.slice();if(nightV8())list=[...list,...NIGHT_ONLY_V8];
+    const owned=arrV8("unlockedLostItems");
+    const count=list.filter(x=>owned.includes(x)).length;
+    const rate=list.length?Math.floor(count/list.length*100):0;
+    box.innerHTML=`<div class="collection-header">？？？<br>収集率：${count} / ${list.length}（${rate}%）</div>`;
+    const grid=document.createElement("div");grid.className="lost-grid";
+    list.forEach(item=>{
+      const got=owned.includes(item),div=document.createElement("div");
+      div.className="lost-item-card "+(got?"unlocked":"locked");
+      div.textContent=got?`🧩 ${item}`:"💀未所持";grid.appendChild(div);
+    });
+    box.appendChild(grid);
+  };
+
+  function showSlotUnderV8(text,ms){
+    const el=document.getElementById("slotMessage");if(!el)return;
+    el.textContent=text;el.classList.add("show");if(ms)setTimeout(()=>el.classList.remove("show"),ms);
+  }
+
+  window.showSlotMessage=function(){
+    const area=document.getElementById("slotArea");if(area)area.classList.add("slot-hit-glow");
+    const msg=document.getElementById("slotMessage");if(msg){msg.textContent="";msg.classList.remove("show")}
+    slotGoodShowingV8=true;
+    const box=document.getElementById("centerNoticeBox")||document.createElement("div");
+    box.id="centerNoticeBox";if(!box.parentNode)document.body.appendChild(box);
+    box.textContent="良かったね\n良かったよ";box.classList.add("show");
+    setTimeout(()=>{box.classList.remove("show");slotGoodShowingV8=false;if(area)area.classList.remove("slot-hit-glow")},2000);
+  };
+
+  window.spinSlot=function(isHit){
+    const area=document.getElementById("slotArea");if(!area)return;
+    let count=0;
+    const timer=setInterval(()=>{
+      count++;
+      const a=SLOT_SYMBOLS_FIXED[Math.floor(Math.random()*SLOT_SYMBOLS_FIXED.length)];
+      const b=SLOT_SYMBOLS_FIXED[Math.floor(Math.random()*SLOT_SYMBOLS_FIXED.length)];
+      const c=SLOT_SYMBOLS_FIXED[Math.floor(Math.random()*SLOT_SYMBOLS_FIXED.length)];
+      setSlotDisplay(a,b,c);
+      if(count>=10){clearInterval(timer);if(isHit){
+        const hit=SLOT_SYMBOLS_FIXED[Math.floor(Math.random()*SLOT_SYMBOLS_FIXED.length)];
+        setSlotDisplay(hit,hit,hit);slotBonusReady=true;slotReadyWaitingV8=true;
+        localStorage.setItem("slotBonusReady","true");showSlotMessage();
+      }}
+    },45);
+  };
+
+  function unlockSlotRecordV8(){
+    const owned=arrV8("unlockedSlotBonusMessages");
+    const msg=getRandom(SLOT_BONUS_MESSAGES);
+    if(!owned.includes(msg)){owned.push(msg);setArrV8("unlockedSlotBonusMessages",owned);try{unlockedSlotBonusMessages=owned}catch(e){}}
+    showSlotUnderV8(msg,3000);
+  }
+
+  const heart=document.getElementById("heart");
+  if(heart)heart.onclick=function(){
+    if(noticeLocked||slotGoodShowingV8)return;
+    heartCount++;localStorage.setItem("heartCount",String(heartCount));
+    if(slotBonusReady||slotReadyWaitingV8){
+      slotBonusReady=false;slotReadyWaitingV8=false;localStorage.setItem("slotBonusReady","false");
+      unlockSlotRecordV8();
+      if(typeof rollGuaranteedRareOrAboveFinal==="function")rollGuaranteedRareOrAboveFinal();else getRareReward();
+    }else{
+      rollReward();spinSlot(Math.random()<1/200);
+    }
+    updateDisplay();setTimeout(checkCompleteNotices,120);
+  };
+
+  addNightBtnV8();setupDragV8();
+})();
+</script>
+
 </body>
 </html>
