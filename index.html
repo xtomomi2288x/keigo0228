@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>三輪啓悟ライブラリ SAFE完全版</title>
+<title>愛してるぜ三輪啓悟</title>
 <style>
 
 /* =====================
@@ -17654,10 +17654,10 @@ function getLostReward(){
 function rollReward(){
   const roll = Math.random();
 
-  const pLost = 1 / 9000;
-  const pUR   = 1 / 7000;
-  const pSR   = 1 / 3000;
-  const pR    = 1 / 500;
+  const pLost = 1 / 5000;
+  const pUR   = 1 / 3000;
+  const pSR   = 1 / 1000;
+  const pR    = 1 / 300;
 
   if(roll < pLost){
     getLostReward();
@@ -17678,9 +17678,9 @@ function rollReward(){
 function rollRarePlus(){
   const roll = Math.random();
 
-  const pLost = 1 / 4500;
-  const pUR   = 1 / 2000;
-  const pSR   = 1 / 700;
+  const pLost = 1 / 2000;
+  const pUR   = 1 / 1000;
+  const pSR   = 1 / 500;
 
   if(roll < pLost){
     getLostReward();
