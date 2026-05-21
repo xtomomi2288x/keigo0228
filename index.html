@@ -18070,5 +18070,142 @@ v16 手動スロット成立検知＋回数保護
 })();
 </script>
 
+
+<style id="ipad-backup-export-style-v18">
+#ipadBackupBoxV18 {
+  display: none;
+  margin-top: 12px;
+  padding: 12px;
+  border: 2px solid #d4af37;
+  border-radius: 12px;
+  background: #fff8d8;
+  color: #111;
+  max-width: 980px;
+  box-sizing: border-box;
+}
+#ipadBackupTextV18 {
+  width: 100%;
+  height: 220px;
+  box-sizing: border-box;
+  font-size: 13px;
+  line-height: 1.4;
+  margin-top: 8px;
+}
+#ipadBackupStatusV18 {
+  margin-top: 8px;
+  font-weight: bold;
+  white-space: pre-line;
+}
+#ipadBackupBtnV18 {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  margin-top: 10px;
+  margin-right: 8px !important;
+  padding: 8px 16px !important;
+  font-size: 16px !important;
+  cursor: pointer !important;
+  position: relative !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
+}
+</style>
+
+<script id="ipad-backup-export-script-v18">
+(function(){
+  function makePlainObjectFromLocalStorage(){
+    const data = {};
+    for(let i = 0; i < localStorage.length; i++){
+      const key = localStorage.key(i);
+      data[key] = localStorage.getItem(key);
+    }
+    return data;
+  }
+
+  function ensureIpadBackupUI(){
+    const area = document.getElementById("buttonArea");
+    if(!area || document.getElementById("ipadBackupBtnV18")) return;
+
+    const btn = document.createElement("button");
+    btn.id = "ipadBackupBtnV18";
+    btn.type = "button";
+    btn.textContent = "📤iPadバックアップ保存";
+    area.appendChild(btn);
+
+    const box = document.createElement("div");
+    box.id = "ipadBackupBoxV18";
+    box.innerHTML = `
+      <b>📤iPadバックアップ保存</b><br>
+      この端末に残っている💗回数・図鑑・？？？・運命記録を表示するよ。<br>
+      表示されたら「全選択 → コピー」してメモに保存してね。<br>
+      <textarea id="ipadBackupTextV18" readonly></textarea><br>
+      <button type="button" id="selectIpadBackupV18">全選択</button>
+      <button type="button" id="downloadIpadBackupV18">backup.jsonを保存</button>
+      <button type="button" id="closeIpadBackupV18">閉じる</button>
+      <div id="ipadBackupStatusV18"></div>
+    `;
+    area.parentNode.insertBefore(box, area.nextSibling);
+
+    function showBackup(){
+      const data = makePlainObjectFromLocalStorage();
+      const json = JSON.stringify(data, null, 2);
+      const text = document.getElementById("ipadBackupTextV18");
+      const status = document.getElementById("ipadBackupStatusV18");
+
+      box.style.display = "block";
+      text.value = json;
+      text.focus();
+      text.select();
+
+      const heart = data.heartCount || "0";
+      let msgCount = 0;
+      let lostCount = 0;
+      let slotCount = 0;
+      try { msgCount = JSON.parse(data.unlockedMessages || "[]").length; } catch(e){}
+      try { lostCount = JSON.parse(data.unlockedLostItems || "[]").length; } catch(e){}
+      try { slotCount = JSON.parse(data.unlockedSlotBonusMessages || "[]").length; } catch(e){}
+
+      status.textContent =
+        "バックアップ表示したよ。\n" +
+        "💗 " + heart + "回\n" +
+        "図鑑 " + msgCount + "個 / ？？？ " + lostCount + "個 / 運命記録 " + slotCount + "個\n" +
+        "この文字をコピーしてメモに保存しておけば復元できるよ。";
+    }
+
+    btn.onclick = showBackup;
+
+    document.getElementById("selectIpadBackupV18").onclick = function(){
+      const text = document.getElementById("ipadBackupTextV18");
+      text.focus();
+      text.select();
+      const status = document.getElementById("ipadBackupStatusV18");
+      status.textContent += "\n全選択したよ。コピーしてメモに保存してね。";
+    };
+
+    document.getElementById("downloadIpadBackupV18").onclick = function(){
+      const text = document.getElementById("ipadBackupTextV18").value || JSON.stringify(makePlainObjectFromLocalStorage(), null, 2);
+      const blob = new Blob([text], {type:"application/json;charset=utf-8"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "miwa_library_backup.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+
+      const status = document.getElementById("ipadBackupStatusV18");
+      status.textContent += "\nbackup.json保存を実行したよ。";
+    };
+
+    document.getElementById("closeIpadBackupV18").onclick = function(){
+      box.style.display = "none";
+    };
+  }
+
+  ensureIpadBackupUI();
+})();
+</script>
+
 </body>
 </html>
