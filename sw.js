@@ -1,4 +1,4 @@
-const CACHE_NAME = "keigo-library-offline-v53";
+const CACHE_NAME = "keigo-library-offline-v54";
 const CORE_ASSETS = [
   "./",
   "./index.html",
