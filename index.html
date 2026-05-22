@@ -17900,7 +17900,7 @@ function downloadMemo(){
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "ここに至るまで.txt";
+  a.download = "即興ではなかった.txt";
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -18278,9 +18278,6 @@ v16 手動スロット成立検知＋回数保護
       if(count >= 10){
         clearInterval(timer);
 
-        // ★ここが修正点：デバッグ成立だけでなく、表示上3つ揃ったら必ず成立扱い
-        if(finalSymbols[0] === finalSymbols[1] && finalSymbols[1] === finalSymbols[2]){
-          v16TriggerSlotHit();
         }
       }
     }, 45);
@@ -18627,6 +18624,58 @@ v16 手動スロット成立検知＋回数保護
   }
 
   ensureIpadBackupUI();
+})();
+</script>
+
+
+<script id="auto-night-mode-v32">
+(function(){
+  function isAutoNightTime(){
+    const h = new Date().getHours();
+    return h >= 1 && h < 4;
+  }
+
+  function applyAutoNightMode(){
+    const on = isAutoNightTime();
+    const body = document.body;
+    const h1 = document.querySelector("h1");
+    const nightBtn = document.getElementById("nightModeBtn");
+
+    if(on){
+      body.classList.add("night-debug-mode");
+      body.dataset.autoNightMode = "1";
+
+      if(h1 && !window.getSelection().toString().trim()){
+        h1.textContent = "🌙月明りの路上ライブ🌙";
+      }
+
+      if(nightBtn){
+        nightBtn.textContent = "☀️通常モード";
+      }
+    }else if(body.dataset.autoNightMode === "1"){
+      body.classList.remove("night-debug-mode");
+      delete body.dataset.autoNightMode;
+
+      if(h1 && (h1.textContent === "🌙月明りの路上ライブ🌙" || h1.textContent === "🌔夜にしか手に入らないもの🌔")){
+        h1.textContent = "🎸三輪啓悟ライブラリ🎸";
+      }
+
+      if(nightBtn){
+        nightBtn.textContent = "🌙ナイトモード";
+      }
+    }
+
+    if(typeof renderLost === "function"){
+      const lostBox = document.getElementById("lostCollectionBox");
+      if(lostBox && lostBox.style.display === "block"){
+        renderLost();
+      }
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", applyAutoNightMode);
+  applyAutoNightMode();
+  setInterval(applyAutoNightMode, 60000);
 })();
 </script>
 
