@@ -18278,6 +18278,9 @@ v16 手動スロット成立検知＋回数保護
       if(count >= 10){
         clearInterval(timer);
 
+        // ★ここが修正点：デバッグ成立だけでなく、表示上3つ揃ったら必ず成立扱い
+        if(finalSymbols[0] === finalSymbols[1] && finalSymbols[1] === finalSymbols[2]){
+          v16TriggerSlotHit();
         }
       }
     }, 45);
