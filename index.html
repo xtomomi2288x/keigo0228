@@ -18639,7 +18639,17 @@ v16 手動スロット成立検知＋回数保護
 <script id="lost-fragment-v2-safe">
 (function(){
   const FRAGMENT_EVERY = 3000;
+  const FRAGMENT_EVERY_NIGHT = 2000;
   const FRAGMENT_MAX = 10;
+
+  function isDeepNight(){
+    const hour = new Date().getHours();
+    return hour >= 1 && hour < 4;
+  }
+
+  function getFragmentEvery(){
+    return isDeepNight() ? FRAGMENT_EVERY_NIGHT : FRAGMENT_EVERY;
+  }
 
   function getFragmentCount(){
     return Number(localStorage.getItem("lostFragmentCount") || 0);
@@ -18668,6 +18678,13 @@ v16 手動スロット成立検知＋回数保護
   function pickFragmentMessage(){
     const r = Math.random();
 
+    if(isDeepNight()){
+      if(r < 0.20){
+        return "あなたと過ごした深夜\nこの時間だけは特別\nもう少し、思い出して";
+      }
+      return "忘れ物の欠片を拾った";
+    }
+
     if(r < 0.02) return "遠いようで近い";
     if(r < 0.10) return "何かを思い出しかけている";
     return "忘れ物の欠片を拾った";
@@ -18675,8 +18692,9 @@ v16 手動スロット成立検知＋回数保護
 
   function checkLostFragment(){
     const currentHeartCount = Number(localStorage.getItem("heartCount") || heartCount || 0);
+    const fragmentEvery = getFragmentEvery();
     if(currentHeartCount <= 0) return;
-    if(currentHeartCount % FRAGMENT_EVERY !== 0) return;
+    if(currentHeartCount % fragmentEvery !== 0) return;
 
     const last = Number(localStorage.getItem("lostFragmentLastAt") || 0);
     if(last === currentHeartCount) return;
@@ -18696,7 +18714,7 @@ v16 手動スロット成立検知＋回数保護
       }, 2100);
     }else{
       setFragmentCount(count);
-      showQuietNotice(pickFragmentMessage(), 2000);
+      showQuietNotice(pickFragmentMessage(), 1000);
     }
 
     updateDisplay();
