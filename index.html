@@ -19076,5 +19076,75 @@ v16 手動スロット成立検知＋回数保護
 })();
 </script>
 
+
+
+<script id="manual-draw-count-restore-v1">
+/* =====================
+手動復元ボタン
+- SR / UR / ？？？ / 欠片の回数をあとから正しい数字に直せる
+- 被り込みの「引いた回数」を保存する
+===================== */
+(function(){
+  function toNumber(v){
+    const n = Number(String(v).replace(/[^\d]/g, ""));
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function setCount(key, value){
+    const n = toNumber(value);
+    if(n === null) return false;
+
+    localStorage.setItem(key, String(n));
+
+    if(key === "srCount") srCount = n;
+    if(key === "urCount") urCount = n;
+    if(key === "lostCount") lostCount = n;
+    if(key === "lostFragmentCount") localStorage.setItem("lostFragmentCount", String(Math.max(0, Math.min(9, n))));
+
+    updateDisplay();
+    return true;
+  }
+
+  function addRestoreButton(id, text, key, label, maxFragment){
+    const area = document.getElementById("buttonArea");
+    if(!area || document.getElementById(id)) return;
+
+    const btn = document.createElement("button");
+    btn.id = id;
+    btn.type = "button";
+    btn.textContent = text;
+
+    btn.onclick = function(){
+      const current = localStorage.getItem(key) || "0";
+      const input = prompt(label + "を復元する数字を入れてね", String(current));
+      if(input === null) return;
+
+      let n = toNumber(input);
+      if(n === null){
+        alert("数字で入れてね");
+        return;
+      }
+
+      if(maxFragment){
+        n = Math.max(0, Math.min(9, n));
+      }
+
+      if(setCount(key, n)){
+        alert(label + "を " + n + " に復元したよ");
+      }
+    };
+
+    area.appendChild(btn);
+  }
+
+  addRestoreButton("restoreSRCountBtn", "💎SR回数復元", "srCount", "💎SR回数", false);
+  addRestoreButton("restoreURCountBtn", "🐙UR回数復元", "urCount", "🐙UR回数", false);
+  addRestoreButton("restoreLostCountBtn", "❓？？？回数復元", "lostCount", "❓？？？回数", false);
+  addRestoreButton("restoreFragmentCountBtn", "🧩欠片復元", "lostFragmentCount", "🧩欠片", true);
+
+  updateDisplay();
+})();
+</script>
+
 </body>
 </html>
