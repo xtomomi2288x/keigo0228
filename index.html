@@ -555,8 +555,7 @@ body.final-complete-playing #finalCompleteScreen *{
 </div>
 <div id="rareEffect"></div>
 <div id="lostItemOverlay"><div id="lostItemText"></div></div>
-</div>
-</div>
+
 <!-- =====================
 五十音順アーティスト一覧
 ===================== -->
@@ -18628,6 +18627,104 @@ v16 手動スロット成立検知＋回数保護
 
   updateDisplay();
 
+})();
+</script>
+
+<script id="lost-fragment-v2-safe">
+(function(){
+  const FRAGMENT_EVERY = 3000;
+  const FRAGMENT_MAX = 10;
+
+  function getFragmentCount(){
+    return Number(localStorage.getItem("lostFragmentCount") || 0);
+  }
+
+  function setFragmentCount(n){
+    localStorage.setItem("lostFragmentCount", String(n));
+  }
+
+  function showQuietNotice(text, ms){
+    let box = document.getElementById("centerNotice");
+    if(!box){
+      box = document.createElement("div");
+      box.id = "centerNotice";
+      document.body.appendChild(box);
+    }
+
+    box.textContent = text;
+    box.classList.add("show");
+
+    setTimeout(function(){
+      box.classList.remove("show");
+    }, ms);
+  }
+
+  function pickFragmentMessage(){
+    const r = Math.random();
+
+    if(r < 0.02) return "遠いようで近い";
+    if(r < 0.10) return "何かを思い出しかけている";
+    return "忘れ物の欠片を拾った";
+  }
+
+  function checkLostFragment(){
+    const currentHeartCount = Number(localStorage.getItem("heartCount") || heartCount || 0);
+    if(currentHeartCount <= 0) return;
+    if(currentHeartCount % FRAGMENT_EVERY !== 0) return;
+
+    const last = Number(localStorage.getItem("lostFragmentLastAt") || 0);
+    if(last === currentHeartCount) return;
+
+    localStorage.setItem("lostFragmentLastAt", String(currentHeartCount));
+
+    let count = getFragmentCount() + 1;
+
+    if(count >= FRAGMENT_MAX){
+      setFragmentCount(0);
+
+      showQuietNotice("案外何でもない日々を\n今も胸に宿して", 2000);
+
+      setTimeout(function(){
+        getLostReward();
+        updateDisplay();
+      }, 2100);
+    }else{
+      setFragmentCount(count);
+      showQuietNotice(pickFragmentMessage(), 1000);
+    }
+
+    updateDisplay();
+  }
+
+  const oldUpdateDisplay = updateDisplay;
+  updateDisplay = function(){
+    oldUpdateDisplay();
+
+    const counter = document.getElementById("counter");
+    if(counter){
+      const count = getFragmentCount();
+      counter.textContent =
+        counter.textContent.replace(/　忘れ物の欠片.*$/, "") +
+        "　忘れ物の欠片 " + count + " / " + FRAGMENT_MAX;
+    }
+  };
+
+  const heart = document.getElementById("heart");
+  if(heart){
+    heart.addEventListener("click", function(){
+      setTimeout(checkLostFragment, 0);
+    });
+  }
+
+  const resetBtn = document.getElementById("resetBtn");
+  if(resetBtn){
+    resetBtn.addEventListener("click", function(){
+      localStorage.removeItem("lostFragmentCount");
+      localStorage.removeItem("lostFragmentLastAt");
+    });
+  }
+
+  updateDisplay();
 })();
 </script>
 
