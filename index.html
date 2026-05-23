@@ -539,7 +539,7 @@ body.final-complete-playing #finalCompleteScreen *{
   </div>
 </div>
 <div id="randomMsg"></div>
-<div id="counter">💗 0回　💎 0回　🐙 0回</div>
+<div id="counter">💗 0回　✨ 0回　💎 0回　🐙 0回　❓ 0回　🧩・0/10回</div>
 <div id="level">Lv.1（0 / 150）｜1周目</div>
 <div id="title">称号：騒音で通報</div>
 <div id="buttonArea">
@@ -17641,7 +17641,9 @@ const NIGHT_ONLY_LOST_ITEMS = ["結ばれたゴミ袋","1時から夜明けま�
 
 let heartCount = Number(localStorage.getItem("heartCount")) || 0;
 let rareCount = Number(localStorage.getItem("rareCount")) || 0;
+let srCount = Number(localStorage.getItem("srCount")) || 0;
 let urCount = Number(localStorage.getItem("urCount")) || 0;
+let lostCount = Number(localStorage.getItem("lostCount")) || 0;
 let slotReady = localStorage.getItem("slotReadySafe") === "true";
 let clickLock = false;
 let noticeLock = false;
@@ -17790,13 +17792,15 @@ function updateDisplay(){
   const levelBox = document.getElementById("level");
   const titleBox = document.getElementById("title");
 
-  if(counter) counter.textContent = `💗 ${heartCount}回　💎 ${rareCount}回　🐙 ${urCount}回`;
+  if(counter) counter.textContent = `💗 ${heartCount}回　✨ ${rareCount}回　💎 ${srCount}回　🐙 ${urCount}回　❓ ${lostCount}回`;
   if(levelBox) levelBox.textContent = `Lv.${p.level}（${p.exp} / ${NEED}）｜${p.loop + 1}周目`;
   if(titleBox) titleBox.textContent = `称号：${getCurrentTitle()}`;
 
   localStorage.setItem("heartCount", String(heartCount));
   localStorage.setItem("rareCount", String(rareCount));
+  localStorage.setItem("srCount", String(srCount));
   localStorage.setItem("urCount", String(urCount));
+  localStorage.setItem("lostCount", String(lostCount));
   updateCrownLoop();
 }
 
@@ -17883,6 +17887,7 @@ function getRareReward(){
 }
 
 function getSRReward(){
+  srCount++;
   const msg = getRandom(srMessages);
   unlockMessage(msg);
   showRandomMessage(msg);
@@ -17929,6 +17934,7 @@ function showLostOverlay(item){
 }
 
 function getLostReward(){
+  lostCount++;
   const pool = lostPool();
   const item = getRandom(pool);
   const owned = getStoreArray("unlockedLostItems");
@@ -18353,7 +18359,7 @@ function setupButtons(){
   };
   if(resetBtn) resetBtn.onclick = () => {
     if(!confirm("💗回数と収集データをリセットする？")) return;
-    ["heartCount","rareCount","urCount","unlockedMessages","unlockedLostItems","unlockedSlotBonusMessages","slotReadySafe"].forEach(k => localStorage.removeItem(k));
+    ["heartCount","rareCount","srCount","urCount","lostCount","lostFragmentCount","lostFragmentLastAt","unlockedMessages","unlockedLostItems","unlockedSlotBonusMessages","slotReadySafe"].forEach(k => localStorage.removeItem(k));
     location.reload();
   };
 
@@ -18702,10 +18708,15 @@ v16 手動スロット成立検知＋回数保護
 
     const counter = document.getElementById("counter");
     if(counter){
-      const count = getFragmentCount();
+      const fragmentCount = getFragmentCount();
+      const heart = Number(localStorage.getItem("heartCount") || heartCount || 0);
+      const rare = Number(localStorage.getItem("rareCount") || rareCount || 0);
+      const sr = Number(localStorage.getItem("srCount") || srCount || 0);
+      const ur = Number(localStorage.getItem("urCount") || urCount || 0);
+      const lost = Number(localStorage.getItem("lostCount") || lostCount || 0);
+
       counter.textContent =
-        counter.textContent.replace(/　忘れ物の欠片.*$/, "") +
-        "　忘れ物の欠片 " + count + " / " + FRAGMENT_MAX;
+        `💗 ${heart}回　✨ ${rare}回　💎 ${sr}回　🐙 ${ur}回　❓ ${lost}回　🧩・${fragmentCount}/${FRAGMENT_MAX}回`;
     }
   };
 
