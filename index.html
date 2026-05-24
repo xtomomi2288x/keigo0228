@@ -394,6 +394,97 @@ body>details{
 
 #centerNotice.show{display:block;}
 
+/* =====================
+忘れ物の欠片・10個演出（花びら＋暗転）
+===================== */
+#petals{
+  position:fixed;
+  inset:0;
+  display:none;
+  overflow:hidden;
+  pointer-events:none;
+  z-index:2147483645;
+  background:rgba(8,10,16,.58);
+  opacity:0;
+  transition:opacity .6s ease;
+}
+
+#petals.show{
+  display:block;
+  opacity:1;
+}
+
+.petal{
+  position:absolute;
+  top:-8vh;
+  width:16px;
+  height:11px;
+  border-radius:70% 30% 70% 30%;
+  background:linear-gradient(135deg,rgba(255,190,215,.96),rgba(255,235,245,.72));
+  box-shadow:0 0 10px rgba(255,180,220,.75),0 0 20px rgba(255,220,240,.35);
+  opacity:.86;
+  transform:rotate(var(--rot));
+  animation:petalFall var(--dur) linear forwards;
+}
+
+.petal::after{
+  content:"";
+  position:absolute;
+  inset:2px;
+  border-radius:70% 30% 70% 30%;
+  background:rgba(255,255,255,.22);
+}
+
+@keyframes petalFall{
+  0%{
+    transform:translate3d(0,-10vh,0) rotate(var(--rot)) scale(.85);
+    opacity:0;
+  }
+  8%{opacity:.92;}
+  100%{
+    transform:translate3d(var(--drift),112vh,0) rotate(calc(var(--rot) + 260deg)) scale(1.05);
+    opacity:0;
+  }
+}
+
+#centerNotice.memory-notice{
+  background:transparent!important;
+  border:none!important;
+  box-shadow:none!important;
+  color:white!important;
+  padding:0 22px!important;
+  font-size:30px!important;
+  line-height:1.85!important;
+  letter-spacing:.04em;
+  text-shadow:
+    0 0 8px rgba(255,255,255,.95),
+    0 0 22px rgba(255,218,235,.75),
+    0 0 46px rgba(255,170,210,.42);
+  animation:memoryNoticeFloat .9s ease both;
+}
+
+#centerNotice.memory-notice.complete{
+  font-size:32px!important;
+  text-shadow:
+    0 0 10px rgba(255,255,255,.98),
+    0 0 28px rgba(255,230,190,.86),
+    0 0 58px rgba(255,170,210,.55);
+}
+
+@keyframes memoryNoticeFloat{
+  0%{
+    opacity:0;
+    transform:translate(-50%,-44%) scale(.94);
+    filter:blur(3px);
+  }
+  100%{
+    opacity:1;
+    transform:translate(-50%,-50%) scale(1);
+    filter:blur(0);
+  }
+}
+
+
 #lostItemOverlay{
   position:fixed;
   inset:0;
@@ -554,6 +645,7 @@ body.final-complete-playing #finalCompleteScreen *{
 <div id="lostCollectionBox"></div>
 </div>
 <div id="rareEffect"></div>
+<div id="petals"></div>
 <div id="lostItemOverlay"><div id="lostItemText"></div></div>
 
 <!-- =====================
@@ -18659,7 +18751,43 @@ v16 手動スロット成立検知＋回数保護
     localStorage.setItem("lostFragmentCount", String(n));
   }
 
-  function showQuietNotice(text, ms){
+  let petalTimer = null;
+  let petalEndTimer = null;
+
+  function startPetals(duration){
+    const container = document.getElementById("petals");
+    if(!container) return;
+
+    if(petalTimer) clearInterval(petalTimer);
+    if(petalEndTimer) clearTimeout(petalEndTimer);
+
+    container.innerHTML = "";
+    container.classList.add("show");
+
+    function createPetal(){
+      const petal = document.createElement("span");
+      petal.className = "petal";
+      petal.style.left = (Math.random() * 100) + "vw";
+      petal.style.setProperty("--dur", (6 + Math.random() * 4) + "s");
+      petal.style.setProperty("--drift", ((Math.random() * 180) - 90) + "px");
+      petal.style.setProperty("--rot", (Math.random() * 360) + "deg");
+      petal.style.animationDelay = (Math.random() * .8) + "s";
+      container.appendChild(petal);
+      setTimeout(function(){ petal.remove(); }, 11000);
+    }
+
+    for(let i = 0; i < 18; i++) createPetal();
+    petalTimer = setInterval(createPetal, 180);
+
+    petalEndTimer = setTimeout(function(){
+      clearInterval(petalTimer);
+      petalTimer = null;
+      container.classList.remove("show");
+      setTimeout(function(){ container.innerHTML = ""; }, 800);
+    }, duration);
+  }
+
+  function showQuietNotice(text, ms, kind){
     let box = document.getElementById("centerNotice");
     if(!box){
       box = document.createElement("div");
@@ -18668,10 +18796,14 @@ v16 手動スロット成立検知＋回数保護
     }
 
     box.textContent = text;
+    box.classList.remove("fragment","complete");
+    box.classList.add("memory-notice");
+    if(kind) box.classList.add(kind);
     box.classList.add("show");
+    startPetals(ms);
 
     setTimeout(function(){
-      box.classList.remove("show");
+      box.classList.remove("show","memory-notice","fragment","complete");
     }, ms);
   }
 
@@ -18706,15 +18838,15 @@ v16 手動スロット成立検知＋回数保護
     if(count >= FRAGMENT_MAX){
       setFragmentCount(0);
 
-      showQuietNotice("案外何でもない日々を\n今も胸に宿して", 2000);
+      showQuietNotice("案外何でもない日々を\n今も胸に宿して", 10000, "complete");
 
       setTimeout(function(){
         getLostReward();
         updateDisplay();
-      }, 2100);
+      }, 10100);
     }else{
       setFragmentCount(count);
-      showQuietNotice(pickFragmentMessage(), 1000);
+      showQuietNotice(pickFragmentMessage(), 10000, "fragment");
     }
 
     updateDisplay();
