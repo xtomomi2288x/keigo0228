@@ -757,6 +757,165 @@ body.final-complete-playing #finalCompleteScreen *{
   to{transform:scale(1.08) rotate(4deg);}
 }
 
+
+/* =====================
+自引き？？？：最終案②「忘れ物が現れる」
+静か・余韻重視・10秒固定
+===================== */
+#memoryFragmentText.lost-appear{
+  font-size:25px;
+  line-height:2.05;
+  letter-spacing:.05em;
+  color:#fff4c8;
+  text-shadow:
+    0 0 10px rgba(255,255,255,.95),
+    0 0 24px rgba(255,220,140,.70),
+    0 0 52px rgba(255,190,80,.38);
+}
+
+#memoryFragmentText.lost-appear .piece{
+  font-size:34px;
+  margin-bottom:12px;
+  color:#fff0b8;
+  text-shadow:
+    0 0 12px rgba(255,255,255,.95),
+    0 0 28px rgba(255,220,120,.78),
+    0 0 58px rgba(255,170,70,.45);
+}
+
+#memoryFragmentText.lost-appear .dots{
+  display:block;
+  font-size:34px;
+  letter-spacing:.35em;
+  margin-bottom:8px;
+  color:#fff6d0;
+  animation:lostDotsPulse 1.4s ease-in-out infinite alternate;
+}
+
+#memoryFragmentText.lost-appear .lost-name{
+  display:block;
+  margin-top:10px;
+  font-size:28px;
+  font-weight:bold;
+  color:#fff2bd;
+}
+
+#memoryFragmentText.lost-appear .lost-sub{
+  display:block;
+  margin-top:10px;
+  font-size:18px;
+  line-height:1.7;
+  color:#ffe8a5;
+  opacity:.92;
+}
+
+@keyframes lostDotsPulse{
+  from{opacity:.35; transform:scale(.96);}
+  to{opacity:1; transform:scale(1.04);}
+}
+
+
+/* 自引き？？？だけ完全黒背景 */
+#memoryFragmentOverlay.lost-black{
+  background:#000!important;
+}
+
+
+/* 自引き？？？：完全黒・装飾なし・ふわふわなし */
+#memoryFragmentOverlay.lost-black{
+  background:#000!important;
+}
+
+#memoryFragmentOverlay.lost-black .fragment-star{
+  display:none!important;
+}
+
+#memoryFragmentText.lost-appear{
+  color:#fff!important;
+  text-shadow:none!important;
+  filter:none!important;
+  transform:none!important;
+  transition:opacity .25s ease!important;
+  animation:none!important;
+}
+
+#memoryFragmentText.lost-appear *{
+  text-shadow:none!important;
+  filter:none!important;
+  transform:none!important;
+  animation:none!important;
+}
+
+#memoryFragmentText.lost-appear .dots{
+  color:#fff!important;
+  letter-spacing:.35em;
+}
+
+#memoryFragmentText.lost-appear .lost-name{
+  color:#fff!important;
+  font-size:28px;
+  font-weight:bold;
+}
+
+#memoryFragmentText.lost-appear .lost-sub{
+  color:#fff!important;
+  font-size:18px;
+  opacity:1;
+}
+
+
+/* 自引き？？？：完全黒＋金色文字＋少しだけ光る */
+#memoryFragmentOverlay.lost-black{
+  background:#000!important;
+}
+
+#memoryFragmentOverlay.lost-black .fragment-star{
+  display:none!important;
+}
+
+#memoryFragmentText.lost-appear{
+  color:#f6d36b!important;
+  text-shadow:
+    0 0 8px rgba(246,211,107,.85),
+    0 0 18px rgba(246,211,107,.45)!important;
+  filter:none!important;
+  transform:none!important;
+  transition:opacity .25s ease!important;
+  animation:none!important;
+}
+
+#memoryFragmentText.lost-appear *{
+  filter:none!important;
+  transform:none!important;
+  animation:none!important;
+}
+
+#memoryFragmentText.lost-appear .dots{
+  color:#f6d36b!important;
+  letter-spacing:.35em;
+  text-shadow:
+    0 0 8px rgba(246,211,107,.85),
+    0 0 18px rgba(246,211,107,.45)!important;
+}
+
+#memoryFragmentText.lost-appear .lost-name{
+  color:#f6d36b!important;
+  font-size:28px;
+  font-weight:bold;
+  text-shadow:
+    0 0 8px rgba(246,211,107,.9),
+    0 0 20px rgba(246,211,107,.5)!important;
+}
+
+#memoryFragmentText.lost-appear .lost-sub{
+  color:#f6d36b!important;
+  font-size:18px;
+  opacity:1;
+  text-shadow:
+    0 0 6px rgba(246,211,107,.75),
+    0 0 14px rgba(246,211,107,.38)!important;
+}
+
 </style>
 </head>
 <body>
@@ -790,7 +949,11 @@ body.final-complete-playing #finalCompleteScreen *{
   </div>
 
   <!-- 2列目（小さめ） -->
-  <div id="subButtonRow" class="sub-buttons"></div>
+  <div id="subButtonRow" class="sub-buttons">
+<button id="testFragmentBtn">🧩欠片テスト</button>
+<button id="testCompleteBtn">🌸10個テスト</button>
+<button id="testLostBtn">❓忘れ物テスト</button>
+</div>
 
   <div id="collectionBox"></div>
 
@@ -21793,7 +21956,7 @@ function showLostOverlay(item){
   if(!overlay || !text) return;
 
   text.classList.remove("show","fadeout");
-  text.textContent = "落とし物を拾った\n" + item;
+  text.textContent = "忘れ物を拾った\n" + item;
   overlay.classList.add("show");
 
   setTimeout(() => text.classList.add("show"), 80);
@@ -21804,7 +21967,7 @@ function showLostOverlay(item){
       overlay.classList.remove("show");
       text.classList.remove("show","fadeout");
     }, 700);
-  }, 5000);
+  }, 10000);
 }
 
 function getLostReward(){
@@ -21816,8 +21979,8 @@ function getLostReward(){
     owned.push(item);
     setStoreArray("unlockedLostItems", owned);
   }
-  showRandomMessage("落とし物を拾った：\n" + item);
-  showLostOverlay(item);
+  showRandomMessage("忘れ物を拾った：\n" + item);
+  if(typeof showLostDirectNotice==="function"){ showLostDirectNotice(item,10000); } else { showLostOverlay(item); }
 }
 
 
@@ -21883,7 +22046,7 @@ function showSlotHit(){
   if(slot) slot.classList.add("hit");
 
   setSlotReady(true);
-  showCenter("良かったね\n良かったよ", 3000, () => {
+  showCenter("良かったね\n良かったよ", 1000, () => {
     if(slot) slot.classList.remove("hit");
   });
 }
@@ -22394,7 +22557,7 @@ v16 手動スロット成立検知＋回数保護
 
     v16SetSlotReady(true);
 
-    v16ShowCenter("良かったね\n良かったよ", 300, () => {
+    v16ShowCenter("良かったね\n良かったよ", 1000, () => {
       if(slot) slot.classList.remove("hit");
     });
   }
@@ -22587,7 +22750,7 @@ updateDisplay();
       overlay.classList.add("fadeout");
 
       setTimeout(function(){
-        overlay.classList.remove("show","fadeout");
+        overlay.classList.remove("show","fadeout","lost-black");
         textBox.className = "";
         textBox.innerHTML = "";
         overlay.querySelectorAll(".fragment-star").forEach(el => el.remove());
@@ -22601,9 +22764,7 @@ updateDisplay();
 
     if(isDeepNight()){
       if(r < 0.20){
-        return "あなたと過ごした深夜
-この時間だけは特別
-もう少し、思い出して";
+        return "あなたと過ごした深夜\nこの時間だけは特別\nもう少し、思い出して";
       }
       return "忘れ物の欠片を拾った";
     }
@@ -22630,8 +22791,7 @@ updateDisplay();
     if(count >= FRAGMENT_MAX){
       setFragmentCount(0);
 
-      showMemoryFragmentNotice("案外何でもない日々を
-今も胸に宿して", 10000, {
+      showMemoryFragmentNotice("案外何でもない日々を\n今も胸に宿して", 10000, {
         complete:true,
         petals:true
       });
@@ -22643,10 +22803,7 @@ updateDisplay();
     }else{
       setFragmentCount(count);
 
-      showMemoryFragmentNotice(pickFragmentMessage(), 10000, {
-        complete:false,
-        petals:false
-      });
+      showMemoryFragmentNotice(pickFragmentMessage(), 10000, {petals:false});
     }
 
     updateDisplay();
@@ -23116,6 +23273,208 @@ function updateKanaGroupCounts(){
 
 document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
 
+</script>
+
+
+
+<script id="kani_memory_fragment_global_v2">
+/* =====================
+最終案演出
+- 欠片：暗転＋星＋花びら＋🧩＋「忘れ物の欠片を拾った」（10秒固定）
+- 10個：暗転＋星＋花びら＋🧩＋特別文（10秒固定）
+- 自引き：案②「忘れ物が現れる」 静かに・・・→忘れ物名（10秒固定）
+===================== */
+(function(){
+  let kaniFragmentTimer = null;
+  let kaniPetalTimer = null;
+  let kaniPetalEndTimer = null;
+
+  function kaniMakeStars(overlay, count){
+    overlay.querySelectorAll(".fragment-star").forEach(el => el.remove());
+    for(let i=0;i<count;i++){
+      const star=document.createElement("span");
+      star.className="fragment-star";
+      star.style.left=(Math.random()*100)+"vw";
+      star.style.top=(Math.random()*100)+"vh";
+      star.style.setProperty("--dur",(1.4+Math.random()*2.6)+"s");
+      star.style.animationDelay=(Math.random()*1.8)+"s";
+      overlay.appendChild(star);
+    }
+  }
+
+  function kaniStartPetals(duration){
+    const container=document.getElementById("petals");
+    if(!container) return;
+
+    if(kaniPetalTimer) clearInterval(kaniPetalTimer);
+    if(kaniPetalEndTimer) clearTimeout(kaniPetalEndTimer);
+
+    container.innerHTML="";
+    container.classList.add("show");
+
+    function createPetal(){
+      const petal=document.createElement("span");
+      petal.className="petal";
+      petal.style.left=(Math.random()*100)+"vw";
+      petal.style.setProperty("--dur",(6+Math.random()*4)+"s");
+      petal.style.setProperty("--drift",((Math.random()*180)-90)+"px");
+      petal.style.setProperty("--rot",(Math.random()*360)+"deg");
+      petal.style.animationDelay=(Math.random()*.8)+"s";
+      container.appendChild(petal);
+      setTimeout(()=>petal.remove(),11000);
+    }
+
+    for(let i=0;i<18;i++) createPetal();
+    kaniPetalTimer=setInterval(createPetal,180);
+
+    kaniPetalEndTimer=setTimeout(()=>{
+      clearInterval(kaniPetalTimer);
+      kaniPetalTimer=null;
+      container.classList.remove("show");
+      setTimeout(()=>{container.innerHTML="";},900);
+    },duration);
+  }
+
+  window.showMemoryFragmentNotice = function(text, ms=10000, options={}){
+    let overlay=document.getElementById("memoryFragmentOverlay");
+    let textBox=document.getElementById("memoryFragmentText");
+
+    if(!overlay){
+      overlay=document.createElement("div");
+      overlay.id="memoryFragmentOverlay";
+      document.body.appendChild(overlay);
+    }
+    if(!textBox){
+      textBox=document.createElement("div");
+      textBox.id="memoryFragmentText";
+      overlay.appendChild(textBox);
+    }
+
+    if(kaniFragmentTimer) clearTimeout(kaniFragmentTimer);
+
+    overlay.classList.remove("show","fadeout","lost-black");
+    textBox.className="";
+    textBox.innerHTML="";
+    overlay.querySelectorAll(".fragment-star").forEach(el=>el.remove());
+
+    const icon = options.icon || "🧩";
+    textBox.innerHTML = '<span class="piece">'+icon+'</span>' + text;
+
+    if(options.complete) textBox.classList.add("complete");
+
+    kaniMakeStars(overlay, options.complete ? 90 : 55);
+
+    overlay.classList.add("show");
+    setTimeout(()=>textBox.classList.add("show"),80);
+
+    if(options.petals) kaniStartPetals(ms);
+
+    kaniFragmentTimer=setTimeout(()=>{
+      textBox.classList.add("fadeout");
+      overlay.classList.add("fadeout");
+
+      setTimeout(()=>{
+        overlay.classList.remove("show","fadeout","lost-black");
+        textBox.className="";
+        textBox.innerHTML="";
+        overlay.querySelectorAll(".fragment-star").forEach(el=>el.remove());
+      },900);
+    },ms);
+  };
+
+  window.showLostDirectNotice = function(item, ms=10000){
+    let overlay=document.getElementById("memoryFragmentOverlay");
+    let textBox=document.getElementById("memoryFragmentText");
+
+    if(!overlay){
+      overlay=document.createElement("div");
+      overlay.id="memoryFragmentOverlay";
+      document.body.appendChild(overlay);
+    }
+    if(!textBox){
+      textBox=document.createElement("div");
+      textBox.id="memoryFragmentText";
+      overlay.appendChild(textBox);
+    }
+
+    if(kaniFragmentTimer) clearTimeout(kaniFragmentTimer);
+
+    overlay.classList.remove("show","fadeout","lost-black");
+    overlay.classList.add("lost-black");
+    textBox.className="lost-appear";
+    textBox.innerHTML="";
+    overlay.querySelectorAll(".fragment-star").forEach(el=>el.remove());
+
+    // 自引きは完全黒＋静けさ重視。キラキラもふわふわも出さない
+    overlay.classList.add("show");
+
+    setTimeout(()=>{
+      textBox.innerHTML = '<span class="dots">・・・</span>';
+      textBox.classList.add("show");
+    }, 900);
+
+    setTimeout(()=>{
+      textBox.classList.remove("show");
+      setTimeout(()=>{
+        textBox.innerHTML =
+          '<span class="lost-name">'+item+'</span>' +
+          '<span class="lost-sub">忘れ物を拾った</span>';
+        textBox.classList.add("show");
+      }, 450);
+    }, 3000);
+
+    kaniFragmentTimer=setTimeout(()=>{
+      textBox.classList.add("fadeout");
+      overlay.classList.add("fadeout");
+
+      setTimeout(()=>{
+        overlay.classList.remove("show","fadeout","lost-black");
+        textBox.className="";
+        textBox.innerHTML="";
+        overlay.querySelectorAll(".fragment-star").forEach(el=>el.remove());
+      },900);
+    },ms);
+  };
+})();
+</script>
+
+
+<script id="kani_test_buttons_v1">
+window.addEventListener("load",()=>{
+ const f=document.getElementById("testFragmentBtn");
+ const c=document.getElementById("testCompleteBtn");
+ const l=document.getElementById("testLostBtn");
+
+ if(f){
+  f.onclick=()=>{
+   if(typeof showMemoryFragmentNotice==="function"){
+    showMemoryFragmentNotice("忘れ物の欠片を拾った",10000,{petals:false});
+   }else{
+    alert("欠片演出関数が見つからないよ");
+   }
+  };
+ }
+
+ if(c){
+  c.onclick=()=>{
+   if(typeof showMemoryFragmentNotice==="function"){
+    showMemoryFragmentNotice("案外何でもない日々を\n今も胸に宿して",10000,{complete:true,petals:true});
+   }else{
+    alert("10個演出関数が見つからないよ");
+   }
+  };
+ }
+
+ if(l){
+  l.onclick=()=>{
+   if(typeof showLostDirectNotice==="function"){
+    showLostDirectNotice("セブンティーンアイス",10000);
+   }else{
+    alert("自引き演出関数が見つからないよ");
+   }
+  };
+ }
+});
 </script>
 </body>
 </html>
