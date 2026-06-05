@@ -652,6 +652,111 @@ body.final-complete-playing #finalCompleteScreen *{
   box-shadow:0 2px 10px rgba(0,0,0,.12);
 }
 
+
+/* =====================
+忘れ物の欠片：理想図版 FIX
+通常欠片：暗転＋星キラ＋🧩＋文字＋フェード
+10個到達：暗転＋花びら＋星キラ＋特別文字
+===================== */
+#memoryFragmentOverlay{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.78);
+  z-index:2147483646;
+  pointer-events:none;
+  opacity:0;
+  overflow:hidden;
+  transition:opacity .7s ease;
+}
+
+#memoryFragmentOverlay.show{
+  display:flex;
+  opacity:1;
+}
+
+#memoryFragmentOverlay.fadeout{
+  opacity:0;
+}
+
+.fragment-star{
+  position:absolute;
+  width:4px;
+  height:4px;
+  border-radius:50%;
+  background:white;
+  opacity:.85;
+  box-shadow:
+    0 0 8px rgba(255,255,255,.95),
+    0 0 18px rgba(255,235,180,.7);
+  animation:fragmentStarFloat var(--dur) ease-in-out infinite alternate;
+}
+
+@keyframes fragmentStarFloat{
+  from{transform:translateY(0) scale(.7); opacity:.35;}
+  to{transform:translateY(-18px) scale(1.25); opacity:1;}
+}
+
+#memoryFragmentText{
+  position:relative;
+  z-index:2147483647;
+  color:white;
+  text-align:center;
+  font-size:22px;
+  line-height:2;
+  white-space:pre-line;
+  text-shadow:
+    0 0 10px rgba(255,255,255,.95),
+    0 0 24px rgba(255,255,255,.62),
+    0 0 42px rgba(255,255,255,.32);
+  opacity:0;
+  filter:blur(8px);
+  transform:translateY(35px);
+  transition:
+    opacity .75s ease,
+    filter .75s ease,
+    transform .75s ease;
+}
+
+#memoryFragmentText.show{
+  opacity:1;
+  filter:blur(0);
+  transform:translateY(0);
+}
+
+#memoryFragmentText.fadeout{
+  opacity:0;
+  filter:blur(5px);
+  transform:translateY(-18px);
+}
+
+#memoryFragmentText .piece{
+  display:block;
+  font-size:38px;
+  line-height:1.1;
+  margin-bottom:8px;
+  text-shadow:
+    0 0 10px rgba(255,255,255,.95),
+    0 0 24px rgba(255,235,180,.75);
+  animation:memoryPiecePulse 1.4s ease-in-out infinite alternate;
+}
+
+#memoryFragmentText.complete{
+  font-size:24px;
+  line-height:2.1;
+}
+
+#memoryFragmentText.complete .piece{
+  font-size:42px;
+}
+
+@keyframes memoryPiecePulse{
+  from{transform:scale(.96) rotate(-4deg);}
+  to{transform:scale(1.08) rotate(4deg);}
+}
+
 </style>
 </head>
 <body>
@@ -696,6 +801,11 @@ body.final-complete-playing #finalCompleteScreen *{
 <div id="rareEffect"></div>
 <div id="petals"></div>
 <div id="lostItemOverlay"><div id="lostItemText"></div></div>
+
+<div id="memoryFragmentOverlay">
+  <div id="memoryFragmentText"></div>
+</div>
+
 
 <!-- =====================
 五十音順アーティスト一覧
@@ -5188,9 +5298,9 @@ Teenager Forever
 いまはここにあるのさ</div></details>
 </details>
 
-<!-- クリープパイプ -->
+<!-- クリープハイプ -->
 <details>
-<summary>クリープパイプ</summary>
+<summary>クリープハイプ</summary>
 
 <details class="song">
 <summary>おやすみ泣き声、さよなら歌姫</summary>
@@ -21773,7 +21883,7 @@ function showSlotHit(){
   if(slot) slot.classList.add("hit");
 
   setSlotReady(true);
-  showCenter("良かったね\n良かったよ", 300, () => {
+  showCenter("良かったね\n良かったよ", 3000, () => {
     if(slot) slot.classList.remove("hit");
   });
 }
@@ -22384,6 +22494,7 @@ updateDisplay();
 
   let petalTimer = null;
   let petalEndTimer = null;
+  let fragmentTimer = null;
 
   function startPetals(duration){
     const container = document.getElementById("petals");
@@ -22414,27 +22525,74 @@ updateDisplay();
       clearInterval(petalTimer);
       petalTimer = null;
       container.classList.remove("show");
-      setTimeout(function(){ container.innerHTML = ""; }, 800);
+      setTimeout(function(){ container.innerHTML = ""; }, 900);
     }, duration);
   }
 
-  function showQuietNotice(text, ms, kind){
-    let box = document.getElementById("centerNotice");
-    if(!box){
-      box = document.createElement("div");
-      box.id = "centerNotice";
-      document.body.appendChild(box);
+  function makeStars(overlay, count){
+    overlay.querySelectorAll(".fragment-star").forEach(el => el.remove());
+
+    for(let i = 0; i < count; i++){
+      const star = document.createElement("span");
+      star.className = "fragment-star";
+      star.style.left = (Math.random() * 100) + "vw";
+      star.style.top = (Math.random() * 100) + "vh";
+      star.style.setProperty("--dur", (1.4 + Math.random() * 2.6) + "s");
+      star.style.animationDelay = (Math.random() * 1.8) + "s";
+      overlay.appendChild(star);
+    }
+  }
+
+  function showMemoryFragmentNotice(text, ms, options){
+    options = options || {};
+    noticeLock = true;
+
+    let overlay = document.getElementById("memoryFragmentOverlay");
+    let textBox = document.getElementById("memoryFragmentText");
+
+    if(!overlay){
+      overlay = document.createElement("div");
+      overlay.id = "memoryFragmentOverlay";
+      document.body.appendChild(overlay);
     }
 
-    box.textContent = text;
-    box.classList.remove("fragment","complete");
-    box.classList.add("memory-notice");
-    if(kind) box.classList.add(kind);
-    box.classList.add("show");
-    startPetals(ms);
+    if(!textBox){
+      textBox = document.createElement("div");
+      textBox.id = "memoryFragmentText";
+      overlay.appendChild(textBox);
+    }
+
+    if(fragmentTimer) clearTimeout(fragmentTimer);
+
+    overlay.classList.remove("fadeout");
+    textBox.className = "";
+    textBox.innerHTML = '<span class="piece">🧩</span>' + text;
+
+    if(options.complete) textBox.classList.add("complete");
+
+    makeStars(overlay, options.complete ? 90 : 55);
+
+    overlay.classList.add("show");
 
     setTimeout(function(){
-      box.classList.remove("show","memory-notice","fragment","complete");
+      textBox.classList.add("show");
+    }, 80);
+
+    if(options.petals){
+      startPetals(ms);
+    }
+
+    fragmentTimer = setTimeout(function(){
+      textBox.classList.add("fadeout");
+      overlay.classList.add("fadeout");
+
+      setTimeout(function(){
+        overlay.classList.remove("show","fadeout");
+        textBox.className = "";
+        textBox.innerHTML = "";
+        overlay.querySelectorAll(".fragment-star").forEach(el => el.remove());
+        noticeLock = false;
+      }, 900);
     }, ms);
   }
 
@@ -22443,7 +22601,9 @@ updateDisplay();
 
     if(isDeepNight()){
       if(r < 0.20){
-        return "あなたと過ごした深夜\nこの時間だけは特別\nもう少し、思い出して";
+        return "あなたと過ごした深夜
+この時間だけは特別
+もう少し、思い出して";
       }
       return "忘れ物の欠片を拾った";
     }
@@ -22456,6 +22616,7 @@ updateDisplay();
   function checkLostFragment(){
     const currentHeartCount = Number(localStorage.getItem("heartCount") || heartCount || 0);
     const fragmentEvery = getFragmentEvery();
+
     if(currentHeartCount <= 0) return;
     if(currentHeartCount % fragmentEvery !== 0) return;
 
@@ -22469,7 +22630,11 @@ updateDisplay();
     if(count >= FRAGMENT_MAX){
       setFragmentCount(0);
 
-      showQuietNotice("案外何でもない日々を\n今も胸に宿して", 10000, "complete");
+      showMemoryFragmentNotice("案外何でもない日々を
+今も胸に宿して", 10000, {
+        complete:true,
+        petals:true
+      });
 
       setTimeout(function(){
         getLostReward();
@@ -22477,7 +22642,11 @@ updateDisplay();
       }, 10100);
     }else{
       setFragmentCount(count);
-      showQuietNotice(pickFragmentMessage(), 10000, "fragment");
+
+      showMemoryFragmentNotice(pickFragmentMessage(), 10000, {
+        complete:false,
+        petals:false
+      });
     }
 
     updateDisplay();
@@ -22948,107 +23117,5 @@ function updateKanaGroupCounts(){
 document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
 
 </script>
-<!-- クリープハイプ -->
-<details>
-<summary>クリープハイプ</summary>
-
-<details class="song">
-<summary>おやすみ泣き声、さよなら歌姫</summary>
-<div class="lyric">
-さよなら歌姫　最後の曲だね　　君の歌が本当に好きだ
-今夜も歌姫　凄く綺麗だね　君の事が本当に好きだ
-
-さよなら歌姫　アンコールはどうする　君の事だからきっと無いね
-それなら歌姫　アルコールはどうする　僕は全然飲めないけど
-
-歌声　歌声　でも君は泣いていたんだね
-泣き声　泣き声　僕は気づけなかった
-
-僕も随分年をとったよ　こんな事で感傷的になってさ
-今なら歌姫やり直せるかな　君はいつも勝手だ
-
-歌声　歌声　でも君は泣いていたんだね
-泣き声　泣き声　僕は気づけなかった
-
-最後の4小節 君の口が動く
-最後の4小節 君が歌う
-最後の4小節 君の気持ちが動く
-さよなら
-
-歌声　歌声　でも君は泣いていたんだね
-無き声　無き声　僕は気づけなかった
-</div>
-</details>
-
-<details class="song">
-<summary>栞</summary>
-<div class="lyric">
-途中でやめた本の中に挾んだままだった
-空気を読むことに忙しくて　今まで忘れてたよ
-句読点がない君の嘘はとても可愛かった
-後ろ前逆の優しさは、すこしだけ本当だった
-
-簡単なあらすじなんかにまとまってたまるか
-途中から読んでも　意味不明な2人の話
-
-桜散る桜散る　ひらひら舞う文字が綺麗
-「今ならまだやり直せるよ」が風に舞う
-嘘だよ　ごめんね　新しい街にいっても元気でね
-桜散る桜散る　お別れの時間がきて
-「ちょっといたい　もっといたい　ずっといたいのにな」
-うつむいてるくらいがちょうどいい
-地面に咲いてる
-
-初めて呼んだ君の名前　振り向いたあの顔
-それだけでなんか嬉しくて　急いで閉じ込めた
-
-あのね本当はね　あの時言えなかったことを
-あとがきに書いても　意味不明な2人の話
-
-ありがちで退屈などこにでもある続きが
-開いたら落ちてひらひらと風に舞う
-迷っても　止まっても　いつも今を教えてくれた栞
-ありがちで退屈などこにでもある続きが
-終わってからわかっても遅いのにな
-うつむいてるくらいがちょうどいい
-地面に泣いてる
-
-この気持ちもいつか　手軽に持ち運べる文庫になって
-懐かしくなるから　それまでは待って地面に水をやる
-
-桜散る桜散る　ひらひら舞う文字が綺麗
-「今ならまだやり直せるよ」が風に舞う
-嘘だよ　ごめんね　新しい街にいっても元気でね
-桜散る桜散る　お別れの時間がきて
-「ちょっといたい　もっといたい　ずっといたいのにな」
-うつむいてるくらいがちょうどいい
-地面に咲いてる
-</div>
-</details>
-
-<details class="song">
-<summary>左耳</summary>
-<div class="lyric">
-ダサいTシャツ着て　寝息を立ててた
-規則正しい　リズムに安心してた
-君が居なくなったら　アタシはどうなるかな
-君が居なくなったら　寂しいな　悲しいな
-左耳知らなかった穴　覗いたら昔の女が居た
-アタシは急いで　ピアスを刺す
-それで起きて　寝呆けた顔して
-これくれるのなんて聞いてくる　別にそれもう要らないし
-
-「ずっと傍に居たい」「あなたが好きよ」
-言葉は遠回りして　迷子になってバイト遅刻
-君が居なくなったら　アタシはどうなるかな
-君が居なくなったら　アタシはどうなるかな
-左耳知らなかった穴　覗いたら昔の女が居た
-アタシは急いで　ピアスを刺す
-それで起きて　寝呆けた顔して
-これくれるのなんて聞いてくる　別にそれもう要らないし
-</div>
-</details>
-
-</details>
 </body>
 </html>
