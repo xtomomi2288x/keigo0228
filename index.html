@@ -950,9 +950,6 @@ body.final-complete-playing #finalCompleteScreen *{
 
   <!-- 2列目（小さめ） -->
   <div id="subButtonRow" class="sub-buttons">
-<button id="testFragmentBtn">🧩欠片テスト</button>
-<button id="testCompleteBtn">🌸10個テスト</button>
-<button id="testLostBtn">❓忘れ物テスト</button>
 </div>
 
   <div id="collectionBox"></div>
@@ -23438,43 +23435,64 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
 })();
 </script>
 
+<script id="kani_debug_test_buttons_v2">
+(function(){
+  function ensureDebugTestButtons(){
+    const debugPanel = document.getElementById("debugPanel");
+    if(!debugPanel || document.getElementById("debugEffectTestBox")) return;
 
-<script id="kani_test_buttons_v1">
-window.addEventListener("load",()=>{
- const f=document.getElementById("testFragmentBtn");
- const c=document.getElementById("testCompleteBtn");
- const l=document.getElementById("testLostBtn");
+    const box = document.createElement("div");
+    box.id = "debugEffectTestBox";
+    box.style.marginTop = "10px";
+    box.style.paddingTop = "10px";
+    box.style.borderTop = "1px dashed #aaa";
+    box.innerHTML = `
+      <b>演出テスト</b><br>
+      <button id="testFragmentBtn" type="button">🧩欠片テスト</button>
+      <button id="testCompleteBtn" type="button">🌸10個テスト</button>
+      <button id="testLostBtn" type="button">❓自引きテスト</button>
+    `;
 
- if(f){
-  f.onclick=()=>{
-   if(typeof showMemoryFragmentNotice==="function"){
-    showMemoryFragmentNotice("忘れ物の欠片を拾った",10000,{petals:false});
-   }else{
-    alert("欠片演出関数が見つからないよ");
-   }
-  };
- }
+    debugPanel.appendChild(box);
 
- if(c){
-  c.onclick=()=>{
-   if(typeof showMemoryFragmentNotice==="function"){
-    showMemoryFragmentNotice("案外何でもない日々を\n今も胸に宿して",10000,{complete:true,petals:true});
-   }else{
-    alert("10個演出関数が見つからないよ");
-   }
-  };
- }
+    const f = document.getElementById("testFragmentBtn");
+    const c = document.getElementById("testCompleteBtn");
+    const l = document.getElementById("testLostBtn");
 
- if(l){
-  l.onclick=()=>{
-   if(typeof showLostDirectNotice==="function"){
-    showLostDirectNotice("セブンティーンアイス",10000);
-   }else{
-    alert("自引き演出関数が見つからないよ");
-   }
-  };
- }
-});
+    if(f){
+      f.onclick = function(){
+        if(typeof showMemoryFragmentNotice === "function"){
+          showMemoryFragmentNotice("忘れ物の欠片を拾った", 10000, {petals:false});
+        }else{
+          alert("欠片演出関数が見つからないよ");
+        }
+      };
+    }
+
+    if(c){
+      c.onclick = function(){
+        if(typeof showMemoryFragmentNotice === "function"){
+          showMemoryFragmentNotice("案外何でもない日々を\n今も胸に宿して", 10000, {complete:true, petals:true});
+        }else{
+          alert("10個演出関数が見つからないよ");
+        }
+      };
+    }
+
+    if(l){
+      l.onclick = function(){
+        if(typeof showLostDirectNotice === "function"){
+          showLostDirectNotice("セブンティーンアイス", 10000);
+        }else{
+          alert("自引き演出関数が見つからないよ");
+        }
+      };
+    }
+  }
+
+  window.addEventListener("load", ensureDebugTestButtons);
+})();
 </script>
+
 </body>
 </html>
