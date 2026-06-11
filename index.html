@@ -22072,13 +22072,25 @@ function getLostReward(){
 }
 
 
+function isTakoRewardBoostActive(){
+  if(typeof window.isTakoModeActive === "function" && window.isTakoModeActive()) return true;
+  return document.body.classList.contains("tako-fatigue-mode");
+}
+
+function takoRewardMultiplier(){
+  return isTakoRewardBoostActive() ? 2 : 1;
+}
+
 function rollReward(){
   const roll = Math.random();
+  const boost = takoRewardMultiplier();
 
-  const pLost = 1 / 10000;
-  const pUR   = 1 / 8000;
-  const pSR   = 1 / 4000;
-  const pR    = 1 / 500;
+  // ❓は通常時、スロット込みでだいたい1/10000になるように調整。
+  // タコモード中だけ、❓/UR/SR/Rをすべて2倍。
+  const pLost = (1 / 10000) * boost;
+  const pUR   = (1 / 8000)  * boost;
+  const pSR   = (1 / 4000)  * boost;
+  const pR    = (1 / 500)   * boost;
 
   if(roll < pLost){
     getLostReward();
@@ -22098,10 +22110,13 @@ function rollReward(){
 
 function rollRarePlus(){
   const roll = Math.random();
+  const boost = takoRewardMultiplier();
 
-  const pLost = 1 / 5000;
-  const pUR   = 1 / 4000;
-  const pSR   = 1 / 2000;
+  // スロット後も❓は基準1/10000。
+  // ここもタコモード中だけ、❓/UR/SR/Rをすべて2倍。
+  const pLost = (1 / 10000) * boost;
+  const pUR   = (1 / 4000)  * boost;
+  const pSR   = (1 / 2000)  * boost;
 
   if(roll < pLost){
     getLostReward();
@@ -22188,9 +22203,12 @@ function handleHeartClick(e){
   }
   if(clickLock || noticeLock) return;
   clickLock = true;
-  setTimeout(() => clickLock = false, 80);
+  setTimeout(() => clickLock = false, 1);
 
   heartCount++;
+  if(typeof window.kaniTakoCountHeartTap === "function"){
+    window.kaniTakoCountHeartTap(heartCount);
+  }
 
   if(slotReady){
     setSlotReady(false);
@@ -22705,9 +22723,12 @@ v16 手動スロット成立検知＋回数保護
       }
       if(clickLock || noticeLock) return;
       clickLock = true;
-      setTimeout(() => clickLock = false, 80);
+      setTimeout(() => clickLock = false, 1);
 
       heartCount++;
+  if(typeof window.kaniTakoCountHeartTap === "function"){
+    window.kaniTakoCountHeartTap(heartCount);
+  }
 
       if(slotReady || localStorage.getItem("slotReadySafe") === "true"){
         v16SetSlotReady(false);
@@ -22741,8 +22762,14 @@ updateDisplay();
     return hour >= 1 && hour < 4;
   }
 
+  function isTakoFragmentBoostActive(){
+    if(typeof window.isTakoModeActive === "function" && window.isTakoModeActive()) return true;
+    return document.body.classList.contains("tako-fatigue-mode");
+  }
+
   function getFragmentEvery(){
-    return isDeepNight() ? FRAGMENT_EVERY_NIGHT : FRAGMENT_EVERY;
+    const base = isDeepNight() ? FRAGMENT_EVERY_NIGHT : FRAGMENT_EVERY;
+    return isTakoFragmentBoostActive() ? Math.max(1, Math.floor(base / 2)) : base;
   }
 
   function getFragmentCount(){
@@ -23131,6 +23158,16 @@ updateDisplay();
   z-index: 10 !important;
   pointer-events: auto !important;
 }
+
+/* =====================
+カニちゃん修正：欠片・10個揃い・❓自引き演出中はクリック不可
+===================== */
+#memoryFragmentOverlay.show,
+#petals.show,
+#lostItemOverlay.show{
+  pointer-events:auto!important;
+}
+
 </style>
 
 <script id="ipad-backup-export-script-v18">
@@ -23622,13 +23659,45 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
 </div>
 
 
-<script id="kani_tako_fatigue_mode_v2">
+
+<script id="kani_memory_click_lock_patch_v1">
 (function(){
-  const TAKO_DURATION = 1*60*60*1000;
-  const TAKO_COMBO_LIMIT = 5000;
-  const TAKO_COMBO_TIMEOUT = 30*1000;
+  function memoryEffectActive(){
+    return !!(
+      document.getElementById("memoryFragmentOverlay")?.classList.contains("show") ||
+      document.getElementById("petals")?.classList.contains("show") ||
+      document.getElementById("lostItemOverlay")?.classList.contains("show")
+    );
+  }
+
+  function blockHeartDuringMemoryEffect(e){
+    if(!memoryEffectActive()) return;
+    const heart = e.target?.closest?.("#heart");
+    if(!heart) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if(typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+  }
+
+  ["click","mousedown","mouseup","pointerdown","pointerup","touchstart","touchend"].forEach(type=>{
+    document.addEventListener(type, blockHeartDuringMemoryEffect, true);
+  });
+})();
+</script>
+
+<script id="kani_tako_fatigue_mode_v3">
+(function(){
+  const TAKO_DURATION = 30*60*1000;
+  const TAKO_COMBO_LIMIT = 100;
+  const TAKO_COMBO_TIMEOUT = 60*1000;
+
+  // 60秒以内に「実際に増えた💗数」が100に到達した時だけ発動。
+  // clickイベント数では数えない。
   let takoCombo = 0;
-  let takoComboTimer = null;
+  let takoComboStartedAt = 0;
+  let takoComboResetTimer = null;
+  let lastObservedHeartCount = null;
+
   const NORMAL_TITLE = "🎸三輪啓悟ライブラリ🎸";
   const NIGHT_TITLE = "🌙月明りの路上ライブ🌙";
   const TAKO_TITLE = "🐙疲れたこ🐙";
@@ -23637,17 +23706,33 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
   let takoStartX = null;
   let takoMouseDownX = null;
 
-  function now(){return Date.now();}
-  function heartCountSafe(){return Number(localStorage.getItem("heartCount") || window.heartCount || 0);}
-  window.isTakoModeActive=function(){return Number(localStorage.getItem("takoModeUntil")||0)>now();};
+  function now(){ return Date.now(); }
+
+  function heartCountSafe(){
+    const candidates = [
+      localStorage.getItem("heartCount"),
+      localStorage.getItem("loveCount"),
+      document.getElementById("counter")?.textContent?.match(/💗\s*(\d+)回/)?.[1]
+    ];
+    for(const v of candidates){
+      const n = Number(v);
+      if(Number.isFinite(n) && n >= 0) return n;
+    }
+    return 0;
+  }
+
+  window.isTakoModeActive = function(){
+    return Number(localStorage.getItem("takoModeUntil") || 0) > now();
+  };
 
   function updateTimer(){
-    const t=document.querySelector("#takoModeTimer strong"); if(!t) return;
-    const r=Math.max(0,Number(localStorage.getItem("takoModeUntil")||0)-now());
-    const h=String(Math.floor(r/3600000)).padStart(2,"0");
-    const m=String(Math.floor((r%3600000)/60000)).padStart(2,"0");
-    const s=String(Math.floor((r%60000)/1000)).padStart(2,"0");
-    t.textContent=`${h}:${m}:${s}`;
+    const t = document.querySelector("#takoModeTimer strong");
+    if(!t) return;
+    const r = Math.max(0, Number(localStorage.getItem("takoModeUntil") || 0) - now());
+    const h = String(Math.floor(r / 3600000)).padStart(2, "0");
+    const m = String(Math.floor((r % 3600000) / 60000)).padStart(2, "0");
+    const s = String(Math.floor((r % 60000) / 1000)).padStart(2, "0");
+    t.textContent = `${h}:${m}:${s}`;
   }
 
   function isTakoTitleMode(){
@@ -23656,42 +23741,60 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
   }
 
   function setMainTitleForMode(){
-    const h1=document.querySelector("h1"); if(!h1) return;
+    const h1 = document.querySelector("h1");
+    if(!h1) return;
 
     if(document.body.classList.contains("night-debug-mode")){
-      h1.textContent=NIGHT_TITLE;
+      h1.textContent = NIGHT_TITLE;
     }else if(document.body.classList.contains("tako-fatigue-mode")){
-      h1.textContent=document.body.classList.contains("tako-dragged") ? TAKO_DRAGGED_TITLE : TAKO_TITLE;
+      h1.textContent = document.body.classList.contains("tako-dragged") ? TAKO_DRAGGED_TITLE : TAKO_TITLE;
     }else{
-      h1.textContent=NORMAL_TITLE;
+      h1.textContent = NORMAL_TITLE;
     }
   }
   window.refreshLibraryModeTitle = setMainTitleForMode;
 
+  function baseModeStatusText(){
+    if(document.body.classList.contains("night-debug-mode")) return "🌙現在のモード：夜モード";
+    if(document.body.classList.contains("tako-fatigue-mode") && !document.body.classList.contains("night-debug-mode")) return "🐙現在のモード：タコチャン疲れたモード";
+    return "☀️現在のモード：昼・通常モード";
+  }
+
   function updateModeStatus(){
-    const st=document.getElementById("takoDebugStatus"); if(!st) return;
-    let mode="☀️現在のモード：昼・通常モード";
-    if(document.body.classList.contains("night-debug-mode")) mode="🌙現在のモード：夜モード";
-    if(document.body.classList.contains("tako-fatigue-mode") && !document.body.classList.contains("night-debug-mode")) mode="🐙現在のモード：タコチャン疲れたモード";
-    st.textContent=mode;
+    const st = document.getElementById("takoDebugStatus");
+    if(!st) return;
+    st.textContent = `${baseModeStatusText()}｜有効連打：${takoCombo}/${TAKO_COMBO_LIMIT}（60秒）`;
+  }
+
+  function resetTakoCombo(){
+    takoCombo = 0;
+    takoComboStartedAt = 0;
+    lastObservedHeartCount = heartCountSafe();
+    clearTimeout(takoComboResetTimer);
+    takoComboResetTimer = null;
+    updateModeStatus();
   }
 
   function applyNormalMode(){
+    resetTakoCombo();
     localStorage.removeItem("takoModeUntil");
     document.body.classList.remove("night-debug-mode","tako-fatigue-mode","tako-dragged");
     delete document.body.dataset.autoNightMode;
-    const o=document.getElementById("takoModeOverlay"); if(o) o.classList.remove("show");
+    const o = document.getElementById("takoModeOverlay");
+    if(o) o.classList.remove("show");
     setMainTitleForMode();
     updateModeStatus();
   }
   window.activateNormalMode = applyNormalMode;
 
   function applyNightMode(){
+    resetTakoCombo();
     localStorage.removeItem("takoModeUntil");
     document.body.classList.remove("tako-fatigue-mode","tako-dragged");
     document.body.classList.add("night-debug-mode");
     document.body.dataset.autoNightMode = "manual";
-    const o=document.getElementById("takoModeOverlay"); if(o) o.classList.remove("show");
+    const o = document.getElementById("takoModeOverlay");
+    if(o) o.classList.remove("show");
     setMainTitleForMode();
     updateModeStatus();
     if(typeof renderLost === "function"){
@@ -23701,8 +23804,9 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
   }
   window.activateNightMode = applyNightMode;
 
-  window.showTakoModeOverlay=function(){
-    const o=document.getElementById("takoModeOverlay"); if(!o) return;
+  window.showTakoModeOverlay = function(){
+    const o = document.getElementById("takoModeOverlay");
+    if(!o) return;
     document.body.classList.remove("night-debug-mode");
     delete document.body.dataset.autoNightMode;
     document.body.classList.add("tako-fatigue-mode");
@@ -23713,8 +23817,9 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     updateModeStatus();
   };
 
-  window.hideTakoModeOverlay=function(){
-    const o=document.getElementById("takoModeOverlay"); if(o) o.classList.remove("show");
+  window.hideTakoModeOverlay = function(){
+    const o = document.getElementById("takoModeOverlay");
+    if(o) o.classList.remove("show");
     if(!isTakoModeActive()){
       document.body.classList.remove("tako-fatigue-mode","tako-dragged");
       setMainTitleForMode();
@@ -23722,16 +23827,19 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     }
   };
 
-  window.activateTakoMode=function(){
-    localStorage.setItem("takoModeUntil",String(now()+TAKO_DURATION));
+  window.activateTakoMode = function(){
+    resetTakoCombo();
+    localStorage.setItem("takoModeUntil", String(now() + TAKO_DURATION));
     showTakoModeOverlay();
     updateModeStatus();
   };
 
-  window.endTakoMode=function(){
+  window.endTakoMode = function(){
+    resetTakoCombo();
     localStorage.removeItem("takoModeUntil");
     document.body.classList.remove("tako-fatigue-mode","tako-dragged");
-    const o=document.getElementById("takoModeOverlay"); if(o) o.classList.remove("show");
+    const o = document.getElementById("takoModeOverlay");
+    if(o) o.classList.remove("show");
     setMainTitleForMode();
     updateModeStatus();
   };
@@ -23745,96 +23853,130 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     }
   }
 
-  document.addEventListener("touchstart",function(e){
+  document.addEventListener("touchstart", function(e){
     if(!isTakoTitleMode() || !e.touches || !e.touches[0]) return;
-    takoStartX=e.touches[0].clientX;
-  },{passive:true});
+    takoStartX = e.touches[0].clientX;
+  }, {passive:true});
 
-  document.addEventListener("touchend",function(e){
-    if(takoStartX===null || !e.changedTouches || !e.changedTouches[0]) return;
+  document.addEventListener("touchend", function(e){
+    if(takoStartX === null || !e.changedTouches || !e.changedTouches[0]) return;
     handleTakoDrag(e.changedTouches[0].clientX - takoStartX);
-    takoStartX=null;
-  },{passive:true});
+    takoStartX = null;
+  }, {passive:true});
 
-  document.addEventListener("mousedown",function(e){
+  document.addEventListener("mousedown", function(e){
     if(!isTakoTitleMode()) return;
-    takoMouseDownX=e.clientX;
+    takoMouseDownX = e.clientX;
   });
 
-  document.addEventListener("mouseup",function(e){
-    if(takoMouseDownX===null) return;
+  document.addEventListener("mouseup", function(e){
+    if(takoMouseDownX === null) return;
     handleTakoDrag(e.clientX - takoMouseDownX);
-    takoMouseDownX=null;
+    takoMouseDownX = null;
   });
 
   function ensureDebug(){
-    const p=document.getElementById("debugPanel");
+    const p = document.getElementById("debugPanel");
     if(!p || document.getElementById("takoDebugBox")) return;
-    const box=document.createElement("div");
-    box.id="takoDebugBox";
-    box.style.marginTop="10px";
-    box.style.paddingTop="10px";
-    box.style.borderTop="1px dashed #aaa";
-    box.innerHTML=`<b>モード切替</b><br>
+
+    const box = document.createElement("div");
+    box.id = "takoDebugBox";
+    box.style.marginTop = "10px";
+    box.style.paddingTop = "10px";
+    box.style.borderTop = "1px dashed #aaa";
+    box.innerHTML = `<b>モード切替</b><br>
 <button id="debugNormalMode" type="button">☀️昼・通常モード</button>
 <button id="debugNightMode" type="button">🌙夜モード</button>
-<button id="debugStartTakoMode" type="button">🐙タコモード（1時間）</button>
+<button id="debugStartTakoMode" type="button">🐙タコモード（30分）</button>
 <button id="debugEndTakoMode" type="button">🐙タコモード終了</button>
 <button id="debugShowTakoMode" type="button">🐙表示だけ見る</button>
-<div id="takoDebugStatus" style="margin-top:8px;padding:8px;background:#fff3d8;border-radius:8px;">☀️現在のモード：昼・通常モード</div>`;
+<div id="takoDebugStatus" style="margin-top:8px;padding:8px;background:#fff3d8;border-radius:8px;">☀️現在のモード：昼・通常モード｜有効連打：0/100（60秒）</div>`;
     p.appendChild(box);
-    document.getElementById("debugNormalMode").onclick=applyNormalMode;
-    document.getElementById("debugNightMode").onclick=applyNightMode;
-    document.getElementById("debugStartTakoMode").onclick=activateTakoMode;
-    document.getElementById("debugEndTakoMode").onclick=endTakoMode;
-    document.getElementById("debugShowTakoMode").onclick=showTakoModeOverlay;
+
+    document.getElementById("debugNormalMode").onclick = applyNormalMode;
+    document.getElementById("debugNightMode").onclick = applyNightMode;
+    document.getElementById("debugStartTakoMode").onclick = activateTakoMode;
+    document.getElementById("debugEndTakoMode").onclick = endTakoMode;
+    document.getElementById("debugShowTakoMode").onclick = showTakoModeOverlay;
     updateModeStatus();
   }
 
-  function autoCheck(){
-    takoCombo++;
+  function countHeartIncrease(currentHeartCount){
+    // すでにタコモード中なら連打判定しない。
+    if(isTakoModeActive() || document.body.classList.contains("tako-fatigue-mode")){
+      resetTakoCombo();
+      return;
+    }
 
-    clearTimeout(takoComboTimer);
-    takoComboTimer = setTimeout(()=>{
-      takoCombo = 0;
-    }, TAKO_COMBO_TIMEOUT);
+    const current = Number(currentHeartCount);
+    if(!Number.isFinite(current)) return;
 
-    if(takoCombo >= TAKO_COMBO_LIMIT){
+    if(lastObservedHeartCount === null){
+      lastObservedHeartCount = current - 1;
+    }
+
+    let diff = current - lastObservedHeartCount;
+    if(diff <= 0){
+      lastObservedHeartCount = current;
+      return;
+    }
+
+    const t = now();
+
+    // 最初の1打、または60秒を超えたら新しい連打枠として数え直す。
+    if(!takoComboStartedAt || (t - takoComboStartedAt) > TAKO_COMBO_TIMEOUT){
+      takoComboStartedAt = t;
       takoCombo = 0;
-      clearTimeout(takoComboTimer);
-      takoComboTimer = null;
+    }
+
+    takoCombo += diff;
+    lastObservedHeartCount = current;
+
+    clearTimeout(takoComboResetTimer);
+    takoComboResetTimer = setTimeout(function(){
+      resetTakoCombo();
+      updateModeStatus();
+    }, TAKO_COMBO_TIMEOUT + 100);
+
+    updateModeStatus();
+
+    if(takoCombo >= TAKO_COMBO_LIMIT && (t - takoComboStartedAt) <= TAKO_COMBO_TIMEOUT){
       localStorage.setItem("takoModeLastAt", String(Date.now()));
       activateTakoMode();
     }
   }
 
-  window.addEventListener("load",function(){
-    const close=document.getElementById("takoModeClose"); if(close) close.onclick=hideTakoModeOverlay;
+  // heartCount++ 直後に本体から呼ばれる。click数ではなく、実際に増えた💗数だけを見る。
+  window.kaniTakoCountHeartTap = countHeartIncrease;
+
+  window.addEventListener("load", function(){
+    const close = document.getElementById("takoModeClose");
+    if(close) close.onclick = hideTakoModeOverlay;
     ensureDebug();
 
     // 起動時は必ず通常モードから始める。
-    // 前回のデバッグや確認で残ったタコモード時間を引き継がないようにする。
     localStorage.removeItem("takoModeUntil");
     document.body.classList.remove("night-debug-mode","tako-fatigue-mode","tako-dragged");
     delete document.body.dataset.autoNightMode;
-    const o=document.getElementById("takoModeOverlay"); if(o) o.classList.remove("show");
+    const o = document.getElementById("takoModeOverlay");
+    if(o) o.classList.remove("show");
 
+    lastObservedHeartCount = heartCountSafe();
     setMainTitleForMode();
     updateModeStatus();
-    const heart=document.getElementById("heart"); if(heart) heart.addEventListener("click",()=>setTimeout(autoCheck,0));
-    setInterval(()=>{
-      updateTimer(); updateModeStatus();
 
-      // 1時間が過ぎたら、演出なしで通常モードへ戻す。
-      // ポップアップを開いたままでも自動で閉じる。
+    setInterval(function(){
+      updateTimer();
+
       if(!isTakoModeActive()){
         document.body.classList.remove("tako-fatigue-mode","tako-dragged");
-        const o=document.getElementById("takoModeOverlay");
+        const o = document.getElementById("takoModeOverlay");
         if(o) o.classList.remove("show");
         setMainTitleForMode();
-        updateModeStatus();
       }
-    },1000);
+
+      updateModeStatus();
+    }, 1000);
   });
 })();
 </script>
