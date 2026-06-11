@@ -348,6 +348,20 @@ body>details{
 
 #rareEffect.show{animation:rareBoomSafe 1s ease forwards;}
 
+/* カニちゃん修正：SR/UR中央演出は揺らさず、3秒その場で固定 */
+#rareEffect.rare-still{
+  opacity:0;
+  transform:translate(-50%,-50%) scale(1)!important;
+}
+#rareEffect.rare-still.show{
+  opacity:1!important;
+  transform:translate(-50%,-50%) scale(1)!important;
+  animation:none!important;
+}
+#randomMsg.ur-glow{
+  animation:none!important;
+}
+
 @keyframes rareBoomSafe{
   0%{opacity:0;transform:translate(-50%,-50%) scale(.2);}
   40%{opacity:1;transform:translate(-50%,-50%) scale(1.5);}
@@ -998,6 +1012,14 @@ body.night-debug-mode.tako-fatigue-mode #title{
   line-height:1.2;
   box-shadow:0 4px 16px rgba(66,35,10,.18);
   pointer-events:none;
+  text-align:center;
+}
+#takoModeBadgeTimer{
+  display:block;
+  margin-top:4px;
+  font-size:13px;
+  font-weight:bold;
+  opacity:.9;
 }
 body.tako-fatigue-mode #takoModeBadge{display:block;}
 body.night-debug-mode #takoModeBadge{display:none;}
@@ -1005,6 +1027,27 @@ body.night-debug-mode #takoModeBadge{display:none;}
   #takoModeBadge{top:8px;right:8px;font-size:13px;padding:7px 11px;}
 }
 
+
+
+/* =====================
+カニちゃん修正：図鑑Nは灰色表示
+===================== */
+.collection-item.normal-item{
+  color:#999999!important;
+  font-weight:normal!important;
+  background:rgba(245,245,245,.85)!important;
+  border:1px solid #b8b8b8!important;
+}
+.collection-item.normal-item.locked{
+  color:#aaaaaa!important;
+  background:rgba(248,248,248,.65)!important;
+  border:1px solid #cfcfcf!important;
+}
+.collection-item.normal-item.unlocked{
+  color:#777777!important;
+  background:#f7f7f7!important;
+  border:1px solid #b8b8b8!important;
+}
 </style>
 </head>
 <body>
@@ -1055,7 +1098,7 @@ body.night-debug-mode #takoModeBadge{display:none;}
   <div id="memoryFragmentText"></div>
 </div>
 
-<div id="takoModeBadge">🐙モード発動中</div>
+<div id="takoModeBadge">🐙モード発動中<br><span id="takoModeBadgeTimer">残り 30:00</span></div>
 
 
 <!-- =====================
@@ -21768,6 +21811,7 @@ let lostCount = Number(localStorage.getItem("lostCount")) || 0;
 let slotReady = localStorage.getItem("slotReadySafe") === "true";
 let clickLock = false;
 let noticeLock = false;
+let centerNoticeTimer = null;
 let selectionLock = false;
 
 const firstTitles = [
@@ -21937,12 +21981,18 @@ function showCenter(text, ms=5000, after){
     box.id = "centerNotice";
     document.body.appendChild(box);
   }
+
+  // デバッグで連続して押した時に、前のタイマーで途中消えしないようにする
+  if(centerNoticeTimer) clearTimeout(centerNoticeTimer);
+
   noticeLock = true;
   box.textContent = text;
   box.classList.add("show");
-  setTimeout(() => {
+
+  centerNoticeTimer = setTimeout(() => {
     box.classList.remove("show");
     noticeLock = false;
+    centerNoticeTimer = null;
     if(typeof after === "function") after();
   }, ms);
 }
@@ -21962,16 +22012,21 @@ function spawnSparkles(){
   }
 }
 
-function showRareText(text,color,shadow){
+function showRareText(text,color,shadow,ms=1200,still=false){
   const rare = document.getElementById("rareEffect");
   if(!rare) return;
   rare.textContent = text;
   rare.style.color = color;
   rare.style.textShadow = shadow;
-  rare.classList.remove("show");
+  rare.style.animationDuration = ms + "ms";
+  rare.classList.remove("show","rare-still");
+  if(still) rare.classList.add("rare-still");
   void rare.offsetWidth;
   rare.classList.add("show");
-  setTimeout(() => rare.classList.remove("show"), 1200);
+  setTimeout(() => {
+    rare.classList.remove("show","rare-still");
+    rare.style.animationDuration = "";
+  }, ms);
 }
 
 function clearRewardClasses(){
@@ -22015,7 +22070,9 @@ function getSRReward(){
   clearRewardClasses();
   const box = document.getElementById("randomMsg");
   if(box) box.classList.add("sr-reward");
-  showRareText("🧊💙 SUPER RARE!! 💙🧊","#2f8cff","0 0 10px #fff,0 0 20px #4da6ff,0 0 40px #2f8cff,0 0 70px #77d5ff");
+  noticeLock = true;
+  showRareText("🧊💙 SUPER RARE!! 💙🧊","#2f8cff","0 0 10px #fff,0 0 20px #4da6ff,0 0 40px #2f8cff,0 0 70px #77d5ff",3000,true);
+  setTimeout(() => { noticeLock = false; }, 3000);
 }
 
 function getURReward(){
@@ -22026,8 +22083,10 @@ function getURReward(){
   clearRewardClasses();
   const box = document.getElementById("randomMsg");
   if(box) box.classList.add("ur-glow");
-  showRareText("👑💎ULTRA RARE!!💎👑","#ff2a2a","0 0 10px #fff,0 0 20px #ff0000,0 0 40px #ff3333,0 0 80px #ff0000");
+  noticeLock = true;
+  showRareText("👑💎ULTRA RARE!!💎👑","#ff2a2a","0 0 10px #fff,0 0 20px #ff0000,0 0 40px #ff3333,0 0 80px #ff0000",3000,true);
   spawnSparkles();
+  setTimeout(() => { noticeLock = false; }, 3000);
 }
 
 function lostPool(){
@@ -22233,24 +22292,47 @@ function closePanels(){
 function renderCollection(){
   const box = document.getElementById("collectionBox");
   if(!box) return;
-  const all = [...heartMessages,...rareMessages,...srMessages,...urMessages];
+
+  const groups = [
+    { label:"N",  title:"N：通常メッセージ", list:heartMessages, className:"normal-item" },
+    { label:"R",  title:"R：レアメッセージ", list:rareMessages,  className:"rare-item" },
+    { label:"SR", title:"SR：SUPER RARE", list:srMessages, className:"sr-item" },
+    { label:"UR", title:"UR：ULTRA RARE", list:urMessages, className:"ur-item" }
+  ];
+
+  const all = groups.flatMap(g => g.list);
   const ownedList = getStoreArray("unlockedMessages");
   const owned = all.filter(m => ownedList.includes(m)).length;
   const rate = all.length ? Math.floor(owned/all.length*100) : 0;
+
   box.innerHTML = `<div class="collection-header">📖図鑑<br>収集率：${owned} / ${all.length}（${rate}%）</div>`;
-  const grid = document.createElement("div");
-  grid.className = "collection-grid";
-  all.forEach(msg => {
-    const got = ownedList.includes(msg);
-    const div = document.createElement("div");
-    div.className = "collection-item " + (got ? "unlocked" : "locked");
-    if(rareMessages.includes(msg)) div.classList.add("rare-item");
-    if(srMessages.includes(msg)) div.classList.add("sr-item");
-    if(urMessages.includes(msg)) div.classList.add("ur-item");
-    div.textContent = got ? msg : "👿未所持";
-    grid.appendChild(div);
+
+  groups.forEach(group => {
+    const groupOwned = group.list.filter(m => ownedList.includes(m)).length;
+    const groupRate = group.list.length ? Math.floor(groupOwned / group.list.length * 100) : 0;
+
+    const heading = document.createElement("div");
+    heading.className = "collection-header";
+    heading.style.marginTop = "16px";
+    heading.style.paddingTop = "8px";
+    heading.style.borderTop = "1px dashed #d4af37";
+    heading.textContent = `${group.title}　${groupOwned} / ${group.list.length}（${groupRate}%）`;
+    box.appendChild(heading);
+
+    const grid = document.createElement("div");
+    grid.className = "collection-grid";
+
+    group.list.forEach(msg => {
+      const got = ownedList.includes(msg);
+      const div = document.createElement("div");
+      div.className = "collection-item " + (got ? "unlocked" : "locked");
+      div.classList.add(group.className);
+      div.textContent = got ? msg : "👿未所持";
+      grid.appendChild(div);
+    });
+
+    box.appendChild(grid);
   });
-  box.appendChild(grid);
 }
 
 function renderTitleCollection(){
@@ -22341,8 +22423,8 @@ function downloadMemo(){
   setTimeout(() => URL.revokeObjectURL(url),1000);
 }
 
-function showFinalComplete(){
-  if(localStorage.getItem("allCompleteShownSafe")) return;
+function showFinalComplete(force=false){
+  if(!force && localStorage.getItem("allCompleteShownSafe")) return;
   localStorage.setItem("allCompleteShownSafe","1");
   document.body.classList.add("final-complete-playing");
   let screen = document.getElementById("finalCompleteScreen");
@@ -22360,7 +22442,7 @@ function showFinalComplete(){
 あなたがここにいた証
 消えることのない記録
 
-いつまでも傍で`;
+続いていくもの`;
   screen.appendChild(text);
   document.body.appendChild(screen);
   setTimeout(() => screen.classList.add("show"),30);
@@ -22430,6 +22512,34 @@ function checkCompleteNotices(){
 運命なんか信じないけど、あなたとなら`,5000);
     return;
   }
+}
+
+
+function checkFinalCompleteOnly(force=false){
+  const p = getProgress();
+  const titleComplete = p.levelIndex >= MAX_LEVEL*MAX_LOOP - 1;
+  const normalComplete = allIncluded(heartMessages,getStoreArray("unlockedMessages"));
+  const rareComplete = allIncluded(rareMessages,getStoreArray("unlockedMessages"));
+  const srComplete = allIncluded(srMessages,getStoreArray("unlockedMessages"));
+  const urComplete = allIncluded(urMessages,getStoreArray("unlockedMessages"));
+  const lostComplete = allIncluded(lostItems,getStoreArray("unlockedLostItems"));
+  const slotComplete = allIncluded(SLOT_BONUS_MESSAGES,getStoreArray("unlockedSlotBonusMessages"));
+
+  if(normalComplete && rareComplete && srComplete && urComplete && titleComplete && lostComplete && slotComplete){
+    showFinalComplete(force);
+  }
+}
+
+function markCompletedFlagsForDebug(){
+  const p = getProgress();
+  const ownedMessages = getStoreArray("unlockedMessages");
+  if(allIncluded(heartMessages, ownedMessages)) localStorage.setItem("normalCompleteShownSafe", "1");
+  if(allIncluded(rareMessages, ownedMessages)) localStorage.setItem("rareCompleteShownSafe", "1");
+  if(allIncluded(srMessages, ownedMessages)) localStorage.setItem("srCompleteShownSafe", "1");
+  if(allIncluded(urMessages, ownedMessages)) localStorage.setItem("urCompleteShownSafe", "1");
+  if(allIncluded(lostItems, getStoreArray("unlockedLostItems"))) localStorage.setItem("lostCompleteShownSafe", "1");
+  if(allIncluded(SLOT_BONUS_MESSAGES, getStoreArray("unlockedSlotBonusMessages"))) localStorage.setItem("slotCompleteShownSafe", "1");
+  if(p.levelIndex >= MAX_LEVEL*MAX_LOOP - 1) localStorage.setItem("titleCompleteShownSafe", "1");
 }
 
 function setupSearch(){
@@ -22502,7 +22612,7 @@ function setupButtons(){
   };
   if(resetBtn) resetBtn.onclick = () => {
     if(!confirm("💗回数と収集データをリセットする？")) return;
-    ["heartCount","rareCount","srCount","urCount","lostCount","lostFragmentCount","lostFragmentLastAt","unlockedMessages","unlockedLostItems","unlockedSlotBonusMessages","slotReadySafe"].forEach(k => localStorage.removeItem(k));
+    ["heartCount","rareCount","srCount","urCount","lostCount","lostFragmentCount","lostFragmentLastAt","unlockedMessages","unlockedLostItems","unlockedSlotBonusMessages","slotReadySafe","normalCompleteShownSafe","rareCompleteShownSafe","srCompleteShownSafe","urCompleteShownSafe","lostCompleteShownSafe","slotCompleteShownSafe","titleCompleteShownSafe","allCompleteShownSafe"].forEach(k => localStorage.removeItem(k));
     location.reload();
   };
 if(area && !document.getElementById("debugBtn")){
@@ -22537,24 +22647,30 @@ if(area && !document.getElementById("debugBtn")){
       if(!mode) return;
 
       if(mode === "HIT"){ spinSlot(true); return; }
-      if(mode === "N") setStoreArray("unlockedMessages",[...getStoreArray("unlockedMessages"),...heartMessages]);
-      if(mode === "R") setStoreArray("unlockedMessages",[...getStoreArray("unlockedMessages"),...rareMessages]);
-      if(mode === "SR") setStoreArray("unlockedMessages",[...getStoreArray("unlockedMessages"),...srMessages]);
-      if(mode === "UR") setStoreArray("unlockedMessages",[...getStoreArray("unlockedMessages"),...urMessages]);
-      if(mode === "LOST") setStoreArray("unlockedLostItems",lostItems);
-      if(mode === "SLOT") setStoreArray("unlockedSlotBonusMessages",SLOT_BONUS_MESSAGES);
+
+      // デバッグボタンは「押した項目の表示確認」用。
+      // 個別コンプでは他カテゴリの表示済みフラグを消さない。
+      // ただし全コンプ確認だけは再判定できるよう、全コンプ表示済みフラグを消す。
+      if(["N","R","SR","UR","LOST","SLOT","TITLE","ALL"].includes(mode)){
+        localStorage.removeItem("allCompleteShownSafe");
+      }
+
+      if(mode === "N") setStoreArray("unlockedMessages", Array.from(new Set([...getStoreArray("unlockedMessages"), ...heartMessages])));
+      if(mode === "R") setStoreArray("unlockedMessages", Array.from(new Set([...getStoreArray("unlockedMessages"), ...rareMessages])));
+      if(mode === "SR") setStoreArray("unlockedMessages", Array.from(new Set([...getStoreArray("unlockedMessages"), ...srMessages])));
+      if(mode === "UR") setStoreArray("unlockedMessages", Array.from(new Set([...getStoreArray("unlockedMessages"), ...urMessages])));
+      if(mode === "LOST") setStoreArray("unlockedLostItems", lostItems);
+      if(mode === "SLOT") setStoreArray("unlockedSlotBonusMessages", SLOT_BONUS_MESSAGES);
       if(mode === "TITLE"){
         heartCount = NEED * (MAX_LEVEL * MAX_LOOP - 1);
         localStorage.setItem("heartCount", String(heartCount));
-        localStorage.removeItem("titleCompleteShownSafe");
       }
       if(mode === "ALL"){
-        setStoreArray("unlockedMessages",[...heartMessages,...rareMessages,...srMessages,...urMessages]);
-        setStoreArray("unlockedLostItems",lostItems);
-        setStoreArray("unlockedSlotBonusMessages",SLOT_BONUS_MESSAGES);
+        setStoreArray("unlockedMessages", [...heartMessages, ...rareMessages, ...srMessages, ...urMessages]);
+        setStoreArray("unlockedLostItems", lostItems);
+        setStoreArray("unlockedSlotBonusMessages", SLOT_BONUS_MESSAGES);
         heartCount = NEED * (MAX_LEVEL * MAX_LOOP - 1);
         localStorage.setItem("heartCount", String(heartCount));
-        ["allCompleteShownSafe","titleCompleteShownSafe","normalCompleteShownSafe","rareCompleteShownSafe","srCompleteShownSafe","urCompleteShownSafe","lostCompleteShownSafe","slotCompleteShownSafe"].forEach(k=>localStorage.removeItem(k));
       }
 
       updateDisplay();
@@ -22566,7 +22682,39 @@ if(area && !document.getElementById("debugBtn")){
       if(titleCollectionBox && titleCollectionBox.style.display === "block") renderTitleCollection();
       if(slotRecordBox && slotRecordBox.style.display === "block") renderSlotRecord();
       if(lostCollectionBox && lostCollectionBox.style.display === "block") renderLost();
-      setTimeout(checkCompleteNotices,120);
+
+      const debugMessages = {
+        N: `使ってくれてありがとう！
+ライブラリとして役立ててね`,
+        R: `あなたの努力は全部知ってるよ
+いつでも応援してる`,
+        SR: `あなたは私の憧れ
+いつまでも背中を追わせてほしい`,
+        UR: `隣に立つのに相応しい人間になりたい
+あなたの傍で生きていたい`,
+        LOST: `忘れ物を全て拾ってくれてありがとう
+風化しない思い出をまた積み重ねて`,
+        SLOT: `僕らが出会ったのは偶然ではなく必然
+
+運命なんか信じないけど、あなたとなら`,
+        TITLE: `他に何もいらない`
+      };
+
+      if(mode === "ALL"){
+        setTimeout(() => showFinalComplete(true), 120);
+        return;
+      }
+
+      if(debugMessages[mode]){
+        // デバッグでは押したボタンのメッセージだけを表示する。
+        // 個別コンプの連鎖判定は走らせず、最後の全コンプ判定だけ確認する。
+        markCompletedFlagsForDebug();
+        showCenter(debugMessages[mode], 5000, () => {
+          setTimeout(() => checkFinalCompleteOnly(true), 80);
+        });
+      }else{
+        setTimeout(() => checkFinalCompleteOnly(true),120);
+      }
     };
   }
 }
@@ -23733,6 +23881,10 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     const m = String(Math.floor((r % 3600000) / 60000)).padStart(2, "0");
     const s = String(Math.floor((r % 60000) / 1000)).padStart(2, "0");
     t.textContent = `${h}:${m}:${s}`;
+    const badgeTimer = document.getElementById("takoModeBadgeTimer");
+    if(badgeTimer){
+      badgeTimer.textContent = `残り ${m}:${s}`;
+    }
   }
 
   function isTakoTitleMode(){
