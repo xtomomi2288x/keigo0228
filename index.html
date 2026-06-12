@@ -14903,7 +14903,7 @@ Everywhere I'll go
     </div>
 
 <div class="chord-image-box">
-  <img src="dakishimetai.jpg" alt="抱きしめたい コード譜">
+  <img src="https://xtomomi2288x.github.io/keigo0228/dakishimetai.jpg" alt="抱きしめたい コード譜">
 </div>
 
 </details>
@@ -21256,39 +21256,42 @@ const SLOT_BONUS_MESSAGES = [
 ];
 
 const lostItems = [
-    "表現者の眼鏡",
-    "飲みかけのミルクティー",
-    "時間の止まった定期券",
-    "丸めて捨てられた弦",
-    "路上での座布団",
-    "捨てられない吸い殻四つ",
-    "用事のふりをした散歩",
-    "まだ帰りたくなかった夜",
-    "セブンティーンアイス",
-    "手作りてるてる坊主",
-    "奇跡の即興",
-    "今日のReason",
-    "曲のようなラブレター",
-    "一番最初のキス",
-    "明かせなかった関係",
-    "へたくそなお守り",
-    "温めるための手",
-    "戻って来られた歌",
-    "幻なんかじゃないぜ",
-    "形の揃わない蕎麦",
-    "クラゲのサンキャッチャー",
-    "聖夜に見た光",
-    "生まれた日の歌",
-    "新雪に付けた死体",
-    "山口への切符",
-    "出来立てのメンチカツ",
-    "完結しない小説",
-    "ホタルイカの軟骨",
-    "片割れのアクセサリー",
-    "夜にだけ手に入るもの",
-    "結ばれたゴミ袋",
-    "1時から夜明けまで",
-    "眠れぬ夜の子守唄"
+  "表現者の眼鏡",
+  "サイン入りのピック",
+  "飲みかけのミルクティー",
+  "時間の止まった定期券",
+  "丸めて捨てられた弦",
+  "捨てられない吸い殻四つ",
+  "用事のふりをした散歩",
+  "路上での座布団",
+  "まだ帰りたくなかった夜",
+  "冷凍の生姜焼き",
+  "両片思い",
+  "セブンティーンアイス",
+  "手作りてるてる坊主",
+  "奇跡の即興",
+  "今日のReason",
+  "一緒に見た夢",
+  "曲のようなラブレター",
+  "一番最初のキス",
+  "明かせなかった関係",
+  "繋いでいい手",
+  "へたくそなお守り",
+  "左手の役割",
+  "戻って来られた歌",
+  "幻なんかじゃないぜ",
+  "剥離した人格",
+  "形の揃わない蕎麦",
+  "クラゲのサンキャッチャー",
+  "聖夜に見た光",
+  "生まれた日の歌",
+  "新雪に付けた死体",
+  "山口への切符",
+  "出来立てのメンチカツ",
+  "完結しない小説",
+  "ホタルイカの軟骨",
+  "片割れのアクセサリー",
+  "夜にだけ手に入るもの"
 ];
 
 const COMPLETE_MEMO_TEXT = `あなたのギターの掻き鳴らす
@@ -21666,7 +21669,7 @@ URは今チューニング中 先にSRどうぞ
     あなたの夢が叶い続けますようにと入ってる 
     啓悟さんの夢は自分の歌で誰かが少しでも心が軽くなったらいい、らしい) 
 
-    "温めるための手",(体温が高い啓悟さんは、
+    "左手の役割",(体温が高い啓悟さんは、
     あなたの手を温めるために俺の手はあるんだよって言ってくれた)
 
     "戻って来られた歌",(統合失調症が再発して、幻覚幻聴、
@@ -21801,7 +21804,14 @@ const MAX_LEVEL = 200;
 const MAX_LOOP = 3;
 const SLOT_SYMBOLS_FIXED = ["🎤","🎹","✨"];
 const SLOT_HIT_RATE = 1 / 150;
-const NIGHT_ONLY_LOST_ITEMS = ["結ばれたゴミ袋","1時から夜明けまで","眠れぬ夜の子守唄"];
+const NIGHT_ONLY_LOST_ITEMS = [
+  "結ばれたゴミ袋",
+  "1時から夜明けまで",
+  "エレベーターチャンス",
+  "眠れぬ夜の子守唄",
+  "駅前の神話",
+  "たった一つの街灯"
+];
 
 let heartCount = Number(localStorage.getItem("heartCount")) || 0;
 let rareCount = Number(localStorage.getItem("rareCount")) || 0;
@@ -22097,6 +22107,10 @@ function lostPool(){
   return Array.from(new Set(list));
 }
 
+function allLostItems(){
+  return Array.from(new Set([...lostItems, ...NIGHT_ONLY_LOST_ITEMS]));
+}
+
 function showLostOverlay(item){
   const overlay = document.getElementById("lostItemOverlay");
   const text = document.getElementById("lostItemText");
@@ -22388,7 +22402,7 @@ function renderSlotRecord(){
 function renderLost(){
   const box = document.getElementById("lostCollectionBox");
   if(!box) return;
-  const list = lostPool();
+  const list = allLostItems();
   const ownedList = getStoreArray("unlockedLostItems");
   const owned = list.filter(m => ownedList.includes(m)).length;
   const rate = list.length ? Math.floor(owned/list.length*100) : 0;
@@ -22463,7 +22477,7 @@ function checkCompleteNotices(){
   const rareComplete = allIncluded(rareMessages,getStoreArray("unlockedMessages"));
   const srComplete = allIncluded(srMessages,getStoreArray("unlockedMessages"));
   const urComplete = allIncluded(urMessages,getStoreArray("unlockedMessages"));
-  const lostComplete = allIncluded(lostItems,getStoreArray("unlockedLostItems"));
+  const lostComplete = allIncluded(allLostItems(),getStoreArray("unlockedLostItems"));
   const slotComplete = allIncluded(SLOT_BONUS_MESSAGES,getStoreArray("unlockedSlotBonusMessages"));
 
   if(normalComplete && rareComplete && srComplete && urComplete && titleComplete && lostComplete && slotComplete){
@@ -22522,7 +22536,7 @@ function checkFinalCompleteOnly(force=false){
   const rareComplete = allIncluded(rareMessages,getStoreArray("unlockedMessages"));
   const srComplete = allIncluded(srMessages,getStoreArray("unlockedMessages"));
   const urComplete = allIncluded(urMessages,getStoreArray("unlockedMessages"));
-  const lostComplete = allIncluded(lostItems,getStoreArray("unlockedLostItems"));
+  const lostComplete = allIncluded(allLostItems(),getStoreArray("unlockedLostItems"));
   const slotComplete = allIncluded(SLOT_BONUS_MESSAGES,getStoreArray("unlockedSlotBonusMessages"));
 
   if(normalComplete && rareComplete && srComplete && urComplete && titleComplete && lostComplete && slotComplete){
@@ -22537,7 +22551,7 @@ function markCompletedFlagsForDebug(){
   if(allIncluded(rareMessages, ownedMessages)) localStorage.setItem("rareCompleteShownSafe", "1");
   if(allIncluded(srMessages, ownedMessages)) localStorage.setItem("srCompleteShownSafe", "1");
   if(allIncluded(urMessages, ownedMessages)) localStorage.setItem("urCompleteShownSafe", "1");
-  if(allIncluded(lostItems, getStoreArray("unlockedLostItems"))) localStorage.setItem("lostCompleteShownSafe", "1");
+  if(allIncluded(allLostItems(), getStoreArray("unlockedLostItems"))) localStorage.setItem("lostCompleteShownSafe", "1");
   if(allIncluded(SLOT_BONUS_MESSAGES, getStoreArray("unlockedSlotBonusMessages"))) localStorage.setItem("slotCompleteShownSafe", "1");
   if(p.levelIndex >= MAX_LEVEL*MAX_LOOP - 1) localStorage.setItem("titleCompleteShownSafe", "1");
 }
@@ -22659,7 +22673,7 @@ if(area && !document.getElementById("debugBtn")){
       if(mode === "R") setStoreArray("unlockedMessages", Array.from(new Set([...getStoreArray("unlockedMessages"), ...rareMessages])));
       if(mode === "SR") setStoreArray("unlockedMessages", Array.from(new Set([...getStoreArray("unlockedMessages"), ...srMessages])));
       if(mode === "UR") setStoreArray("unlockedMessages", Array.from(new Set([...getStoreArray("unlockedMessages"), ...urMessages])));
-      if(mode === "LOST") setStoreArray("unlockedLostItems", lostItems);
+      if(mode === "LOST") setStoreArray("unlockedLostItems", allLostItems());
       if(mode === "SLOT") setStoreArray("unlockedSlotBonusMessages", SLOT_BONUS_MESSAGES);
       if(mode === "TITLE"){
         heartCount = NEED * (MAX_LEVEL * MAX_LOOP - 1);
@@ -22667,7 +22681,7 @@ if(area && !document.getElementById("debugBtn")){
       }
       if(mode === "ALL"){
         setStoreArray("unlockedMessages", [...heartMessages, ...rareMessages, ...srMessages, ...urMessages]);
-        setStoreArray("unlockedLostItems", lostItems);
+        setStoreArray("unlockedLostItems", allLostItems());
         setStoreArray("unlockedSlotBonusMessages", SLOT_BONUS_MESSAGES);
         heartCount = NEED * (MAX_LEVEL * MAX_LOOP - 1);
         localStorage.setItem("heartCount", String(heartCount));
@@ -23836,10 +23850,10 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
 <script id="kani_tako_fatigue_mode_v3">
 (function(){
   const TAKO_DURATION = 30*60*1000;
-  const TAKO_COMBO_LIMIT = 100;
+  const TAKO_COMBO_LIMIT = 300;
   const TAKO_COMBO_TIMEOUT = 60*1000;
 
-  // 60秒以内に「実際に増えた💗数」が100に到達した時だけ発動。
+  // 60秒以内に「実際に増えた💗数」が300に到達した時だけ発動。
   // clickイベント数では数えない。
   let takoCombo = 0;
   let takoComboStartedAt = 0;
@@ -24042,7 +24056,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
 <button id="debugStartTakoMode" type="button">🐙タコモード（30分）</button>
 <button id="debugEndTakoMode" type="button">🐙タコモード終了</button>
 <button id="debugShowTakoMode" type="button">🐙表示だけ見る</button>
-<div id="takoDebugStatus" style="margin-top:8px;padding:8px;background:#fff3d8;border-radius:8px;">☀️現在のモード：昼・通常モード｜有効連打：0/100（60秒）</div>`;
+<div id="takoDebugStatus" style="margin-top:8px;padding:8px;background:#fff3d8;border-radius:8px;">☀️現在のモード：昼・通常モード｜有効連打：0/300（60秒）</div>`;
     p.appendChild(box);
 
     document.getElementById("debugNormalMode").onclick = applyNormalMode;
@@ -24130,6 +24144,40 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
       updateModeStatus();
     }, 1000);
   });
+})();
+</script>
+
+
+<script id="kani_chord_image_fix_v1">
+(function(){
+  const CHORD_BASE = "https://xtomomi2288x.github.io/keigo0228/";
+
+  function fixChordImages(){
+    document.querySelectorAll(".chord-image-box img").forEach(img => {
+      const raw = (img.getAttribute("src") || "").trim();
+      if(raw && !/^(https?:|data:|blob:)/i.test(raw)){
+        img.setAttribute("src", CHORD_BASE + raw.replace(/^\.\/?/, ""));
+      }
+      img.loading = "lazy";
+      img.decoding = "async";
+      img.onerror = function(){
+        const box = img.closest(".chord-image-box");
+        if(!box || box.dataset.errorShown === "1") return;
+        box.dataset.errorShown = "1";
+        img.style.display = "none";
+        const msg = document.createElement("div");
+        msg.style.cssText = "display:inline-block;padding:10px 14px;border:1px dashed #d4af37;border-radius:8px;color:#8a6500;background:#fff8d8;font-size:14px;line-height:1.6;";
+        msg.textContent = "コード画像が見つからないよ。GitHubに画像が上がっているか確認してね。";
+        box.appendChild(msg);
+      };
+    });
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", fixChordImages);
+  }else{
+    fixChordImages();
+  }
 })();
 </script>
 
