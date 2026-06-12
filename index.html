@@ -1023,6 +1023,7 @@ body.night-debug-mode.tako-fatigue-mode #title{
 }
 body.tako-fatigue-mode #takoModeBadge{display:block;}
 body.night-debug-mode #takoModeBadge{display:none;}
+body.night-debug-mode.tako-fatigue-mode #takoModeBadge{display:block!important;}
 @media(max-width:700px){
   #takoModeBadge{top:8px;right:8px;font-size:13px;padding:7px 11px;}
 }
@@ -1098,7 +1099,7 @@ body.night-debug-mode #takoModeBadge{display:none;}
   <div id="memoryFragmentText"></div>
 </div>
 
-<div id="takoModeBadge">🐙モード発動中<br><span id="takoModeBadgeTimer">残り 30:00</span></div>
+<div id="takoModeBadge">🐙モード発動中<br><span id="takoModeBadgeTimer">残り 05:00</span></div>
 
 
 <!-- =====================
@@ -9035,7 +9036,7 @@ PopでCuteなセカオワ「Melody」
 笑い声に変えられないかな　そしたらきっと楽しいのに
 
 30 minutes INSTANT RADIO presents smile all over the world.
-(30分間のインスタントラジオは世界中に笑顔を贈ります)
+(5分間のインスタントラジオは世界中に笑顔を贈ります)
 
 世界が終わって生まれた「Melody」
 時間と光のLoveloveな「Melody」
@@ -9053,7 +9054,7 @@ PopでCuteなセカオワ「Melody」
 みんな歌えたらいいのに　それだけで十分すぎるのに
 
 30 minutes INSTANT RADIO presents smile all over the world.
-(30分間のインスタントラジオは世界中に笑顔を贈ります)
+(5分間のインスタントラジオは世界中に笑顔を贈ります)
 
 30 minutes INSTANT RADIO</div></details>
 <details class="song"><summary>死の魔法</summary><div class="lyric">HELLO“GOODBYE”今までありがとう
@@ -21306,33 +21307,87 @@ const COMPLETE_MEMO_TEXT = `あなたのギターの掻き鳴らす
 🎸三輪啓悟ライブラリ🎸を反転表示したらメッセージが変わることを示唆
 
 
-二周目
-const secondTitles = [
-  { level:1, title:"転生しました" },
-  { level:5, title:"来世モード突入" },
-  { level:10, title:"隣の家に引っ越し" },
-  { level:20, title:"親同士が仲良し" },
-  { level:30, title:"一緒にピアノ教室" },
-  { level:50, title:"小学校が一緒" },
-  { level:60, title:"三輪啓悟が中学に上がり疎遠に" },
-  { level:70, title:"高校受験について三輪啓悟に相談" },
-  { level:80, title:"晴れて同じ大学に入学" },
-  { level:90, title:"三輪啓悟、留年" },
-  { level:100, title:"創作音楽サークルにて2人で無双" },
-  { level:110, title:"なぜか一緒に卒業" },
-  { level:120, title:"別々の就職先へ" },
-  { level:130, title:"社会人生活は忙しい" },
-  { level:140, title:"月2で飲み会" },
-  { level:150, title:"小学生以来に部屋に上がる" },
-  { level:200, title:"三輪啓悟「ずっと好きだった」" },
-  { level:250, title:"来世でも嫁END" }
+const firstTitles = [
+  { level: 1, title: "騒音で通報" },
+  { level: 5, title: "初見です" },
+  { level: 10, title: "たまに止まる" },
+  { level: 20, title: "路上常連" },
+  { level: 30, title: "路上最前死守" },
+  { level: 40, title: "ライブ行きました" },
+  { level: 50, title: "ライブ全通" },
+  { level: 60, title: "ファンサ贔屓" },
+  { level: 70, title: "三輪ファミリー" },
+  { level: 80, title: "最早身内" },
+  { level: 90, title: "公式嫁候補" },
+  { level: 100, title: "婚約者" },
+  { level: 110, title: "結婚しました" },
+  { level: 120, title: "三輪啓悟の嫁" },
+  { level: 130, title: "三輪啓悟、離婚の危機" },
+  { level: 140, title: "三輪啓悟、仲直りする" },
+  { level: 150, title: "夫婦円満" },
+  { level: 160, title: "いつでも一緒" },
+  { level: 170, title: "老後も一緒に" },
+  { level: 180, title: "死ぬまで一緒" },
+  { level: 190, title: "死んでも一緒" },
+  { level: 200, title: "来世も一緒" },
+
 ];
 
+
+二周目
+const secondTitles = [{ level: 1, title: "もしかしたらの話" },
+  { level: 5, title: "来世モード突入" },
+  { level: 10, title: "隣の家に引っ越し" },
+  { level: 20, title: "親同士が仲良し" },
+  { level: 30, title: "一緒にピアノ教室" },
+  { level: 40, title: "小学校が一緒" },
+  { level: 50, title: "三輪啓悟が中学に上がり疎遠に" },
+  { level: 60, title: "高校受験について三輪啓悟に相談" },
+  { level: 70, title: "晴れて同じ大学に入学" },
+  { level: 80, title: "創作音楽サークルにて2人で無双" },
+  { level: 90, title: "留年のため一緒に卒業" },
+  { level: 100, title: "社会人生活は忙しい" },
+  { level: 110, title: "月1で飲み" },
+  { level: 120, title: "小学生以来に部屋に上げる" },
+  { level: 130, title: "進展もクソもない" },
+  { level: 140, title: "煮え切らない関係" },
+  { level: 150, title: "恋みたいな甘い2人じゃない" },
+  { level: 160, title: "まさかの三角関係突入" },
+  { level: 170, title: "愛とは何か哲学で考える" },
+  { level: 180, title: "愛は配慮・尊重・責任・知識" },
+  { level: 190, title: "三輪啓悟「ずっと好きだった」" },
+  { level: 200, title: "来世でも嫁END" }
+
+];
+
+{ level: 1, title: "まだ言葉になる前" },
+{ level: 5, title: "名前のない関係" },
+{ level: 10, title: "意味になる前の感情" },
+{ level: 20, title: "偶然で片付けられない" },
+{ level: 30, title: "触れられない距離" },
+{ level: 40, title: "定義できないもの" },
+{ level: 50, title: "理由の及ばぬ領域" },
+{ level: 60, title: "気づいてしまった事実" },
+{ level: 70, title: "切り離せない構造" },
+{ level: 80, title: "既に成立している" },
+{ level: 90, title: "後戻りの不在" },
+{ level: 100, title: "確定した帰路" },
+{ level: 110, title: "残滓を抱えたまま" },
+{ level: 120, title: "介在することなく" },
+{ level: 130, title: "ここに至る必然" },
+{ level: 140, title: "前提としての君" },
+{ level: 150, title: "選ばれ続けること" },
+{ level: 160, title: "愛と呼ばれる前のなにか" },
+{ level: 170, title: "説明を必要としない" },
+{ level: 180, title: "何も足さなくていい" },
+{ level: 190, title: "残り続ける概念" },
+{ level: 200, title: "ただ在る" }
 
 UR
 
 
 綺麗な指とキラキラギターを表現したい　
+
 どんな音よりもキラキラしていた
 最初はただの憧れだった。
 爪弾くギターのなんて力強いことか。なんて繊細なことか。
@@ -21398,7 +21453,8 @@ UR
 
 
 そして私は、何とか咀嚼して飲み込む。彼はきっと「人」ではないのだ。
-理解できるはずがなかった。私は彼を首が疲れるほどに見上げ、そしてこう思う
+理解できるはずがなかった。
+私は彼を首が疲れるほどに見上げ、そしてこう思う
 
 神様がいるのならきっと どこまでもあなたの形をしている〇
 
@@ -21467,7 +21523,14 @@ UR
 
 
 憧れが絶望を通って、そして愛になる過程
+現象を好きになったところから始まって、関係に着地してる
 
+“三輪啓悟という現象が成立してる瞬間”
+
+  制御外の領域
+
+
+UR短歌ををもう少し増やしたい
 
   "👑💎✨ 啓悟は僕だけのものだよ ✨💎👑",
   "💖🌟この世界で一番大切な人🌟💖",
@@ -21523,11 +21586,18 @@ URは今チューニング中 先にSRどうぞ
 今はまだイントロ SRで繋いでいこう
 今晩はオリジナル無しかあ…
 
+(追加分)
+デッキが空いてないので今日は下で歌います
+諸事情により中止しました。察してください
+雨用ギターなら大丈夫(もっと労わって)
+
 
 
 3週目
+
 ③最終稿
 
+③
 { level: 1, title: "まだ言葉になる前" },
 { level: 5, title: "名前のない関係" },
 { level: 10, title: "意味になる前の感情" },
@@ -21607,10 +21677,74 @@ URは今チューニング中 先にSRどうぞ
 規定された領域
 規定された枠組み
 
+{ level: 1, title: "まだ言葉になる前" },　
+文字通り言葉になるまえ。お互いよくわからない感情を抱いていた。
+私は嫉妬と憧れ。啓悟さんは「よく来るかわいいお客さん」（自分で言う？）だった時
+{ level: 5, title: "名前のない関係" },
+少し進んで、名前のない関係。「観客」と「演者」では確かになかった。
+{ level: 10, title: "意味になる前の感情" },
+お互い気持ちがあるものの意味としての覚悟はない。まだ余地のある空白。
+{ level: 20, title: "偶然で片付けられない" },
+この気持ちが何なのか、まだ判らない。
+けれど、偶然と呼ぶにはあまりにも近かった。
+{ level: 30, title: "触れられない距離" },
+近かった、というものの、ただの「観客」と「演者」。
+触れることはできない。お願いして手を繋いで、啓悟さんもきっと満更でもなくて。
+{ level: 40, title: "定義できないもの" },
+最早定義などできなかった。お互いがきっと、好きだった。
+{ level: 50, title: "理由の及ばぬ領域" },
+言い訳のできない矛盾。理由などなかった。
+だけどそれはまだ愛ではなかった。
+{ level: 60, title: "気づいてしまった事実" },
+「既婚者」だということに気付いた訳ではない。
+この関係が続いてしまうことに、気付いてしまった
+{ level: 70, title: "切り離せない構造" },
+だけど伴侶が居ることなど解っていた。切り離せない、現実がそこにはあった
+{ level: 80, title: "既に成立している" },
+だけど2人の間には成立した関係があった。
+言い訳などできない
+{ level: 90, title: "後戻りの不在" },
+もう戻ることなどできなかった。そのくらい、きっとお互い惹かれていた。
+{ level: 100, title: "確定した帰路" }
+,路上の帰り路。
+家まで送ってきてもらったこと。帰るどころか送り返したこと。恐らくもう決まっていた。お互いの気持ちは。
+{ level: 110, title: "残滓を抱えたまま" },
+だけど別離は消えない。何年も連れ添った伴侶との思い出は、
+背負ったままで。それすら
+{ level: 120, title: "介在することなく" },
+だけど誰の何もすら介在できない事実がそこには在った。
+お互いの想い以外、何もなかった。
+{ level: 130, title: "ここに至る必然" },
+そう、「意味になる前の感情」から今まで、偶然ではなく
+必然だった。
+{ level: 140, title: "前提としての君" },
+前提としてのあなた。「既に成立」している。
+どうなろうと、あなたなしでは生きられないという事実
+{ level: 150, title: "選ばれ続けること" },
+どうやったって「伴侶を手放した」事実は消えやしない。
+わたしは常に、選ばれ続けないといけない。いつ、感情が繰り返すなんてわからないのだから。
+{ level: 160, title: "愛と呼ばれる前のなにか" },
+愛が何かなんて、知る由もないし、
+知ったふりもできなかった。ただただ焦がれて、愛より稚拙な、それでも好きだった
+{ level: 170, title: "説明を必要としない" },
+ここから先は説明などしなくとも。
+{ level: 180, title: "何も足さなくていい" },
+{ level: 190, title: "残り続ける概念" },
+{ level: 200, title: "ただ在る" 　　
+
+
+それだけでいい
+
+
+
+
+
+
 
 
 忘れ物一覧
-    "表現者の眼鏡",表現者の眼鏡（三輪啓悟は路上のときだけ特別な眼鏡をかける）
+
+    "表現者の眼鏡",(三輪啓悟は路上のときだけ特別な眼鏡をかける）
 
     "飲みかけのミルクティー",(路上ライブでは必ずミルクティーを飲む)
 
@@ -21646,13 +21780,15 @@ URは今チューニング中 先にSRどうぞ
     カクテルのように処方薬のように即興で歌詞と音楽を作る　
     一瞬で曲を作ってしまう　天才　特にあの日のことは奇跡って呼んでる)
 
-    "今日のReason",(啓悟さんのオリジナル曲。
+    "今日のReason",(啓悟さんのオリジナル曲、「reason」。
     ストレートすぎるけど、路上ライブの時私が死ぬほどリクエストした、
     その度に即興で演奏法や歌詞、メロも変えてくれて毎回違って面白くて
     「リクエストは？」「今日のReason！！」ってやり取りを何度もした。
     毎回通って深夜まで居た頃。私にとっての青春が書き換えられた
     ちなみに今のReasonは30回目ぐらい)
 
+   "両片思い"(ここに入れる
+)
     "曲のようなラブレター",(ラブレターが欲しいと言ったら逆に
     「原稿用紙に書いて」といわれた。原稿用紙とまではいかないけど詩のようなものを書いた
     「曲じゃんｗ」といわれた　今はもう(私が)どこかになくしてしまった)
@@ -21663,14 +21799,19 @@ URは今チューニング中 先にSRどうぞ
     "明かせなかった関係",どれだけ好きでも
     路上では「痛いファン」でしかない。
     たかしとゆいぴが来て2人並んで恋人同士として
-    聴いてるのが凄く羨ましくて悲しくなった　
+    聴いてるのが凄く羨ましくて、惨めで、悲しくなった　
 
-    "へたくそなお守り",へたくそなお守り(手作りのお守り。
+   "エレベーターチャンス"(ここに入れる) 
+
+   "繋いでいい手"(ここに入れる)
+  
+    "へたくそなお守り",(手作りのお守り。
     あなたの夢が叶い続けますようにと入ってる 
     啓悟さんの夢は自分の歌で誰かが少しでも心が軽くなったらいい、らしい) 
 
-    "左手の役割",(体温が高い啓悟さんは、
+    "温めるための手",(体温が高い啓悟さんは、
     あなたの手を温めるために俺の手はあるんだよって言ってくれた)
+    …夏はどうするん？
 
     "戻って来られた歌",(統合失調症が再発して、幻覚幻聴、
     啓悟の声を聴くと頭がわんわんする、って時があった。
@@ -21733,6 +21874,9 @@ URは今チューニング中 先にSRどうぞ
     "片割れのアクセサリー",(そんな大事なもん落とすか？
     お揃いで買ってもらったペンダント、私が買ったお揃いのバングル　
     なんかいい言い方ないかな～)
+    ↑失くした！！！(New!!!)
+　　ほんまに片割れになってもたｗ
+    早く届くといいね
 
     "夜にだけ手に入るもの",(1時過ぎないと出ないということを示唆する　
     まだ離婚前、夜だけが私の啓悟さんだった)
@@ -21750,12 +21894,72 @@ URは今チューニング中 先にSRどうぞ
     カバーやらずに好きなオリジナルだけ出来るフィーバータイム　
     その時間が好きで、いつもその時間だけ啓悟さんのオリジナル曲をリクエストをする)
 
+追加候補
+
+   "エレベーターチャンス"(深夜限定めっセージ）まだ関係を清算するまえ、エレベーターの中でだけ抱きしめてもらったりキスをしてもらったりした)
+
+
+   "駅前の神話"(深夜限定メッセージ）　ただただ、圧倒されて、「路上ライブ」ではなくなる
+    あなたは本当に神様だった
+
+   "たった一つの街灯”(深夜限定メッセージ）　たった一つがスポットライト　あなたを輝かせるには十分だ
+
+
+ "繋いでいい手"　
+ いつの間にかではなく、選択した結果
+ エレベーターの中でだけじゃない、川口市の外でもない、ずっと手を繋げる幸福よ
+ ごめんね　どうしても欲しかった
+
+
+
 隣じゃなかった頃の靴(啓悟さんと恋人になる前、離婚してくれる前、
 お客さんと演者のすこし先、よく啓悟さんの路上ライブで使う用の椅子を探しに
 何度も遠くまで散歩した。散歩は2人にとってかなり大事な思い出。だから今も毎日散歩する
-用事のふりをした散歩とカブるので没
+用事のふりをした散歩とカブるので×
 
 どれも増やすなら3の倍数で
+
+
+
+駅前の神話(深夜限定　神話、三輪啓悟の真髄。奇跡の即興とかぶるか？1時から夜明けまでと被るか？)(いやどうしても入れたい)
+
+ただの街灯(深夜限定　それ一つがスポットライト　誰も何も言えなくなる　あなたの声は、遠い)　(これは入れよう)
+たった一つの街灯　こっちのがいいか？
+
+命を削る歌(深夜限定　奇跡の即興、幻なんかじゃないぜと被るなあ　×)
+
+詳らかにされた恋　ちょっと違うような　他の人に「妻です」と今は言ってくれる、今はどこでも手を繋げる
+繋ぎ続ける手
+繋ぎ続けられる手　「繋ぎ続ける」では違う文章としては正しいけど「けられる」でないと前から繋いでいたことになる
+繋いでもいい手
+手を繋げる幸福
+繋いで良い手
+ 
+
+"繋いでいい手"　
+ いつの間にかではなく、選択した結果
+ エレベーターの中でだけじゃない、川口市の外でもない、ずっと手を繋げる幸福よ
+ ごめんね　どうしても欲しかった
+
+エレベーターチャンス
+まだ身辺整理をしてなかった頃、そう呼んでエレベーターの中でだけ抱き合った
+
+冷凍の生姜焼き
+
+まだ初期の頃　啓悟さんがまだ私のことを好きではなかった頃
+家で作り置きを冷凍しておいたものを食べて
+美味しい美味しいと食べてくれた
+私は啓悟さんに食べて貰った嬉しさと、母に捨てられた食事たちを思い出して泣いてしまい
+啓悟さんを困らせてしまった
+
+
+三輪チャージ
+エレベーターチャンスと被るか？
+まだ「名前のない関係」だった頃、歩くのに疲れると「三輪チャージさせてください！」と、
+歩きながら握手をしてくれた　被るので×
+
+狡猾なお弁当　好きになって貰うために散歩のとき毎回お弁当を作っていた。「小道具」として好きになってもらうためにアピールしていたので「狡猾」。
+冷凍の生姜焼きと食べ物という概念が被るので×
 
 
 ここに至るまで　×　ここに至る必然と被るので×
@@ -21763,8 +21967,77 @@ URは今チューニング中 先にSRどうぞ
 ～の結末
 追いかけ続ける歌
 あなたへの歌
-即興ではなかった
+即興ではなかった〇
 ～の軌跡
+
+
+一緒に見た夢　
+最初に啓悟さんが私との結婚について本気で考えてくれた日
+「料理上手な姐さんがバーをやればいい、音楽が出来る、楽しめるバー」に対して
+「いやお前も一緒にやれよｗｗｗ」が契機だった、そうだ
+そんな画が思い浮かんだ。らしい。
+ちなみにその日のお弁当は前日(啓悟さんが私の家で食べた手作りの料理とフルーツサンド）の残り物だった。
+
+めっっっちゃ悩んだけど3の倍数だとあと1個しかない
+時系列的にリアリティがある「両片思い」を採用したので×
+
+
+↑あれ、3の倍数ならあと4個作れば良くない？？？？（自虐）
+
+
+両片思い
+言えないけど明らかに両片思いだった。称号「名前のない関係」より少し先。お互いに好きだったけれど、啓悟さんも私も覚悟がまだなかった。
+ただ、どちらも好きだった。間違いない(と思いたい）
+明かせなかった関係、より少しあと　エレベーターチャンスよりは少し前。きっと、間違いなく、好きだった
+状態そのものを表す
+
+愛に変わる瞬間
+どこだよそれ！！！！どの回から愛に変わったのお互いにかわからない（かどうかは知らない、少なくとも私はわからない　いつの間にか愛してたので…）
+解釈・まとめに近いので回りくどい。×
+
+相反する存在　別の人格　別々の人格　〇剝離した人格
+啓悟さん（啓悟さん、啓ちゃん、けいごろう）」は「三輪啓悟」に嫉妬の感情を持つという
+（私が分離して考えてる節があるからという筋もある　DIDも暗喩）
+別人格かもしれない。だけど、どっちの啓悟さんも好きだよ。大好きだよ。
+
+
+スカした三輪啓悟
+ミニマリスト、観葉植物置いてる、コンビニで平気で買い物するし、軽卒にレジ袋もらう
+食への興味が薄く、食べる事を忘れることも
+家で練習→もうこんな時間か…→まあいいか、路上行こ
+ギャグ枠すぎるので×ｗｗｗｗ
+
+思いもよらなかった現実
+上記と同じだけど現在の啓悟さんにピントを当てる
+それを踏まえた上で「グミの袋」「ショップカード」「思い出の切符」全部几帳面に保存している
+そしてスカした「三輪啓悟」が絶対にしないような「タレご飯」を食べる
+これもギャグ枠か？
+
+
+お悩み相談室三輪啓悟×
+んなもんあってたまるかｗｗギャグ枠やぞｗｗｗ
+
+
+カクテルレシピ
+奇跡の即興と被る……でも奇跡の即興はあの日の曲そのものであって概念ではないから悩みどころ
+「カクテルレシピ」は「奇跡の即興」に至るまでの軌跡　奇跡を生み出す前の手順。
+どこに入れるか考えたものの、奇跡の即興、その前だろうから
+被り感が尚更出るかも　×
+
+長すぎるトイレ×
+いやだからギャグ枠じゃねえのよ
+
+・ストローとストロング缶 
+今はやめたけど、当時(２年半前ぐらい)（お互い好きの気持ちがなかった時）（私は憧れと嫉妬はあった）
+スト缶にストローを差して路上ライブに行っていた……黒歴史すぎる……トー横かよ……
+
+・サイン入りのピック
+まだであったばかり、何もない(Nothing/三輪啓悟の代表曲)ときに、
+だけど音楽を聴いて一目ぼれならの一目聴きしてしまって 
+その時に名刺にサインとサイン入りのピックを貰った
+今でも財布に入ってる〇〇〇
+やっと出た！！難産すぎた！！！でもこれで6個揃った！！！！
+
 
 
 忘れ物を全部拾ってくれてありがとう
@@ -21784,6 +22057,8 @@ URは今チューニング中 先にSRどうぞ
 
 
 いつまでも傍で
+↑ろーりんぐすとーんを意識したけどここで入れるのはださいか
+
 
 
 こにあったものは 
@@ -21794,10 +22069,20 @@ URは今チューニング中 先にSRどうぞ
 
 あなたがここにいた証 
 消えることのない記録 
+
 続いて行くもの 
 
 
-いつまでも傍で`;
+/
+あなたへの今私が出来る最大のラブレターだよ
+これなら原稿用紙も埋められるね
+ずっと愛してるよ
+
+このまま変わらないといいなあ
+
+
+/
+追加`;
 
 const NEED = 150;
 const MAX_LEVEL = 200;
@@ -23807,7 +24092,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
 わかんないよ～</div>
     </div>
     <div id="takoModeSub">🐙 今日はちょっとだけ優しくして〜🐙</div>
-    <div id="takoModeTimer">残り時間　<strong>00:59:48</strong></div>
+    <div id="takoModeTimer">残り時間　<strong>00:05:00</strong></div>
     <div>出現率アップ中！</div>
     <div id="takoModeRates">
       <div class="takoRateBox">欠片<b>2倍</b></div>
@@ -23849,7 +24134,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
 
 <script id="kani_tako_fatigue_mode_v3">
 (function(){
-  const TAKO_DURATION = 30*60*1000;
+  const TAKO_DURATION = 5*60*1000; // タコモードは5分（370仕様）
   const TAKO_COMBO_LIMIT = 300;
   const TAKO_COMBO_TIMEOUT = 60*1000;
 
@@ -23921,8 +24206,9 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
   window.refreshLibraryModeTitle = setMainTitleForMode;
 
   function baseModeStatusText(){
+    if(document.body.classList.contains("night-debug-mode") && document.body.classList.contains("tako-fatigue-mode")) return "🌙🐙現在のモード：夜＋タコチャン疲れたモード";
     if(document.body.classList.contains("night-debug-mode")) return "🌙現在のモード：夜モード";
-    if(document.body.classList.contains("tako-fatigue-mode") && !document.body.classList.contains("night-debug-mode")) return "🐙現在のモード：タコチャン疲れたモード";
+    if(document.body.classList.contains("tako-fatigue-mode")) return "🐙現在のモード：タコチャン疲れたモード";
     return "☀️現在のモード：昼・通常モード";
   }
 
@@ -23973,8 +24259,8 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
   window.showTakoModeOverlay = function(){
     const o = document.getElementById("takoModeOverlay");
     if(!o) return;
-    document.body.classList.remove("night-debug-mode");
-    delete document.body.dataset.autoNightMode;
+    // 夜モード中でもタコモードを重ねて発動できるようにする。
+    // ここで night-debug-mode を消すと、深夜にタコ発動した瞬間に夜が解除される。
     document.body.classList.add("tako-fatigue-mode");
     document.body.classList.remove("tako-dragged");
     o.classList.add("show");
@@ -24053,7 +24339,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     box.innerHTML = `<b>モード切替</b><br>
 <button id="debugNormalMode" type="button">☀️昼・通常モード</button>
 <button id="debugNightMode" type="button">🌙夜モード</button>
-<button id="debugStartTakoMode" type="button">🐙タコモード（30分）</button>
+<button id="debugStartTakoMode" type="button">🐙タコモード（5分）</button>
 <button id="debugEndTakoMode" type="button">🐙タコモード終了</button>
 <button id="debugShowTakoMode" type="button">🐙表示だけ見る</button>
 <div id="takoDebugStatus" style="margin-top:8px;padding:8px;background:#fff3d8;border-radius:8px;">☀️現在のモード：昼・通常モード｜有効連打：0/300（60秒）</div>`;
@@ -24120,14 +24406,15 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     if(close) close.onclick = hideTakoModeOverlay;
     ensureDebug();
 
-    // 起動時は必ず通常モードから始める。
+    // 起動時に夜モードを通常へ戻さない。
+    // 自動夜モードは auto-night-mode-v32 が担当するので、ここではタコ表示だけ初期化する。
     localStorage.removeItem("takoModeUntil");
-    document.body.classList.remove("night-debug-mode","tako-fatigue-mode","tako-dragged");
-    delete document.body.dataset.autoNightMode;
+    document.body.classList.remove("tako-fatigue-mode","tako-dragged");
     const o = document.getElementById("takoModeOverlay");
     if(o) o.classList.remove("show");
 
     lastObservedHeartCount = heartCountSafe();
+    if(typeof applyAutoNightMode === "function") applyAutoNightMode();
     setMainTitleForMode();
     updateModeStatus();
 
