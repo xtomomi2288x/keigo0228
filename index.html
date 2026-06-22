@@ -966,6 +966,25 @@ body.final-complete-playing #finalCompleteScreen *{
 body.tako-fatigue-mode{background:#f3dfbf!important;color:#5a3519!important;}
 body.tako-fatigue-mode details{background:rgba(255,250,240,.72)!important;}
 body.tako-fatigue-mode #counter,body.tako-fatigue-mode #level,body.tako-fatigue-mode #title{color:#6b4323!important;}
+
+/* =====================
+カニちゃん修正：夜モード中にタコモードへ入ったらタコ背景を優先
+===================== */
+body.night-debug-mode.tako-fatigue-mode{
+  background:#f3dfbf!important;
+  color:#5a3519!important;
+}
+body.night-debug-mode.tako-fatigue-mode details{
+  background:rgba(255,250,240,.72)!important;
+  border-color:#ddd!important;
+}
+body.night-debug-mode.tako-fatigue-mode #counter,
+body.night-debug-mode.tako-fatigue-mode #level,
+body.night-debug-mode.tako-fatigue-mode #title{
+  color:#6b4323!important;
+  text-shadow:none!important;
+}
+
 @media(max-width:700px){
   #takoModeInner{flex-direction:column;gap:8px;}
   #takoModeImg{width:70vw;max-height:220px;}
@@ -4838,7 +4857,7 @@ Oh My Little Girl
 </details>
 </details>
 <details class="kana-group">
-<summary>か行（8アーティスト / 33曲）</summary>
+<summary>か行（9アーティスト / 37曲）</summary>
 
 <!-- GLAY -->
 <details class="artist" data-artist="GLAY" data-yomi="ぐれい">
@@ -6347,9 +6366,463 @@ SWEET SMELL OF SUICIDE DAY</div></details>
 目の前を…</div></details>
 </details>
 
+
+<!-- Queen -->
+<details>
+<summary>Queen</summary>
+<details class="song" data-yomi="さーてぃないん"><summary>'39</summary><div class="lyric">In the year of '39 assembled here the Volunteers
+In the days when lands were few
+Here the ship sailed out into the blue and sunny morn
+The sweetest sight ever seen.
+
+And the night followed day
+And the story tellers say
+That the score brave souls inside
+For many a lonely day sailed across the milky seas
+Never looked back, never feared, never cried.
+
+Don't you hear my call though you're many years away
+Don't you hear me calling you
+Write your letters in the sand
+For the day I take your hand
+In the land that our grandchildren knew.
+
+In the year of '39 came a ship in from the blue
+The volunteers came home that day
+And they bring good news of a world so newly born
+Though their hearts so heavily weigh
+
+For the earth is old and grey, little darling we'll away
+But my love this cannot be
+For so many years have gone though I'm older but a year
+Your mother's eyes from your eyes cry to me.
+
+Don't you hear my call though you're many years away
+Don't you hear me calling you
+Write your letters in the sand
+For the day I take your hand
+In the land that our grandchildren knew.
+
+Don't you hear my call though you're many years away
+Don't you hear me calling you
+All your letters in the sand cannot heal me like your hand
+
+For my life
+Still ahead
+Pity Me.</div></details>
+<details class="song" data-yomi="みらくる"><summary>The Miracle</summary><div class="lyric">Every drop of rain that falls
+In Sahara Desert says it all
+It's a miracle
+
+All God's creations great and small
+The Golden Gate and the Taj Mahal
+That's a miracle
+
+Test tube babies being born
+Mothers, fathers dead and gone
+It's a miracle
+
+We're having a miracle on earth
+Mother nature does it all for us
+The wonders of this world go on
+The hanging Gardens of Babylon
+Captain Cook and Cain and Abel
+Jimi Hendrix to the Tower of Babel
+It's a miracle, it's a miracle
+
+It's a miracle, it's a miracle
+
+The one thing we're all waiting for
+Is peace on earth - an end to war
+It's a miracle we need - the miracle
+
+The miracle we're all waiting for today
+
+If every leaf on every tree
+Could tell a story that would be
+A miracle
+
+If every child on every street
+Had clothes to wear and food to eat
+That's a miracle
+
+If all God's people could be free
+To live in perfect harmony
+It's a miracle
+
+We're having a miracle on earth
+Mother nature does it all for us
+Open hearts and surgery
+Sunday mornings with a cup of tea
+Super powers always fighting
+Mona Lisa just keeps on smiling
+It's a miracle, it's a miracle
+It's a miracle, it's a miracle
+
+(Wonders of this world go on)
+It's a miracle, it's a miracle
+It's a miracle, 
+it's a miracle
+
+The one thing (the one thing)
+We're all waiting for (we're all waiting for)
+Is peace on earth (peace on earth)
+And an end to war (an end to war)
+It's a miracle we need - the miracle
+The miracle peace on earth and end to war
+Today
+
+That time will come one day you'll see
+When we can all be friends
+That time will come one day you'll see
+When we can all be friends
+That time will come one day you'll see
+When we can all be friends
+That time will come one day you'll see
+When we can all be friends
+
+和訳
+
+サハラ砂漠に振る雨
+その雨粒ひとつひとつがすべてを語ってる
+それは奇跡だと
+
+神が創りし大小の物すべて
+ゴールデン・ゲートやタージ・マハール
+それらは奇跡なんだ
+
+対外受精で生を授かったベイビー
+父母 ともに亡くなっているというのに
+それは奇跡なんだ
+
+地球には奇跡が起こる
+母なる自然が人間のためにしてくれること
+この地球が回っている驚異
+バビロンの空中庭園
+キャプテン・クックとカインとアベル
+ジミ・ヘンドリックスとバベルの塔
+それは奇跡　奇跡なんだ
+それは奇跡　奇跡なんだよ
+
+俺たちが待ち望むただ一つのこと
+それは世界の平和 - 戦争の終結
+それが 俺たちに必要な奇跡
+今日 みんなが待ち望む奇跡なんだ
+
+木々の葉の一枚一枚が
+物語を語ってくれたなら
+それは奇跡なんだ
+
+どこにでもいるストリートチルドレンが
+着る服があり 食事ができるならば
+それこそが奇跡
+
+神の民がみな自由になれて
+みな一つになって暮らせたら
+それは奇跡
+
+地球には奇跡が起こる
+母なる自然が人間のためにしてくれること
+開胸手術
+日曜の朝に飲む一杯の紅茶
+超大国はいつだって戦争しているが
+モナ・リサはずっと微笑み続けている
+それは奇跡　それこそが奇跡
+それが奇跡　奇跡なんだよ
+
+（驚くことに この地球は回ってる）
+奇跡さ 奇跡なんだ
+奇跡なのさ 奇跡なんだよ
+
+俺たちが待ち望むただ一つのこと
+それは世界の平和 - 戦争の終結
+それが 俺たちに必要な奇跡 
+今日 みんなが待ち望む奇跡なんだ
+
+いつかそんな日が来る　わかるかい
+俺たちみんなが友だちになれる日が
+いつか来る 信じよう
+みんなが友だちになれる日が来るんだ..
+
+</div></details>
+<details class="song" data-yomi="きらーくいーん"><summary>Killer Queen</summary><div class="lyric">She keeps
+Moet et Chandon
+In her pretty cabinet
+'Let them eat cake' she says
+Just like
+Marie Antoinette
+A built-in remedy
+For Kruschev and Kennedy
+At anytime an invitation
+You can't decline
+Caviar and cigarettes
+Well versed in etiquette
+Extraordinarity nice
+She's a killer Queen
+Gunpowder, gelatine
+Dynamite with a laser beam
+Guaranteed to blow your mind
+(Anytime)
+Woo… Recommended at the price
+Insatiable an appetite
+Wanna try?
+To avoid complications
+She never kept the same address
+In conversation
+She spoke just like a baroness
+Met a man from China
+Went down to
+Geisha Minah
+Then again incidentally
+If you're that way inclined
+Perfume came naturally from Paris
+For cars she couldn't care less
+(Fastidious and precise)
+She's a killer Queen
+Gunpowder, gelatine
+Dynamite with a laser beam
+Guaranteed to blow your mind
+(Anytime)
+
+Drop of a hat she's as willing as
+Playful as a pussy cat
+Then momentarily out of action
+Temporarily out of gas
+To absolutely
+(drive you wild, wild…)
+She's all out to get you
+She's a killer Queen
+Gunpowder, gelatine
+Dynamite with a laser beam
+Guaranteed to blow your mind
+(Anytime)
+Woo… Recommended at the price
+Insatiable an appetite
+Wanna try?
+You wanna try…
+
+
+和訳
+
+
+優美な飾り棚にモエ・エ・シャンドンを並べ、
+「ケーキを食べればいいじゃない」と言う彼女の様子は、まさにマリー・アントワネット
+
+フルシチョフとケネディのいさかいも収めてしまう
+どんな時だって、彼女の誘惑に抗うなんて無理さ
+
+キャビアにシガレット、エチケットにも通じてる
+例えようもないほどの素晴らしさ
+
+彼女はキラー・クイーン
+＜彼女の魅力ときたら＞火薬にゼラチン(ニトロ)
+ダイナマイトにレーザービームまで完備して
+間違いなくあなたの心を吹き飛ばす
+（いつだって）
+
+どう
+お安いものでしょ？
+飽くなき欲望を持つあなたには。
+お試しいかが？
+
+ 面倒ごとを避け、一つの場所には留まらない
+口を開けば、貴族のような話しぶり
+
+ミナという源氏名で、中国から来た男をもてなした
+ついでにもう一度、あなたのお望みどおりにいかが？
+
+香水はもちろんパリから取り寄せたもの（もちろん）
+車には全く無関心な様子
+彼女の好みを把握するのは至難の業
+
+彼女はキラー・クイーン
+その魅力ときたら火薬にニトロ
+ダイナマイトにレーザービームまで完備して
+間違いなくあなたの心を吹き飛ばす
+（いつだって）
+
+気が向けばすぐに、仔猫みたいにふざけてみせ
+すると突然、ガス欠みたいに
+大人しくなって
+その気にさせてくる（あなたを激しく、その気にね）
+
+きっとあなたを虜にする
+
+彼女はキラー・クイーン
+その魅力ときたら火薬にニトロ
+ダイナマイトにレーザービームまで完備して
+間違いなくあなたの心を吹き飛ばす
+（いつだって）
+
+どう
+お安いものでしょ？
+飽くなき欲望を持つあなたには。
+お試しいかが？
+
+お試しいかが？
+
+ </div></details>
+<details class="song" data-yomi="どんとすとっぷみーなう"><summary>Don’t Stop Me Now</summary><div class="lyric">Tonight
+I'm gonna have myself a real good time
+I feel alive
+And the world—I'll turn it inside out
+Yeah!
+I'm floating around
+In ecstasy
+
+So don't stop me now, don't stop me
+'Cause I'm having a good time, having a good time
+
+I'm a shooting star leaping through the sky
+Like a tiger defying the laws of gravity
+I'm a racing car passing by
+Like Lady Godiva
+I'm gonna go go go
+There's no stopping me
+
+I'm burning through the sky
+Yeah!
+Two hundred degrees
+That's why they call me Mister Fahrenheit
+I'm traveling at the speed of light
+I wanna make a supersonic man out of you
+
+Don't stop me now
+I'm having such a good time
+I'm having a ball
+Don't stop me now
+If you wanna have a good time
+Just give me a call
+
+Don't stop me now
+'Cause I'm having a good time
+Don't stop me now
+Yes I'm having a good time
+I don't want to stop at all, yeah!
+
+I'm a rocket ship on my way to Mars
+On a collision course
+I am a satellite
+I'm out of control
+I am a sex machine ready to reload
+Like an atom bomb about to-oh-oh-oh-oh-oh explode
+
+I'm burning through the sky
+Yeah!
+Two hundred degrees
+That's why they call me Mister Fahrenheit
+I'm traveling at the speed of light
+I wanna make a supersonic woman of you
+
+Don't stop me
+Don't stop me
+Don't stop me
+Hey hey hey!
+
+Don't stop me
+Don't stop me
+Ooh ooh ooh
+I like it
+
+Don't stop me
+Don't stop me
+Have a good time, good time
+
+Don't stop me
+Don't stop me
+
+Ooh ooh alright
+
+Ooh I'm burning through the sky
+Yeah!
+Two hundred degrees
+That's why they call me Mister Fahrenheit
+I'm traveling at the speed of light
+I wanna make a supersonic man out of you
+
+Don't stop me now
+I'm having such a good time
+I'm having a ball
+Don't stop me now
+If you wanna have a good time
+Alright
+Just give me a call
+
+Don't stop me now
+'Cause I'm having a good time
+Don't stop me now
+Yes, I'm having a good time
+I don't wanna stop at all
+
+和訳
+
+今夜は、思いっきり楽しもう。
+ああ、生きてるって感じ。
+世界をひっくり返してしまおう、そうだ！
+エクスタシーに酔いしれながら……
+だから、止めないで、邪魔はしないで。
+だって、本当に、本当に楽しんでいるんだから。
+僕は空を突き抜けて飛んでいく流星
+まるで、重力をものともしない虎のように。
+僕はレディ・ゴダイバのように駆け抜けるレーシングカー
+さあ、行くぞ、ゴー、ゴー、
+誰も止められやしない。
+空を突き破るように燃えている、そう、
+200度もの高熱で。
+だから、ミスター ファーレンハイト(華氏)と呼ばれるわけ。
+高速で突っ走りながら、
+君をスーパーソニック(超音速)マンにしてやりたい。
+今は、止めないで。
+ほら、こんなに他に死んでいるんだから。
+もう、最高の気分。
+邪魔はしないで。
+もし君も楽しみたいのなら、
+電話をしてみて。
+今は、止めないで。こんなに楽しんでいるんだから。
+邪魔はしないで。そう、本当に楽しい。
+そうさ、全然辞めたくなくかないんだ！
+僕は火星に向かう宇宙船、
+衝突コースをまっしぐら。
+僕は衛星、制御も不能。
+僕はいつでも準備完了のセックスマシーン、
+ああ、もう爆発寸前の原子爆弾みたいに。
+空を突き破るように燃えている、そう、
+200度もの高熱で。
+だからミスター ファーレンハイトと呼ばれるわけ。
+高速で突っ走りながら、
+君をスーパーソニックマンにもしてやりたい。
+止めないで、止めないで、邪魔はしないで！
+ヘイ、ヘイ、ヘイ！
+止めないで、止めないで、邪魔はしないで！
+OOH OOH OOH (いいね！)
+止めないで、邪魔はしないで！
+もっと、もっと、楽しもうよ！
+止めないで、邪魔はしないで！
+OOH OOH ALRIGHT
+空を突き破るように燃えている、そう、
+200度もの高熱で。
+だからミスター ファーレンハイトと呼ばれるわけ。
+高速で突っ走りながら、
+君をスーパーソニックマンにしてやりたい。
+今は、止めないで。
+ほら、こんなに楽しんでいるんだから。
+もう、最高の気分。
+邪魔はしないで。
+もし君も楽しみたいのなら、
+電話をかけてみて。
+今は、止めないで。こんなに楽しんでいるんだから。
+邪魔はしないで。そう、本当に楽しい。
+絶対にやめたくなんかないね！
+LA DA DA DA DAAH
+DA DA DA HAA
+HA DA DA HA HA HAAA
+HA DA DAA HA DA DA AAA
+
+</div></details>
+</details>
 </details>
 <details class="kana-group">
-<summary>さ行（10アーティスト / 83曲）</summary>
+<summary>さ行（11アーティスト / 86曲）</summary>
 
 <!-- SUPER BEAVER -->
 <details><summary>SUPER BEAVER</summary>
@@ -9898,6 +10371,151 @@ BARのロボットに見惚れてたら
 笑顔のあとで
 世界に愛されながら</div></details>
 </details>
+
+<!-- サイダーガール -->
+<details>
+<summary>サイダーガール</summary>
+<details class="song" data-yomi="あいでぃー"><summary>ID</summary><div class="lyric">大体の現象に名前はあるが
+誰も分からないな　真っ逆さま
+何十億もの人がいるのに
+教えてくれないな　な
+
+限りある命と引き換えにして
+僕は進めているかな
+無駄になることは一つだって
+ないと信じているけど
+
+なんでなりたい自分となれない自分と
+ぐしゃぐしゃになって　半透明
+どんだけ強がって　背伸びをしているの
+嫌だな　疲れちゃうし
+
+この世界は案外残酷で
+ステータスは最初に選べないし
+それなら中指立てて
+あっちまでぶっ飛んで行こうぜ
+
+頭の中では分かっているが
+これが現実で　狂い狂って
+こんなに努力をしているんです
+しているつもりなんです　ああ
+
+あたりまえの日常　鏡の前で
+君は笑えているかな
+望んでいたことなんだって
+言い聞かせていたけど
+
+なんでなりたい自分となれない自分と
+ぐしゃぐしゃになって　半透明
+どこまで逃げたって追いつかれるんだよ
+憧れはもう消えてくれないよな
+
+ああ　子供だった頃は
+ずっと何かに夢中で
+大事にしてきたものすら忘れて
+未完成なまま僕は
+
+なりたい自分となれない自分と
+ぐしゃぐしゃになって　半透明
+どんだけ強がって　背伸びをしているの
+嫌だな　疲れちゃうし
+
+いつか最低な自分を愛せますようにと
+めくるめく未来を願っている
+飾らないでさ　不器用に笑って
+今はただ生きていこう
+
+この世界は案外残酷で
+ステータスは最初に選べないし
+それなら中指立てて
+あっちまでぶっ飛んで行こうぜ</div></details>
+<details class="song" data-yomi="しんでれら"><summary>シンデレラ</summary><div class="lyric">些細なよろこびたちを育てていきませんか
+
+あなたの顔が少し寂しそうで
+ジョークのひとつでも言えたらなあ
+
+溢れる気持ちに戸惑っては
+何度もしたためるラブレター
+いつまで丸めて捨てているの
+
+目と目合えば　不思議なもんで
+無理して笑ってもバレてしまうな
+灰かぶっても大丈夫　あなたがいるのならば
+
+気の利いたことは言えないけど
+一緒に猫に会いにいきませんか
+些細なよろこびたちを育てていきませんか
+
+寝ても覚めても　胸が苦しいのは
+あと少し　勇気を出せないから
+
+今はまだこのまま　気づかないふりで
+ビビディバビディブー　魔法をモアエンモア
+
+近づくほど　わかんなくなって　かぼちゃも馬鹿になる
+
+頑張っても　悲しいときには
+寄り道しながら帰りませんか
+夕焼けに祈りを込めて　明日は笑えるように
+
+桜の花　海の青さ　落ち葉と雪の絨毯
+一人じゃ気づけない　美しさを知った
+甘くて苦い味も知った
+
+いつか終わりが来てしまえば　それぞれの道を歩んでいくから
+灰かぶってる場合じゃない　シンデレラじゃあるまいし
+
+これからもあなたの隣がいい
+なんてことのない日々を過ごして
+些細なよろこびたちを育てていきませんか</div></details>
+<details class="song" data-yomi="めらんこりー"><summary>メランコリー</summary><div class="lyric">ぐるぐるしてるんだ頭の中
+よく聴く流行りのミュージック
+ゆらゆらしてるんだ心の中
+手の鳴る方　行ってみようぜ
+
+今日も最低な一日でした　笑っちゃうな
+一人でいたって特にやる事もないし
+
+不安だよハイウェイスター夜が明けてしまう
+明日は気取ったコピぺマネキンを蹴り飛ばしてやれ
+
+ぐるぐるしてるんだ頭の中
+良く聴く流行りのミュージック
+ゆらゆらしてるんだ心の中
+手の鳴る方　行ってみようぜ
+ぐるぐるしてるんだ君の声が
+まるで紫のリフレイン
+ゆらゆらしてるんだ僕の声が
+涙の日にさよなら
+
+きっと飾られる335 メランコリー
+さぁさパパッと支度して
+あまり気が乗らないランデヴー
+
+急いでよオーバードライブ　効き目は短いさ
+知ったかぶりの並んだスピーカー
+ぶっ飛ばしてこうぜ
+
+踵鳴らせ　手を鳴らせ
+乗ったもん勝ち　らららららー
+何も知らない　興味もない
+それで良いさ　おっおっおっおー
+
+月水金　怒られて
+火木　ちょっとツイてない
+終末君に会えるなら
+結局それも　ぱらぱぱぱ
+
+ぐるぐるしてるんだ頭の中
+良く聴く流行りのミュージック
+ゆらゆらしてるんだ心の中
+手の鳴る方　行ってみようぜ
+くらくらしてるんだ君の声に
+恋に落ちたのかいエイリアン
+ゆらゆらしてるんだ僕の声が
+涙の日にさよならバイバイ
+</div></details>
+</details>
 </details>
 <details class="kana-group">
 <summary>た行（9アーティスト / 34曲）</summary>
@@ -11346,7 +11964,7 @@ loneliness…………</div> <div class="message">
 </details>
 </details>
 <details class="kana-group">
-<summary>な行（1アーティスト / 7曲）</summary>
+<summary>な行（2アーティスト / 8曲）</summary>
 <!-- 中島みゆき -->
 <details><summary>中島みゆき</summary>
 <details class="song"><summary>糸</summary><div class="lyric">なぜ　めぐり逢うのかを
@@ -11602,9 +12220,51 @@ loneliness…………</div> <div class="message">
   </div>
 </details>
 </details>
+
+<!-- NICO Touches the Walls -->
+<details>
+<summary>NICO Touches the Walls</summary>
+<details class="song" data-yomi="ほろぐらむ"><summary>ホログラム</summary><div class="lyric">真っ白な景色にいま誘われて
+僕は行くよ　まだ見ぬ世界へ
+
+迷子のまま旅していた　鼠色の空の下
+日替わりの地図　いくつもの夢が滲んでいた
+いつかはさ　ちっぽけな僕のこの歩幅でも
+あの雲の向こうまで行けるかな
+
+強がって　キズついた心透かしたように
+降り出した雨粒たちが　乱反射繰り返す
+
+真っ直ぐな光が交差して
+行く先も告げぬまま　どこまでも突き抜ける
+淡い残像　両眼に焼き付けて
+届くはずなんだ　まだ見ぬ世界へ
+
+知らず知らずに貼っていたのは　白黒のステッカーで
+大事なもの　僕らは隠してしまっていた
+宝の石より　花より　星の灯りより綺麗な
+「夢」と言う名のホログラムを　ざわめきを
+
+はみだして　逆らって　いつか描いた風景
+悔しさも　寂しさもいま　泡みたいに弾けとぶ
+
+真っ直ぐな道で　躓いたって
+かさぶたはがれたら　今よりきっと強くなれる
+真っ白な景色にいま誘われて
+僕は行くよ　まだ見ぬ世界へ
+
+霞む空の先に　虹色の光
+明日の影に　震えるたびに　遠くで僕を呼ぶ声がして
+
+真っ直ぐな光が　散らばって
+雨上がりの午後に　束になって降り注ぐ
+無限のグラデーションがいま混ざり合って
+この空の下どんな所にいても
+必ず届くはずさ　まだ見ぬ世界へ</div></details>
+</details>
 </details>
 <details class="kana-group">
-<summary>は行（8アーティスト / 61曲）</summary>
+<summary>は行（9アーティスト / 64曲）</summary>
 
 <!-- B'z -->
 <details><summary>B'z</summary>
@@ -14949,6 +15609,113 @@ any time, any place, wanna kiss, want your lips
 僕らをつないでいるもの　不安を塞ぐように　キスをするんだ
 ねぇ　揺れる雲に月が隠れてしまう前に　帰ろう
 今　君の家に向かう途中</div></details>
+</details>
+
+<!-- FIELD OF VIEW -->
+<details>
+<summary>FIELD OF VIEW</summary>
+<details class="song" data-yomi="かわいたさけび"><summary>渇いた叫び</summary><div class="lyric">このまま もう少し 歩こう 肩を抱き
+消えゆく夢を数え 枯れてく仲間を見た
+通い慣れた道に迷い込む このごろ
+闇が もう一人の自分をつくる
+
+渇いた叫びが くじけそうな胸を突き刺す
+君を誘って世界を見たいな
+だれにも出せない答えが僕の中にある
+駆け引きがカギとどけ fly at higher game
+
+いくつの悲しみを 一緒に越えただろう?
+気が済むまで求めた あの日の僕達がいた
+時代が巡るなら またどこかで会えるね
+その時が 来るまで 諦めない
+
+冷めていく想いは どうしても 否めないけど
+恋に落ちて変わってくのもいいね
+焦らず 騒がず あるがままでと願うから
+心に花を咲かそう just take my heart
+
+渇いた叫びが くじけそうな胸を突き刺す
+君を誘って世界を見たいな
+だれにも出せない答えが夢の中にある
+僕を信じて 咲かそう just take my heart 人生は続いてく</div></details>
+<details class="song" data-yomi="だんだんこころひかれてく"><summary>DAN DAN 心魅かれてく</summary><div class="lyric">DAN DAN 心魅かれてく
+その眩しい笑顔に
+果てない暗闇から
+飛び出そう Hold my hand
+君と出会ったとき
+子供のころ大切に
+想っていた景色を
+思い出したんだ
+僕と踊ってくれないか
+光と影の Winding Road
+今でもあいつに
+夢中なの？
+少しだけ振り向き
+たくなるような
+時もあるけど
+愛と勇気と
+誇りを持って闘うよ
+DAN DAN 心魅かれてく
+この宇宙の希望のかけら
+きっと誰もが
+永遠を手に入れたい
+ZEN ZEN 気にしない
+フリしても
+ほら君に恋してる
+果てない暗闇から
+飛び出そう
+Hold your hand
+
+怒った顔も疲れてる
+君も好きだけど
+あんなに飛ばして生きて
+大丈夫かなと思う
+僕は…何気ない行動に
+振り回されてる
+sea side blue
+それでもあいつに
+夢中なの？
+もっと聞きたい
+ことがあったのに
+二人の会話が
+車の音にはばまれて
+通りに舞うよ
+DAN DAN 心魅かれてく
+自分でも不思議なんだけど
+何かあると一番に
+君に電話したくなる
+ZEN ZEN 気のない
+フリしても
+結局 君のことだけ
+見ていた
+海の彼方へ飛び出そうよ
+Hold my hand</div></details>
+<details class="song" data-yomi="とつぜん"><summary>突然</summary><div class="lyric">突然君からの手紙　あの日から途切れた君の声
+今すぐ逢いに行くよ　夏が遠回りしても
+
+カセットのボリューム上げた　日曜の車は混んでいる
+バックミラーの自分を見て　“今度こそは意地を張らない…”
+
+海岸通り過ぎると　君の家が見える
+過去も未来も忘れて　現在(いま)は君のことだけ
+
+突然の風に吹かれて　夢中で何かを探したね
+倒れそうになったら　僕を近くに感じて
+またあの日のように　君を抱きしめたい
+
+何かを求めれば何かが　音をたてて崩れてく
+たとえ今日が終わっても　明日を信じて行こうよ
+
+僕は君の大事な存在(ひと)になれるのだろうか
+この仕事(ゆめ)はどんな状況(とき)も笑っているよ
+
+突然の熱い夕立ちに　夢中で車に走ったね
+埃まみれになって　時間(とき)の経つのも忘れた
+恋人よ　君を心から大切にしたい
+
+突然の風に吹かれて　旅人は行く先を知らない
+でも僕らの愛は　二度とはぐれたりはしない
+あの青い空のように　いつまでもそばにいる</div></details>
 </details>
 </details>
 <details class="kana-group">
@@ -18677,38 +19444,7 @@ GO☆GO☆READY☆GO☆GO
 ずっと望んでいたあの頃　簡単に掴めないけど
 準備はいいかい?　いくよ　永遠に刻む
 新たなSTORY　駆け出して
-ダイブする　Show me　Fly the sky</div></details><details class="song" data-yomi="だんだんこころひかれてく"><summary>DAN DAN 心魅かれてく</summary><div class="lyric">DAN DAN 心魅かれてく その眩しい笑顔に
-果てない暗闇から飛び出そう
-Hold my hand
-
-君と出合ったとき 子供の頃 大切に想ってた景色を思い出したんだ
-僕と踊ってくれないか?
-光と影の Winding road
-今でも あいつに夢中なの?
-
-少しだけ振り向きたくなるような時もあるけど愛と勇気と誇りを持って闘うよ
-
-DAN DAN 心魅かれてく
-この星の希望のかけら
-きっと誰もが 永遠を手に入れたい
-ZEN ZEN 気にしないフリしても ほら君に恋してる
-果てない暗闇から飛び出そう
-Hold your hand
-
-怒った顔も疲れてる君も好きだけどあんなに
-飛ばして生きて 大丈夫かなと思う
-僕は 何気ない行動に振り回されてる Sea side blue
-それでも あいつに夢中なの?
-
-もっと聞きたいことがあったのに
-二人の会話が 車の音にはばまれて通りに舞うよ
-
-
-DAN DAN 心魅かれてく
-自分でも不思議なんだけど 何かあると一番に 君に電話したくなる
-ZEN ZEN 気のないフリしても 結局 君のことだけ見ていた
-海の彼方へ 飛び出そうよ
-Hold my hand</div></details><details class="song" data-yomi="となりのととろ"><summary>となりのトトロ</summary><div class="lyric">トトロ　トトロ　トトロ　トトロ
+ダイブする　Show me　Fly the sky</div></details><details class="song" data-yomi="となりのととろ"><summary>となりのトトロ</summary><div class="lyric">トトロ　トトロ　トトロ　トトロ
 
 だれかが　こっそり
 小路に　木の実　うずめて
@@ -23417,7 +24153,13 @@ function renderTitleCollection(){
     {name:"2周目", list:secondTitles, base:MAX_LEVEL},
     {name:"3周目", list:thirdTitles, base:MAX_LEVEL*2}
   ];
-  box.innerHTML = `<div class="collection-header">🏆獲得称号<br>収集率：${Math.min(p.levelIndex+1,MAX_LEVEL*MAX_LOOP)} / ${MAX_LEVEL*MAX_LOOP}（${Math.floor(Math.min(p.levelIndex+1,MAX_LEVEL*MAX_LOOP)/(MAX_LEVEL*MAX_LOOP)*100)}%）</div>`;
+  const totalTitles = firstTitles.length + secondTitles.length + thirdTitles.length;
+  const ownedTitles =
+    firstTitles.filter(item => p.levelIndex >= item.level - 1).length +
+    secondTitles.filter(item => p.levelIndex >= MAX_LEVEL + item.level - 1).length +
+    thirdTitles.filter(item => p.levelIndex >= MAX_LEVEL * 2 + item.level - 1).length;
+  const titleRate = totalTitles ? Math.floor(ownedTitles / totalTitles * 100) : 0;
+  box.innerHTML = `<div class="collection-header">🏆獲得称号<br>収集率：${ownedTitles} / ${totalTitles}（${titleRate}%）</div>`;
   const wrap = document.createElement("div");
   wrap.className = "title-three-columns";
   sets.forEach(set => {
