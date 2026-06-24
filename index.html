@@ -1073,6 +1073,317 @@ body.night-debug-mode.tako-fatigue-mode #takoModeBadge{
   display:block!important;
 }
 
+
+/* =====================
+第二章「残り火」簡易版＋導入デバッグ v1
+第一章の収集データは削除せず、表示だけ保管庫へ切り替える。
+===================== */
+#chapterIntroOverlay,
+#chapterBlackoutOverlay,
+#chapterPoemOverlay{
+  position:fixed;
+  inset:0;
+  z-index:2147483647;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  box-sizing:border-box;
+}
+
+#chapterIntroOverlay.show,
+#chapterBlackoutOverlay.show,
+#chapterPoemOverlay.show{
+  display:flex;
+}
+
+#chapterIntroOverlay{
+  background:rgba(5,5,8,.86);
+  backdrop-filter:blur(5px);
+  padding:20px;
+}
+
+#chapterIntroCard{
+  width:min(720px,90vw);
+  box-sizing:border-box;
+  padding:38px 30px 30px;
+  border:1px solid rgba(255,255,255,.34);
+  border-radius:18px;
+  background:rgba(15,15,18,.95);
+  color:white;
+  text-align:center;
+  box-shadow:0 18px 70px rgba(0,0,0,.55);
+}
+
+#chapterIntroQuestion{
+  margin:0 0 12px;
+  font-size:34px;
+  line-height:1.65;
+  letter-spacing:.08em;
+  font-weight:normal;
+}
+
+#chapterIntroSub{
+  margin:0 0 28px;
+  color:#d7d7d7;
+  font-size:16px;
+  line-height:1.8;
+  white-space:pre-line;
+}
+
+#chapterIntroChoices{
+  display:flex;
+  justify-content:center;
+  gap:18px;
+  flex-wrap:wrap;
+}
+
+#chapterIntroChoices button{
+  min-width:150px;
+  margin:0!important;
+  padding:11px 24px!important;
+  border:1px solid rgba(255,255,255,.45)!important;
+  border-radius:999px!important;
+  background:transparent!important;
+  color:white!important;
+  font-size:17px!important;
+}
+
+#chapterIntroChoices button:hover{
+  background:rgba(255,255,255,.12)!important;
+}
+
+#chapterBlackoutOverlay{
+  background:#000;
+  color:white;
+  padding:30px;
+  opacity:0;
+  transition:opacity .75s ease;
+}
+
+#chapterBlackoutOverlay.show{
+  opacity:1;
+}
+
+#chapterBlackoutText{
+  max-width:90vw;
+  font-size:31px;
+  line-height:2.1;
+  letter-spacing:.1em;
+  text-align:center;
+  white-space:pre-line;
+  opacity:0;
+  transition:opacity .8s ease;
+}
+
+#chapterBlackoutText.visible{opacity:1;}
+
+#chapterPoemOverlay{
+  background:rgba(0,0,0,.78);
+  color:white;
+  padding:26px;
+  opacity:0;
+  transition:opacity .45s ease;
+  pointer-events:none;
+}
+
+#chapterPoemOverlay.show{opacity:1;}
+
+#chapterPoemText{
+  max-width:88vw;
+  font-size:29px;
+  line-height:2;
+  text-align:center;
+  white-space:pre-line;
+  text-shadow:0 0 16px rgba(255,255,255,.5);
+}
+
+#chapterArchiveBtn{
+  display:none!important;
+}
+
+#chapterArchiveBtn.chapter-visible{
+  display:inline-block!important;
+}
+
+#chapterArchiveBtn.chapter-pulse{
+  animation:chapterArchivePulse 1.1s ease-in-out 3;
+}
+
+@keyframes chapterArchivePulse{
+  0%,100%{box-shadow:none;transform:scale(1);}
+  50%{box-shadow:0 0 20px rgba(212,175,55,.85);transform:scale(1.04);}
+}
+
+#chapter2Banner{
+  display:none;
+  width:min(1000px,calc(100vw - 60px));
+  box-sizing:border-box;
+  margin:18px 0 12px;
+  padding:18px 22px;
+  border:1px solid #bd6d28;
+  border-radius:14px;
+  background:
+    radial-gradient(circle at 82% 30%,rgba(255,200,104,.28),transparent 23%),
+    linear-gradient(135deg,#fff7e8,#f4ddbe);
+  color:#5b3217;
+  box-shadow:0 6px 24px rgba(122,69,25,.15);
+}
+
+#chapter2Banner.show{display:block;}
+
+#chapter2BannerTitle{
+  font-size:28px;
+  font-weight:bold;
+  letter-spacing:.08em;
+}
+
+#chapter2BannerSub{
+  margin-top:4px;
+  font-size:14px;
+  opacity:.78;
+}
+
+#chapter2ButtonRow{
+  display:none;
+  margin-top:8px;
+}
+
+#chapter2ButtonRow.show{display:block;}
+
+#chapter2ButtonRow button{
+  border-color:#bd6d28!important;
+  background:#fff7e8!important;
+  color:#5b3217!important;
+}
+
+#chapterArchivePanel,
+#chapter2Panel{
+  display:none;
+  width:95vw;
+  max-width:1200px;
+  box-sizing:border-box;
+  margin-top:12px;
+  padding:16px;
+  border:1px solid #c8a276;
+  border-radius:14px;
+  background:#fffdf8;
+  color:#2c2118;
+  box-shadow:0 4px 20px rgba(0,0,0,.14);
+  font-size:15px;
+  line-height:1.55;
+}
+
+#chapterArchivePanel.show,
+#chapter2Panel.show{display:block;}
+
+.chapter-panel-header{
+  margin-bottom:12px;
+  font-size:18px;
+  font-weight:bold;
+}
+
+.chapter-panel-note{
+  margin-bottom:14px;
+  padding:9px 12px;
+  border-radius:9px;
+  background:#fff5d9;
+  color:#6c4b17;
+  font-size:14px;
+}
+
+#chapterArchiveMenu,
+#chapter2Menu{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:12px;
+}
+
+#chapterArchiveMenu button,
+#chapter2Menu button{
+  margin:0!important;
+}
+
+#chapterBookmarkBtn{
+  border-color:#946a2f!important;
+  background:#fff7dc!important;
+}
+
+#chapterArchiveContent{
+  margin-top:10px;
+}
+
+#chapterArchiveContent #collectionBox,
+#chapterArchiveContent #titleCollectionBox,
+#chapterArchiveContent #slotRecordBox,
+#chapterArchiveContent #lostCollectionBox{
+  width:100%;
+  max-width:none;
+  margin-top:10px;
+}
+
+.chapter2-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+}
+
+.chapter2-card{
+  min-width:0;
+  padding:12px;
+  border:1px solid #d7b68e;
+  border-radius:10px;
+  background:#fffaf1;
+  overflow-wrap:anywhere;
+}
+
+.chapter2-card h3{
+  margin:0 0 7px;
+  font-size:17px;
+}
+
+.chapter2-card ul{
+  margin:0;
+  padding-left:1.3em;
+}
+
+.chapter2-card li{margin:4px 0;}
+
+.chapter2-rarity-n{border-color:#bbb;background:#f7f7f7;}
+.chapter2-rarity-r{border-color:#d4af37;background:#fff9df;}
+.chapter2-rarity-sr{border-color:#4da6ff;background:#edf7ff;}
+.chapter2-rarity-ur{border-color:#b000ff;background:#fbf0ff;}
+.chapter2-rarity-lost{border-color:#bd6d28;background:#fff3e4;}
+
+.chapter2-placeholder{
+  color:#765d48;
+  font-style:italic;
+}
+
+body.night-debug-mode #chapterArchivePanel,
+body.night-debug-mode #chapter2Panel{
+  background:rgba(255,253,248,.97);
+  color:#2c2118;
+}
+
+body.night-debug-mode #chapter2Banner{
+  color:#5b3217;
+}
+
+body.tako-fatigue-mode #chapter2Banner,
+body.night-debug-mode.tako-fatigue-mode #chapter2Banner{
+  background:linear-gradient(135deg,#fff1d9,#efc894)!important;
+  color:#5a3519!important;
+}
+
+@media(max-width:700px){
+  #chapterIntroQuestion{font-size:27px;}
+  #chapterBlackoutText{font-size:24px;}
+  #chapterPoemText{font-size:24px;}
+  #chapter2Banner{width:auto;}
+  .chapter2-grid{grid-template-columns:1fr;}
+}
+
 </style>
 </head>
 <body>
@@ -20501,71 +20812,49 @@ Listen to the stereo!! around! around! around!
 『もっとちゃんと君をみてれば　もっとちゃんと』って
 少し苦い　君の匂いに泣けた</div>
 </details>
-<details class="song" data-yomi="ばんさんか"><summary>晩餐歌</summary><div class="lyric">君を泣かすから
-だから一緒には居れないな
-君を泣かすから
-早く忘れて欲しいんだ
-人間だからね
-たまには違うものも食べたいね
-君を泣かすから
-そう君を泣かすから
+<details class="song" data-yomi="ばんさんか"><summary>晩餐歌</summary><div class="lyric">
+君を泣かすから　だから一緒には居れないな
+君を泣かすから　早く忘れて欲しいんだ
+人間だからね　たまには違うものも食べたいね
+君を泣かすから　そう君を泣かすから
 
-でも味気ないんだよね
-会いたくなんだよね
+でも味気ないんだよね　会いたくなんだよね
 君以外会いたくないんだよね
 なんて勝手だね
-大体曖昧なんだよね
-愛の存在証明なんて
+大体曖昧なんだよね　愛の存在証明なんて
 君が教えてくれないか
 
-何十回の夜を過ごしたって
-得られぬような
+何十回の夜を過ごしたって　得られぬような
 愛してるを並べてみて
-何十回の夜を過ごしたって
-得られぬような
+何十回の夜を過ごしたって　得られぬような
 最高のフルコースを頂戴
 
-君を泣かすから
-きっと一生は無理だよね
-君を泣かすから
-胸がとても痛くなんだ
-人間だからね
-たまには分かり合えなくなって
-君を泣かすから
-また君を泣かすから
+君を泣かすから　きっと一生は無理だよね
+君を泣かすから　胸がとても痛くなんだ
+人間だからね　たまには分かり合えなくなって
+君を泣かすから　また君を泣かすから
 
-でも自信がないんだよね
-変わりたくないんだよね
-君以外会いたくないんだよね
-なんて勝手だね
-大体曖昧だったよね
-愛の存在証明なんて
+でも自信がないんだよね　変わりたくないんだよね
+君以外会いたくないんだよね　なんて勝手だね
+大体曖昧だったよね愛の存在証明なんて
 君がそこに居るのにね
 
-何百回の夜を過ごしたって
-得られぬような
+何百回の夜を過ごしたって　得られぬような
 愛してるを並べてみて
-何百回の夜を過ごしたって
-得られぬような
+何百回の夜を過ごしたって　得られぬような
 最高のフルコースを頂戴
 
-離れないで　傍に居てくれたのは
-結局君一人だったよね
-涙のスパイスは君の胸に
-残ってしまうだろうけど
+離れないで　傍に居てくれたのは　結局君一人だったよね
+涙のスパイスは君の胸に　残ってしまうだろうけど
 
-何千回の夜を過ごしたって
-得られぬような
+何千回の夜を過ごしたって　得られぬような
 愛してるを並べるから
-何千回の夜を過ごしたって
-得られぬような
+何千回の夜を過ごしたって　得られぬような
 最高のフルコースを
 
-何万回の夜を過ごしたって
-忘れぬような
+何万回の夜を過ごしたって　忘れぬような
 愛してるを並べるから
-何万回の夜を過ごしたって
-忘れぬような
+何万回の夜を過ごしたって　忘れぬような
 最高のフルコースを頂戴</div></details>
 </details>
 <!-- オリジナル -->
@@ -21890,9 +22179,10 @@ OH YEAR OH YESの掛け合い好き
 心にしこり残して引き摺って
 ふいに鏡と向き合ったなら
 つまらなそうな顔してないかい
+
 悲劇のヒロイン気取って
 いつまでもその場に立ち止まって俯いてないかい
-時間は有限で流れ続けてるから顔上げて 前を向いて 踏み出して
+時間は有限で流れ続けてるから　顔上げて 前を向いて 踏み出して
 
 何にもない 何にもない なんて
 今はまだ言わないで欲しいんだ
@@ -21908,6 +22198,7 @@ OH YEAR OH YESの掛け合い好き
 
 そのままじゃあなた照らす光さえ見えやしないから
 何度でも勇気出して目を開いて
+
 何にもない 何にもないなんて
 今はまだ言わないで欲しいんだ
 どこにもない これまで見たことのない扉を開きに行こう
@@ -26558,6 +26849,431 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
 })();
 </script>
 
+
+
+<script id="kani-chapter2-simple-v1">
+/* =====================
+第二章「残り火」簡易版＋導入デバッグ v1
+- 第一章のlocalStorage収集データは一切削除しない
+- 本を閉じる／閉じない→保管庫→栞→第二章を確認できる
+- 第二章の中身は仮枠。後から正式データへ差し替える
+===================== */
+(function(){
+  "use strict";
+
+  const CHAPTER_KEY = "keigoChapterStateV1";
+  const CHAPTER_CHOICE_KEY = "keigoChapterIntroChoiceV1";
+  const FIRST_PANEL_IDS = ["collectionBox","titleCollectionBox","slotRecordBox","lostCollectionBox"];
+  const FIRST_BUTTON_IDS = ["bookBtn","titleBtn","slotRecordBtn","lostBtn","resetBtn"];
+
+  function getState(){
+    const value = localStorage.getItem(CHAPTER_KEY);
+    return ["chapter1","closed","chapter2"].includes(value) ? value : "chapter1";
+  }
+
+  function setState(value){
+    localStorage.setItem(CHAPTER_KEY,value);
+    applyState();
+  }
+
+  function hideFirstPanels(){
+    FIRST_PANEL_IDS.forEach(function(id){
+      const box = document.getElementById(id);
+      if(box) box.style.display = "none";
+    });
+  }
+
+  function restoreFirstPanelsHome(){
+    const home = document.getElementById("buttonArea");
+    if(!home) return;
+    FIRST_PANEL_IDS.forEach(function(id){
+      const box = document.getElementById(id);
+      if(box && box.parentNode !== home) home.appendChild(box);
+    });
+  }
+
+  function closeChapterPanels(){
+    const archive = document.getElementById("chapterArchivePanel");
+    const chapter2 = document.getElementById("chapter2Panel");
+    if(archive) archive.classList.remove("show");
+    if(chapter2) chapter2.classList.remove("show");
+    hideFirstPanels();
+  }
+
+  function showPoem(text,ms,after){
+    const overlay = document.getElementById("chapterPoemOverlay");
+    const target = document.getElementById("chapterPoemText");
+    if(!overlay || !target){
+      if(typeof after === "function") after();
+      return;
+    }
+    target.textContent = text;
+    overlay.classList.add("show");
+    setTimeout(function(){
+      overlay.classList.remove("show");
+      setTimeout(function(){
+        if(typeof after === "function") after();
+      },480);
+    },ms || 1800);
+  }
+
+  function highlightArchiveButton(){
+    const btn = document.getElementById("chapterArchiveBtn");
+    if(!btn) return;
+    btn.classList.remove("chapter-pulse");
+    void btn.offsetWidth;
+    btn.classList.add("chapter-pulse");
+    setTimeout(function(){ btn.classList.remove("chapter-pulse"); },3600);
+  }
+
+  function enterClosedLibrary(choice){
+    localStorage.setItem(CHAPTER_CHOICE_KEY,choice);
+    setState("closed");
+    setTimeout(highlightArchiveButton,160);
+  }
+
+  function showQuestion(mode){
+    const overlay = document.getElementById("chapterIntroOverlay");
+    const question = document.getElementById("chapterIntroQuestion");
+    const sub = document.getElementById("chapterIntroSub");
+    const yes = document.getElementById("chapterIntroYes");
+    const no = document.getElementById("chapterIntroNo");
+    if(!overlay || !question || !sub || !yes || !no) return;
+
+    overlay.dataset.mode = mode;
+    if(mode === "bookmark"){
+      question.textContent = "続きを読みますか？";
+      sub.textContent = "第二章『残り火』へ進みます。\n第一章の記録は保管庫に残ります。";
+    }else{
+      question.textContent = "本を閉じますか？";
+      sub.textContent = "第一章『忘れ物』の記録は、どちらを選んでも保管庫に残ります。";
+    }
+    yes.textContent = "YES";
+    no.textContent = "NO";
+    overlay.classList.add("show");
+  }
+
+  function hideQuestion(){
+    const overlay = document.getElementById("chapterIntroOverlay");
+    if(overlay) overlay.classList.remove("show");
+  }
+
+  function playNoBlackout(){
+    const overlay = document.getElementById("chapterBlackoutOverlay");
+    const text = document.getElementById("chapterBlackoutText");
+    if(!overlay || !text){
+      enterClosedLibrary("NO");
+      return;
+    }
+    text.textContent = "";
+    text.classList.remove("visible");
+    overlay.classList.add("show");
+
+    setTimeout(function(){
+      text.textContent = "全部見つけたはずなのに";
+      text.classList.add("visible");
+    },700);
+
+    setTimeout(function(){
+      text.classList.remove("visible");
+    },2500);
+
+    setTimeout(function(){
+      text.textContent = "まだ探している";
+      text.classList.add("visible");
+    },3300);
+
+    setTimeout(function(){
+      text.classList.remove("visible");
+    },5300);
+
+    setTimeout(function(){
+      overlay.classList.remove("show");
+      enterClosedLibrary("NO");
+    },6200);
+  }
+
+  function playIntro(){
+    document.body.classList.remove("final-complete-playing");
+    const finalScreen = document.getElementById("finalCompleteScreen");
+    if(finalScreen) finalScreen.remove();
+    closeChapterPanels();
+    showQuestion("intro");
+  }
+
+  function handleQuestionChoice(answer){
+    const overlay = document.getElementById("chapterIntroOverlay");
+    const mode = overlay ? overlay.dataset.mode : "intro";
+    hideQuestion();
+
+    if(mode === "bookmark"){
+      if(answer === "YES"){
+        setState("chapter2");
+        showPoem("第二章\n残り火",2100);
+      }else{
+        setState("closed");
+        showPoem("そのままで十分だった",1800,highlightArchiveButton);
+      }
+      return;
+    }
+
+    if(answer === "YES"){
+      enterClosedLibrary("YES");
+      showPoem("遊んでくれてありがとう！\nこれからもライブラリとして活用してね",2600,highlightArchiveButton);
+    }else{
+      playNoBlackout();
+    }
+  }
+
+  function renderArchiveView(type){
+    const content = document.getElementById("chapterArchiveContent");
+    if(!content) return;
+    hideFirstPanels();
+
+    const map = {
+      collection:{id:"collectionBox",render:"renderCollection"},
+      title:{id:"titleCollectionBox",render:"renderTitleCollection"},
+      slot:{id:"slotRecordBox",render:"renderSlotRecord"},
+      lost:{id:"lostCollectionBox",render:"renderLost"}
+    };
+    const item = map[type];
+    if(!item) return;
+    if(typeof window[item.render] === "function") window[item.render]();
+    const box = document.getElementById(item.id);
+    if(box){
+      content.appendChild(box);
+      box.style.display = "block";
+    }
+  }
+
+  function openArchive(){
+    const panel = document.getElementById("chapterArchivePanel");
+    const second = document.getElementById("chapter2Panel");
+    if(second) second.classList.remove("show");
+    if(!panel) return;
+    const willShow = !panel.classList.contains("show");
+    panel.classList.toggle("show",willShow);
+    if(!willShow) hideFirstPanels();
+  }
+
+  const SECOND_CHAPTER_VIEWS = {
+    collection:function(){ return `
+      <div class="chapter-panel-header">📖 第二章図鑑（簡易版）</div>
+      <div class="chapter-panel-note">構造確認用の仮枠です。正式実装では、第二章専用の抽選・解放状態・収集率につなげます。</div>
+      <div class="chapter2-grid">
+        <section class="chapter2-card chapter2-rarity-n"><h3>N｜いつものもの</h3><ul><li>いつものチューニング</li><li>帰宅後のギター</li><li>半額シールの時間</li></ul></section>
+        <section class="chapter2-card chapter2-rarity-r"><h3>R｜啓悟さんが喜ぶこと</h3><ul><li>最後のひとくち</li><li>ファイリングした袋</li><li>名入りの定期券</li></ul></section>
+        <section class="chapter2-card chapter2-rarity-sr"><h3>SR｜ギャグ枠</h3><ul><li>ドリンクでよかった</li><li>もはや散歩ではない</li><li>トイレから帰ってこない</li></ul></section>
+        <section class="chapter2-card chapter2-rarity-ur"><h3>UR｜短歌</h3><p class="chapter2-placeholder">友見の短歌を増やしていくための仮枠。</p></section>
+      </div>`;},
+    title:function(){ return `
+      <div class="chapter-panel-header">🏆 第二章称号（簡易版）</div>
+      <div class="chapter-panel-note">まだ名称・必要Lvは確定させず、第二章専用の棚が切り替わることだけを確認できます。</div>
+      <div class="chapter2-grid">
+        <section class="chapter2-card"><h3>序盤</h3><ul><li>残り火を見つけた人</li><li>まだ続きを読んでいる</li></ul></section>
+        <section class="chapter2-card"><h3>中盤</h3><p class="chapter2-placeholder">ここに第二章の軽い称号を追加。</p></section>
+        <section class="chapter2-card"><h3>終盤</h3><p class="chapter2-placeholder">重い言葉は後半に置く予定。</p></section>
+      </div>`;},
+    slot:function(){ return `
+      <div class="chapter-panel-header">🎰 第二章運命記録（簡易版）</div>
+      <div class="chapter-panel-note">第一章の運命記録は保管庫に保存したまま。ここは第二章専用記録の仮表示です。</div>
+      <div class="chapter2-grid">
+        <section class="chapter2-card"><h3>残り火を見つけた回数</h3><b>0回</b></section>
+        <section class="chapter2-card"><h3>第二章で揃った運命</h3><b>0 / 仮</b></section>
+        <section class="chapter2-card"><h3>最長連続ログイン</h3><b>準備中</b></section>
+      </div>`;},
+    fire:function(){ return `
+      <div class="chapter-panel-header">🔥 ？？？「残り火」（簡易版）</div>
+      <div class="chapter-panel-note">消えなかったもの、今も残っているもの、これからも続いていくもの。候補を並べた確認用の棚です。</div>
+      <div class="chapter2-grid">
+        ${[
+          "擦り切れたギターケース","弦を切らないピック","歩道橋での待ち合わせ",
+          "自家製ミルクティー","失くした眼鏡","名入りの定期券",
+          "重たい鞄","ふわふわ座布団","ドリンクでよかった",
+          "ファイリングした袋","最後のひとくち","寄り道が本編",
+          "音楽以外の使い方","仲直りのうた"
+        ].map(function(name){return `<div class="chapter2-card chapter2-rarity-lost">🔥 ${name}</div>`;}).join("")}
+      </div>`;}
+  };
+
+  function openSecondView(type){
+    const archive = document.getElementById("chapterArchivePanel");
+    const panel = document.getElementById("chapter2Panel");
+    const content = document.getElementById("chapter2Content");
+    if(archive) archive.classList.remove("show");
+    hideFirstPanels();
+    if(!panel || !content || !SECOND_CHAPTER_VIEWS[type]) return;
+    content.innerHTML = SECOND_CHAPTER_VIEWS[type]();
+    panel.classList.add("show");
+  }
+
+  function applyState(){
+    const state = getState();
+    const archiveBtn = document.getElementById("chapterArchiveBtn");
+    const banner = document.getElementById("chapter2Banner");
+    const row = document.getElementById("chapter2ButtonRow");
+
+    closeChapterPanels();
+
+    if(state === "chapter1"){
+      restoreFirstPanelsHome();
+      FIRST_BUTTON_IDS.forEach(function(id){
+        const btn = document.getElementById(id);
+        if(btn) btn.style.setProperty("display","inline-block","important");
+      });
+      if(archiveBtn) archiveBtn.classList.remove("chapter-visible");
+      if(banner) banner.classList.remove("show");
+      if(row) row.classList.remove("show");
+      return;
+    }
+
+    FIRST_BUTTON_IDS.forEach(function(id){
+      const btn = document.getElementById(id);
+      if(btn) btn.style.setProperty("display","none","important");
+    });
+    if(archiveBtn) archiveBtn.classList.add("chapter-visible");
+
+    if(state === "chapter2"){
+      if(banner) banner.classList.add("show");
+      if(row) row.classList.add("show");
+    }else{
+      if(banner) banner.classList.remove("show");
+      if(row) row.classList.remove("show");
+    }
+  }
+
+  function buildUI(){
+    if(document.getElementById("chapterIntroOverlay")) return;
+
+    const body = document.body;
+    const intro = document.createElement("div");
+    intro.id = "chapterIntroOverlay";
+    intro.innerHTML = `<div id="chapterIntroCard">
+      <h2 id="chapterIntroQuestion">本を閉じますか？</h2>
+      <div id="chapterIntroSub"></div>
+      <div id="chapterIntroChoices">
+        <button id="chapterIntroYes" type="button">YES</button>
+        <button id="chapterIntroNo" type="button">NO</button>
+      </div>
+    </div>`;
+    body.appendChild(intro);
+
+    const blackout = document.createElement("div");
+    blackout.id = "chapterBlackoutOverlay";
+    blackout.innerHTML = `<div id="chapterBlackoutText"></div>`;
+    body.appendChild(blackout);
+
+    const poem = document.createElement("div");
+    poem.id = "chapterPoemOverlay";
+    poem.innerHTML = `<div id="chapterPoemText"></div>`;
+    body.appendChild(poem);
+
+    const mainButtons = document.querySelector("#buttonArea .main-buttons");
+    const archiveBtn = document.createElement("button");
+    archiveBtn.id = "chapterArchiveBtn";
+    archiveBtn.type = "button";
+    archiveBtn.textContent = "📚保管庫";
+    if(mainButtons) mainButtons.appendChild(archiveBtn);
+
+    const buttonArea = document.getElementById("buttonArea");
+    const banner = document.createElement("div");
+    banner.id = "chapter2Banner";
+    banner.innerHTML = `<div id="chapter2BannerTitle">🔥 第二章　残り火</div><div id="chapter2BannerSub">簡易版・構造確認用｜第一章の記録は保管庫に保存されています</div>`;
+    if(buttonArea) buttonArea.parentNode.insertBefore(banner,buttonArea.nextSibling);
+
+    const row = document.createElement("div");
+    row.id = "chapter2ButtonRow";
+    row.innerHTML = `<button type="button" data-chapter2-view="collection">📖図鑑</button>
+      <button type="button" data-chapter2-view="title">🏆称号</button>
+      <button type="button" data-chapter2-view="slot">🎰運命記録</button>
+      <button type="button" data-chapter2-view="fire">🔥残り火</button>`;
+    if(banner) banner.parentNode.insertBefore(row,banner.nextSibling);
+
+    const archivePanel = document.createElement("div");
+    archivePanel.id = "chapterArchivePanel";
+    archivePanel.innerHTML = `<div class="chapter-panel-header">📚 第一章保管庫</div>
+      <div class="chapter-panel-note">第一章「忘れ物」の収集データは一切削除されていません。ここからいつでも見返せます。</div>
+      <div id="chapterArchiveMenu">
+        <button type="button" data-archive-view="collection">📖第一章 図鑑</button>
+        <button type="button" data-archive-view="title">🏆第一章 称号</button>
+        <button type="button" data-archive-view="slot">🎰第一章 運命記録</button>
+        <button type="button" data-archive-view="lost">？？？ 第一章 忘れ物</button>
+        <button id="chapterBookmarkBtn" type="button">🔖栞</button>
+      </div>
+      <div id="chapterArchiveContent"></div>`;
+    row.parentNode.insertBefore(archivePanel,row.nextSibling);
+
+    const chapter2Panel = document.createElement("div");
+    chapter2Panel.id = "chapter2Panel";
+    chapter2Panel.innerHTML = `<div id="chapter2Content"></div>`;
+    archivePanel.parentNode.insertBefore(chapter2Panel,archivePanel.nextSibling);
+
+    document.getElementById("chapterIntroYes").onclick = function(){ handleQuestionChoice("YES"); };
+    document.getElementById("chapterIntroNo").onclick = function(){ handleQuestionChoice("NO"); };
+    archiveBtn.onclick = openArchive;
+    document.getElementById("chapterBookmarkBtn").onclick = function(){
+      if(getState() === "chapter2"){
+        closeChapterPanels();
+        return;
+      }
+      showPoem("――失くしたものばかりではない",1900,function(){ showQuestion("bookmark"); });
+    };
+
+    archivePanel.addEventListener("click",function(e){
+      const type = e.target && e.target.dataset ? e.target.dataset.archiveView : "";
+      if(type) renderArchiveView(type);
+    });
+
+    row.addEventListener("click",function(e){
+      const type = e.target && e.target.dataset ? e.target.dataset.chapter2View : "";
+      if(type) openSecondView(type);
+    });
+  }
+
+  function ensureDebugButtons(){
+    const panel = document.getElementById("debugPanel");
+    if(!panel || document.getElementById("chapterDebugBox")) return;
+    const box = document.createElement("div");
+    box.id = "chapterDebugBox";
+    box.style.cssText = "margin-top:10px;padding-top:10px;border-top:1px dashed #aaa;";
+    box.innerHTML = `<b>📕第二章・導入確認</b><br>
+      <button id="debugChapterIntro" type="button">📖「本を閉じますか？」から確認</button>
+      <button id="debugChapterClosed" type="button">📚本を閉じた後へ</button>
+      <button id="debugChapter2Direct" type="button">🔥第二章を直接開始</button>
+      <button id="debugChapter1Return" type="button">↩️第一章へ戻す</button>
+      <div style="margin-top:7px;font-size:13px;">※第一章の収集データは、どのボタンでも削除されません。</div>`;
+    panel.appendChild(box);
+
+    document.getElementById("debugChapterIntro").onclick = playIntro;
+    document.getElementById("debugChapterClosed").onclick = function(){ setState("closed"); highlightArchiveButton(); };
+    document.getElementById("debugChapter2Direct").onclick = function(){ setState("chapter2"); showPoem("第二章\n残り火",1800); };
+    document.getElementById("debugChapter1Return").onclick = function(){
+      localStorage.removeItem(CHAPTER_KEY);
+      localStorage.removeItem(CHAPTER_CHOICE_KEY);
+      setState("chapter1");
+      showPoem("第一章へ戻しました",1300);
+    };
+  }
+
+  function boot(){
+    buildUI();
+    ensureDebugButtons();
+    applyState();
+    setTimeout(ensureDebugButtons,300);
+    setTimeout(ensureDebugButtons,900);
+  }
+
+  window.kaniPlayChapter2Intro = playIntro;
+  window.kaniSetChapterState = setState;
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded",boot);
+  }else{
+    boot();
+  }
+  window.addEventListener("load",function(){ ensureDebugButtons(); applyState(); });
+})();
+</script>
 
 </body>
 </html>
