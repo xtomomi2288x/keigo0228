@@ -1186,7 +1186,10 @@ body.night-debug-mode.tako-fatigue-mode #takoModeBadge{
   pointer-events:none;
 }
 
-#chapterPoemOverlay.show{opacity:1;}
+#chapterPoemOverlay.show{
+  opacity:1;
+  pointer-events:auto;
+}
 
 #chapterPoemText{
   max-width:88vw;
@@ -1195,6 +1198,14 @@ body.night-debug-mode.tako-fatigue-mode #takoModeBadge{
   text-align:center;
   white-space:pre-line;
   text-shadow:0 0 16px rgba(255,255,255,.5);
+}
+
+/* 章演出中は10秒間、ハートを含む全操作を受け付けない */
+body.chapter-fixed-lock{
+  overflow:hidden!important;
+}
+body.chapter-fixed-lock > *:not(#chapterPoemOverlay):not(#chapterBlackoutOverlay):not(#chapterIntroOverlay){
+  pointer-events:none!important;
 }
 
 #chapterArchiveBtn{
@@ -1216,31 +1227,26 @@ body.night-debug-mode.tako-fatigue-mode #takoModeBadge{
 
 #chapter2Banner{
   display:none;
-  width:min(1000px,calc(100vw - 60px));
+  width:auto;
+  max-width:none;
   box-sizing:border-box;
-  margin:18px 0 12px;
-  padding:18px 22px;
-  border:1px solid #bd6d28;
-  border-radius:14px;
-  background:
-    radial-gradient(circle at 82% 30%,rgba(255,200,104,.28),transparent 23%),
-    linear-gradient(135deg,#fff7e8,#f4ddbe);
-  color:#5b3217;
-  box-shadow:0 6px 24px rgba(122,69,25,.15);
+  margin:0 0 8px;
+  padding:0;
+  border:none;
+  border-radius:0;
+  background:none;
+  color:inherit;
+  box-shadow:none;
 }
 
 #chapter2Banner.show{display:block;}
 
 #chapter2BannerTitle{
-  font-size:28px;
-  font-weight:bold;
+  font-size:16px;
+  line-height:1.4;
+  font-weight:normal;
   letter-spacing:.08em;
-}
-
-#chapter2BannerSub{
-  margin-top:4px;
-  font-size:14px;
-  opacity:.78;
+  opacity:.72;
 }
 
 #chapter2ButtonRow{
@@ -1309,6 +1315,29 @@ body.night-debug-mode.tako-fatigue-mode #takoModeBadge{
   background:#fff7dc!important;
 }
 
+#chapterIntroSub:empty{display:none;}
+
+#chapterBookmarkWrap{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:12px;
+  padding-top:8px;
+  border-top:1px dashed rgba(148,106,47,.28);
+}
+
+#chapterBookmarkBtn{
+  min-width:0!important;
+  margin:0!important;
+  padding:2px 8px!important;
+  font-size:11px!important;
+  line-height:1.25!important;
+  opacity:.78!important;
+  border:1px solid #946a2f!important;
+  border-radius:999px!important;
+  background:#fff7dc!important;
+  color:#5b3f18!important;
+}
+
 #chapterArchiveContent{
   margin-top:10px;
 }
@@ -1366,14 +1395,13 @@ body.night-debug-mode #chapter2Panel{
   color:#2c2118;
 }
 
-body.night-debug-mode #chapter2Banner{
-  color:#5b3217;
-}
-
+body.night-debug-mode #chapter2Banner,
 body.tako-fatigue-mode #chapter2Banner,
 body.night-debug-mode.tako-fatigue-mode #chapter2Banner{
-  background:linear-gradient(135deg,#fff1d9,#efc894)!important;
-  color:#5a3519!important;
+  background:none!important;
+  color:inherit!important;
+  border:none!important;
+  box-shadow:none!important;
 }
 
 @media(max-width:700px){
@@ -1384,6 +1412,29 @@ body.night-debug-mode.tako-fatigue-mode #chapter2Banner{
   .chapter2-grid{grid-template-columns:1fr;}
 }
 
+
+
+/* =====================
+第二章の棚：第一章と同じ見た目へ統一
+===================== */
+#chapter2Panel{
+  width:95vw;
+  max-width:1200px;
+  box-sizing:border-box;
+  background:white;
+  color:#222;
+  border:1px solid #ccc;
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 4px 20px rgba(0,0,0,.15);
+  font-size:14px;
+  line-height:1.45;
+}
+
+body.night-debug-mode #chapter2Panel{
+  background:rgba(255,255,255,.96);
+  color:#222;
+}
 </style>
 </head>
 <body>
@@ -6686,7 +6737,7 @@ SWEET SMELL OF SUICIDE DAY</div></details>
 <!-- Queen -->
 <details>
 <summary>Queen</summary>
-<details class="song" data-yomi="さーてぃないん"><summary>39</summary><div class="lyric">In the year of '39 assembled here the Volunteers
+<details class="song" data-yomi="さーてぃないん"><summary>'39</summary><div class="lyric">In the year of '39 assembled here the Volunteers
 In the days when lands were few
 Here the ship sailed out into the blue and sunny morn
 The sweetest sight ever seen.
@@ -25106,6 +25157,7 @@ function downloadMemo(){
 function showFinalComplete(force=false){
   if(!force && localStorage.getItem("allCompleteShownSafe")) return;
   localStorage.setItem("allCompleteShownSafe","1");
+  localStorage.setItem("keigoChapterIntroPendingV1","1");
   document.body.classList.add("final-complete-playing");
   let screen = document.getElementById("finalCompleteScreen");
   if(screen) screen.remove();
@@ -25292,7 +25344,7 @@ function setupButtons(){
   };
   if(resetBtn) resetBtn.onclick = () => {
     if(!confirm("💗回数と収集データをリセットする？")) return;
-    ["heartCount","rareCount","srCount","urCount","lostCount","lostFragmentCount","lostFragmentLastAt","unlockedMessages","unlockedLostItems","unlockedSlotBonusMessages","slotReadySafe","normalCompleteShownSafe","rareCompleteShownSafe","srCompleteShownSafe","urCompleteShownSafe","lostCompleteShownSafe","slotCompleteShownSafe","titleCompleteShownSafe","allCompleteShownSafe"].forEach(k => localStorage.removeItem(k));
+    ["heartCount","rareCount","srCount","urCount","lostCount","lostFragmentCount","lostFragmentLastAt","unlockedMessages","unlockedLostItems","unlockedSlotBonusMessages","slotReadySafe","normalCompleteShownSafe","rareCompleteShownSafe","srCompleteShownSafe","urCompleteShownSafe","lostCompleteShownSafe","slotCompleteShownSafe","titleCompleteShownSafe","allCompleteShownSafe","keigoChapterStateV1","keigoChapterIntroChoiceV1","keigoChapterIntroPendingV1"].forEach(k => localStorage.removeItem(k));
     location.reload();
   };
 if(area && !document.getElementById("debugBtn")){
@@ -26851,20 +26903,21 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
 
 
 
-<script id="kani-chapter2-simple-v1">
+<script id="kani-chapter2-simple-v2">
 /* =====================
-第二章「残り火」簡易版＋導入デバッグ v1
+第二章・簡易版＋導入デバッグ v5
 - 第一章のlocalStorage収集データは一切削除しない
-- 本を閉じる／閉じない→保管庫→栞→第二章を確認できる
-- 第二章の中身は仮枠。後から正式データへ差し替える
+- 全コンプ後は導入待ちを保存し、次回以降オンラインで更新した時に問いかける
+- 「残り火」という名称はクリアまで画面に表示しない
 ===================== */
 (function(){
   "use strict";
 
   const CHAPTER_KEY = "keigoChapterStateV1";
   const CHAPTER_CHOICE_KEY = "keigoChapterIntroChoiceV1";
+  const CHAPTER_PENDING_KEY = "keigoChapterIntroPendingV1";
   const FIRST_PANEL_IDS = ["collectionBox","titleCollectionBox","slotRecordBox","lostCollectionBox"];
-  const FIRST_BUTTON_IDS = ["bookBtn","titleBtn","slotRecordBtn","lostBtn","resetBtn"];
+  const FIRST_BUTTON_IDS = ["bookBtn","titleBtn","slotRecordBtn","lostBtn"];
 
   function getState(){
     const value = localStorage.getItem(CHAPTER_KEY);
@@ -26892,30 +26945,65 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     });
   }
 
+  function resetArchiveActiveView(){
+    const content = document.getElementById("chapterArchiveContent");
+    if(content) content.dataset.activeView = "";
+  }
+
   function closeChapterPanels(){
     const archive = document.getElementById("chapterArchivePanel");
     const chapter2 = document.getElementById("chapter2Panel");
     if(archive) archive.classList.remove("show");
     if(chapter2) chapter2.classList.remove("show");
+    resetArchiveActiveView();
     hideFirstPanels();
   }
 
-  function showPoem(text,ms,after){
+  let chapterPoemTimer = null;
+  let chapterPoemAfterTimer = null;
+  let chapterInteractionLocked = false;
+
+  function setChapterInteractionLock(locked){
+    chapterInteractionLocked = !!locked;
+    document.body.classList.toggle("chapter-fixed-lock",chapterInteractionLocked);
+  }
+
+  /*
+  fixed=true の演出は指定時間ずっと表示し、ハートを含む全操作をロックする。
+  */
+  function showPoem(text,ms,after,fixed){
     const overlay = document.getElementById("chapterPoemOverlay");
     const target = document.getElementById("chapterPoemText");
     if(!overlay || !target){
       if(typeof after === "function") after();
       return;
     }
+
+    if(chapterPoemTimer) clearTimeout(chapterPoemTimer);
+    if(chapterPoemAfterTimer) clearTimeout(chapterPoemAfterTimer);
+
     target.textContent = text;
+    if(fixed) setChapterInteractionLock(true);
     overlay.classList.add("show");
-    setTimeout(function(){
+
+    chapterPoemTimer = setTimeout(function(){
       overlay.classList.remove("show");
-      setTimeout(function(){
+      chapterPoemAfterTimer = setTimeout(function(){
+        if(fixed) setChapterInteractionLock(false);
         if(typeof after === "function") after();
       },480);
     },ms || 1800);
   }
+
+  /* 捕捉段階でも演出中の操作を止め、背後の💗などへ絶対に通さない */
+  ["click","pointerdown","pointerup","touchstart","touchend","keydown"].forEach(function(type){
+    document.addEventListener(type,function(event){
+      if(!chapterInteractionLocked) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if(typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+    },true);
+  });
 
   function highlightArchiveButton(){
     const btn = document.getElementById("chapterArchiveBtn");
@@ -26928,6 +27016,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
 
   function enterClosedLibrary(choice){
     localStorage.setItem(CHAPTER_CHOICE_KEY,choice);
+    localStorage.removeItem(CHAPTER_PENDING_KEY);
     setState("closed");
     setTimeout(highlightArchiveButton,160);
   }
@@ -26941,13 +27030,8 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     if(!overlay || !question || !sub || !yes || !no) return;
 
     overlay.dataset.mode = mode;
-    if(mode === "bookmark"){
-      question.textContent = "続きを読みますか？";
-      sub.textContent = "第二章『残り火』へ進みます。\n第一章の記録は保管庫に残ります。";
-    }else{
-      question.textContent = "本を閉じますか？";
-      sub.textContent = "第一章『忘れ物』の記録は、どちらを選んでも保管庫に残ります。";
-    }
+    question.textContent = mode === "bookmark" ? "続きを読みますか？" : "本を閉じますか？";
+    sub.textContent = "";
     yes.textContent = "YES";
     no.textContent = "NO";
     overlay.classList.add("show");
@@ -26962,7 +27046,9 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     const overlay = document.getElementById("chapterBlackoutOverlay");
     const text = document.getElementById("chapterBlackoutText");
     if(!overlay || !text){
-      enterClosedLibrary("NO");
+      showPoem("第二章",10000,function(){
+        enterClosedLibrary("NO");
+      },true);
       return;
     }
     text.textContent = "";
@@ -26974,22 +27060,20 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
       text.classList.add("visible");
     },700);
 
-    setTimeout(function(){
-      text.classList.remove("visible");
-    },2500);
+    setTimeout(function(){ text.classList.remove("visible"); },2500);
 
     setTimeout(function(){
       text.textContent = "まだ探している";
       text.classList.add("visible");
     },3300);
 
-    setTimeout(function(){
-      text.classList.remove("visible");
-    },5300);
+    setTimeout(function(){ text.classList.remove("visible"); },5300);
 
     setTimeout(function(){
       overlay.classList.remove("show");
-      enterClosedLibrary("NO");
+      showPoem("第二章",10000,function(){
+        enterClosedLibrary("NO");
+      },true);
     },6200);
   }
 
@@ -27009,7 +27093,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     if(mode === "bookmark"){
       if(answer === "YES"){
         setState("chapter2");
-        showPoem("第二章\n残り火",2100);
+        showPoem("第二章",10000,null,true);
       }else{
         setState("closed");
         showPoem("そのままで十分だった",1800,highlightArchiveButton);
@@ -27017,18 +27101,41 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
       return;
     }
 
+    localStorage.removeItem(CHAPTER_PENDING_KEY);
     if(answer === "YES"){
       enterClosedLibrary("YES");
-      showPoem("遊んでくれてありがとう！\nこれからもライブラリとして活用してね",2600,highlightArchiveButton);
+      showPoem("遊んでくれてありがとう！\nこれからもライブラリとして活用してね",10000,highlightArchiveButton,true);
     }else{
       playNoBlackout();
     }
   }
 
+  function appendBookmarkInsideLost(box){
+    if(!box) return;
+    const oldWrap = box.querySelector("#chapterBookmarkWrap");
+    if(oldWrap) oldWrap.remove();
+
+    const wrap = document.createElement("div");
+    wrap.id = "chapterBookmarkWrap";
+    const btn = document.createElement("button");
+    btn.id = "chapterBookmarkBtn";
+    btn.type = "button";
+    btn.textContent = "🔖栞";
+    wrap.appendChild(btn);
+    box.appendChild(wrap);
+  }
+
+  function openBookmarkQuestion(){
+    if(getState() === "chapter2"){
+      closeChapterPanels();
+      return;
+    }
+    showPoem("――失くしたものばかりではない",10000,function(){ showQuestion("bookmark"); },true);
+  }
+
   function renderArchiveView(type){
     const content = document.getElementById("chapterArchiveContent");
     if(!content) return;
-    hideFirstPanels();
 
     const map = {
       collection:{id:"collectionBox",render:"renderCollection"},
@@ -27038,62 +27145,187 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     };
     const item = map[type];
     if(!item) return;
+
+    const current = content.dataset.activeView || "";
+    hideFirstPanels();
+    if(current === type){
+      content.dataset.activeView = "";
+      return;
+    }
+
     if(typeof window[item.render] === "function") window[item.render]();
     const box = document.getElementById(item.id);
     if(box){
       content.appendChild(box);
       box.style.display = "block";
+      if(type === "lost") appendBookmarkInsideLost(box);
+      content.dataset.activeView = type;
     }
   }
 
-  function openArchive(){
+  function openArchive(forceOpen){
     const panel = document.getElementById("chapterArchivePanel");
     const second = document.getElementById("chapter2Panel");
     if(second) second.classList.remove("show");
     if(!panel) return;
-    const willShow = !panel.classList.contains("show");
+
+    const willShow = forceOpen === true ? true : !panel.classList.contains("show");
     panel.classList.toggle("show",willShow);
-    if(!willShow) hideFirstPanels();
+    if(!willShow){
+      hideFirstPanels();
+      resetArchiveActiveView();
+    }
+  }
+
+  /* =====================
+  第二章の四つの棚
+  見た目は第一章の図鑑・称号・運命記録・？？？をそのまま流用する。
+  中身と保存先だけ第二章専用に分離して、今後の正式実装へつなぐ。
+  ===================== */
+  function makeSecondChapterSlots(prefix,total,known){
+    const list = known.slice();
+    while(list.length < total){
+      list.push(`__${prefix}_${String(list.length + 1).padStart(3,"0")}__`);
+    }
+    return list.slice(0,total);
+  }
+
+  /* 第一章と同じ総数：N51＋R30＋SR36＋UR15＝132 */
+  const SECOND_CHAPTER_COLLECTION_GROUPS = [
+    {
+      label:"N",
+      title:"N：通常メッセージ",
+      className:"normal-item",
+      list:makeSecondChapterSlots("CH2_N",51,[
+        "いつものチューニング","帰宅後のギター","半額シールの時間"
+      ])
+    },
+    {
+      label:"R",
+      title:"R：レアメッセージ",
+      className:"rare-item",
+      list:makeSecondChapterSlots("CH2_R",30,[
+        "最後のひとくち","ファイリングした袋","名入りの定期券"
+      ])
+    },
+    {
+      label:"SR",
+      title:"SR：SUPER RARE",
+      className:"sr-item",
+      list:makeSecondChapterSlots("CH2_SR",36,[
+        "ドリンクでよかった","もはや散歩ではない","トイレから帰ってこない"
+      ])
+    },
+    {
+      label:"UR",
+      title:"UR：ULTRA RARE",
+      className:"ur-item",
+      list:makeSecondChapterSlots("CH2_UR",15,[
+        "友見の短歌を追加する仮枠"
+      ])
+    }
+  ];
+
+  /* 第一章と同じ総数：1周22＋2周22＋3周22＝66 */
+  const SECOND_CHAPTER_TITLE_SETS = [
+    {name:"1周目",list:makeSecondChapterSlots("CH2_TITLE_1",22,["続きを見つけた人","まだ続きを読んでいる"])},
+    {name:"2周目",list:makeSecondChapterSlots("CH2_TITLE_2",22,["第二章の軽い称号を追加する仮枠"])},
+    {name:"3周目",list:makeSecondChapterSlots("CH2_TITLE_3",22,["第二章後半の称号を追加する仮枠"])}
+  ];
+
+  /* 運命記録は第一章と同じ51枠 */
+  const SECOND_CHAPTER_SLOT_MESSAGES = makeSecondChapterSlots("CH2_SLOT",51,[]);
+
+  /* ？？？は第一章と同じ42枠。正式名は獲得するまで表示しない。 */
+  const SECOND_CHAPTER_LOST_ITEMS = makeSecondChapterSlots("CH2_LOST",42,[
+    "擦り切れたギターケース","弦を切らないピック","歩道橋での待ち合わせ",
+    "自家製ミルクティー","失くした眼鏡","名入りの定期券",
+    "重たい鞄","ふわふわ座布団","ドリンクでよかった",
+    "ファイリングした袋","最後のひとくち","寄り道が本編",
+    "音楽以外の使い方","仲直りのうた"
+  ]);
+
+  function getChapter2StoreArray(key){
+    try{
+      const value = JSON.parse(localStorage.getItem(key) || "[]");
+      return Array.isArray(value) ? value : [];
+    }catch(e){
+      return [];
+    }
+  }
+
+  function chapter2Percent(owned,total){
+    return total ? Math.floor(owned / total * 100) : 0;
+  }
+
+  function renderSecondCollection(){
+    const all = SECOND_CHAPTER_COLLECTION_GROUPS.flatMap(function(group){ return group.list; });
+    const ownedList = getChapter2StoreArray("chapter2UnlockedMessages");
+    const owned = all.filter(function(message){ return ownedList.includes(message); }).length;
+    let html = `<div class="collection-header">📖図鑑<br>収集率：${owned} / ${all.length}（${chapter2Percent(owned,all.length)}%）</div>`;
+
+    SECOND_CHAPTER_COLLECTION_GROUPS.forEach(function(group){
+      const groupOwned = group.list.filter(function(message){ return ownedList.includes(message); }).length;
+      html += `<div class="collection-header" style="margin-top:16px;padding-top:8px;border-top:1px dashed #d4af37;">${group.title}　${groupOwned} / ${group.list.length}（${chapter2Percent(groupOwned,group.list.length)}%）</div>`;
+      html += `<div class="collection-grid">`;
+      group.list.forEach(function(message){
+        const got = ownedList.includes(message);
+        html += `<div class="collection-item ${got ? "unlocked" : "locked"} ${group.className}">${got ? message : "👿未所持"}</div>`;
+      });
+      html += `</div>`;
+    });
+    return html;
+  }
+
+  function renderSecondTitles(){
+    const ownedList = getChapter2StoreArray("chapter2UnlockedTitles");
+    const all = SECOND_CHAPTER_TITLE_SETS.flatMap(function(set){ return set.list; });
+    const owned = all.filter(function(title){ return ownedList.includes(title); }).length;
+    let html = `<div class="collection-header">🏆獲得称号<br>収集率：${owned} / ${all.length}（${chapter2Percent(owned,all.length)}%）</div>`;
+    html += `<div class="title-three-columns">`;
+    SECOND_CHAPTER_TITLE_SETS.forEach(function(set){
+      html += `<div class="title-column"><h3>${set.name}</h3>`;
+      set.list.forEach(function(title){
+        const got = ownedList.includes(title);
+        html += `<div class="title-item ${got ? "unlocked" : "locked"}">${got ? `🏆 ${title}` : "🔒未所持"}</div>`;
+      });
+      html += `</div>`;
+    });
+    html += `</div>`;
+    return html;
+  }
+
+  function renderSecondSlotRecord(){
+    const ownedList = getChapter2StoreArray("chapter2UnlockedSlotBonusMessages");
+    const owned = SECOND_CHAPTER_SLOT_MESSAGES.filter(function(message){ return ownedList.includes(message); }).length;
+    let html = `<div class="collection-header">🎰運命記録<br>収集率：${owned} / ${SECOND_CHAPTER_SLOT_MESSAGES.length}（${chapter2Percent(owned,SECOND_CHAPTER_SLOT_MESSAGES.length)}%）</div>`;
+    html += `<div class="slot-record-grid">`;
+    SECOND_CHAPTER_SLOT_MESSAGES.forEach(function(message){
+      const got = ownedList.includes(message);
+      html += `<div class="slot-record-item ${got ? "unlocked" : "locked"}">${got ? message : "🔒未所持"}</div>`;
+    });
+    html += `</div>`;
+    return html;
+  }
+
+  function renderSecondLost(){
+    const ownedList = getChapter2StoreArray("chapter2UnlockedLostItems");
+    const owned = SECOND_CHAPTER_LOST_ITEMS.filter(function(item){ return ownedList.includes(item); }).length;
+    let html = `<div class="collection-header">？？？<br>収集率：${owned} / ${SECOND_CHAPTER_LOST_ITEMS.length}（${chapter2Percent(owned,SECOND_CHAPTER_LOST_ITEMS.length)}%）</div>`;
+    html += `<div class="lost-grid">`;
+    SECOND_CHAPTER_LOST_ITEMS.forEach(function(item){
+      const got = ownedList.includes(item);
+      html += `<div class="lost-item-card ${got ? "unlocked" : "locked"}">${got ? `🧩 ${item}` : "💀未所持"}</div>`;
+    });
+    html += `</div>`;
+    return html;
   }
 
   const SECOND_CHAPTER_VIEWS = {
-    collection:function(){ return `
-      <div class="chapter-panel-header">📖 第二章図鑑（簡易版）</div>
-      <div class="chapter-panel-note">構造確認用の仮枠です。正式実装では、第二章専用の抽選・解放状態・収集率につなげます。</div>
-      <div class="chapter2-grid">
-        <section class="chapter2-card chapter2-rarity-n"><h3>N｜いつものもの</h3><ul><li>いつものチューニング</li><li>帰宅後のギター</li><li>半額シールの時間</li></ul></section>
-        <section class="chapter2-card chapter2-rarity-r"><h3>R｜啓悟さんが喜ぶこと</h3><ul><li>最後のひとくち</li><li>ファイリングした袋</li><li>名入りの定期券</li></ul></section>
-        <section class="chapter2-card chapter2-rarity-sr"><h3>SR｜ギャグ枠</h3><ul><li>ドリンクでよかった</li><li>もはや散歩ではない</li><li>トイレから帰ってこない</li></ul></section>
-        <section class="chapter2-card chapter2-rarity-ur"><h3>UR｜短歌</h3><p class="chapter2-placeholder">友見の短歌を増やしていくための仮枠。</p></section>
-      </div>`;},
-    title:function(){ return `
-      <div class="chapter-panel-header">🏆 第二章称号（簡易版）</div>
-      <div class="chapter-panel-note">まだ名称・必要Lvは確定させず、第二章専用の棚が切り替わることだけを確認できます。</div>
-      <div class="chapter2-grid">
-        <section class="chapter2-card"><h3>序盤</h3><ul><li>残り火を見つけた人</li><li>まだ続きを読んでいる</li></ul></section>
-        <section class="chapter2-card"><h3>中盤</h3><p class="chapter2-placeholder">ここに第二章の軽い称号を追加。</p></section>
-        <section class="chapter2-card"><h3>終盤</h3><p class="chapter2-placeholder">重い言葉は後半に置く予定。</p></section>
-      </div>`;},
-    slot:function(){ return `
-      <div class="chapter-panel-header">🎰 第二章運命記録（簡易版）</div>
-      <div class="chapter-panel-note">第一章の運命記録は保管庫に保存したまま。ここは第二章専用記録の仮表示です。</div>
-      <div class="chapter2-grid">
-        <section class="chapter2-card"><h3>残り火を見つけた回数</h3><b>0回</b></section>
-        <section class="chapter2-card"><h3>第二章で揃った運命</h3><b>0 / 仮</b></section>
-        <section class="chapter2-card"><h3>最長連続ログイン</h3><b>準備中</b></section>
-      </div>`;},
-    fire:function(){ return `
-      <div class="chapter-panel-header">🔥 ？？？「残り火」（簡易版）</div>
-      <div class="chapter-panel-note">消えなかったもの、今も残っているもの、これからも続いていくもの。候補を並べた確認用の棚です。</div>
-      <div class="chapter2-grid">
-        ${[
-          "擦り切れたギターケース","弦を切らないピック","歩道橋での待ち合わせ",
-          "自家製ミルクティー","失くした眼鏡","名入りの定期券",
-          "重たい鞄","ふわふわ座布団","ドリンクでよかった",
-          "ファイリングした袋","最後のひとくち","寄り道が本編",
-          "音楽以外の使い方","仲直りのうた"
-        ].map(function(name){return `<div class="chapter2-card chapter2-rarity-lost">🔥 ${name}</div>`;}).join("")}
-      </div>`;}
+    collection:renderSecondCollection,
+    title:renderSecondTitles,
+    slot:renderSecondSlotRecord,
+    fire:renderSecondLost
   };
 
   function openSecondView(type){
@@ -27101,10 +27333,44 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     const panel = document.getElementById("chapter2Panel");
     const content = document.getElementById("chapter2Content");
     if(archive) archive.classList.remove("show");
+    resetArchiveActiveView();
     hideFirstPanels();
     if(!panel || !content || !SECOND_CHAPTER_VIEWS[type]) return;
+
+    if(panel.classList.contains("show") && panel.dataset.activeView === type){
+      panel.classList.remove("show");
+      panel.dataset.activeView = "";
+      return;
+    }
+
     content.innerHTML = SECOND_CHAPTER_VIEWS[type]();
+    panel.dataset.activeView = type;
     panel.classList.add("show");
+  }
+
+  /*
+  管理ボタン列の配置
+  ・第一章：第一章メニューの下（従来位置）
+  ・本を閉じた後：保管庫ボタンの下
+  ・第二章：第二章の四つの棚メニューの下
+  */
+  function placeManagementButtons(state){
+    const sub = document.getElementById("subButtonRow");
+    const buttonArea = document.getElementById("buttonArea");
+    const chapter2Row = document.getElementById("chapter2ButtonRow");
+    if(!sub || !buttonArea) return;
+
+    if(state === "chapter2" && chapter2Row && chapter2Row.parentNode){
+      chapter2Row.parentNode.insertBefore(sub,chapter2Row.nextSibling);
+      return;
+    }
+
+    const firstPanel = buttonArea.querySelector("#collectionBox");
+    if(firstPanel){
+      buttonArea.insertBefore(sub,firstPanel);
+    }else{
+      buttonArea.appendChild(sub);
+    }
   }
 
   function applyState(){
@@ -27114,6 +27380,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     const row = document.getElementById("chapter2ButtonRow");
 
     closeChapterPanels();
+    placeManagementButtons(state);
 
     if(state === "chapter1"){
       restoreFirstPanelsHome();
@@ -27124,6 +27391,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
       if(archiveBtn) archiveBtn.classList.remove("chapter-visible");
       if(banner) banner.classList.remove("show");
       if(row) row.classList.remove("show");
+      ensureResetInSubRow();
       return;
     }
 
@@ -27140,6 +27408,17 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
       if(banner) banner.classList.remove("show");
       if(row) row.classList.remove("show");
     }
+    ensureResetInSubRow();
+  }
+
+  function ensureResetInSubRow(){
+    const reset = document.getElementById("resetBtn");
+    const sub = document.getElementById("subButtonRow");
+    if(!reset || !sub) return;
+    if(reset.parentNode !== sub) sub.appendChild(reset);
+    reset.style.setProperty("display","inline-block","important");
+    reset.style.setProperty("visibility","visible","important");
+    reset.style.setProperty("opacity","1","important");
   }
 
   function buildUI(){
@@ -27178,27 +27457,35 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     const buttonArea = document.getElementById("buttonArea");
     const banner = document.createElement("div");
     banner.id = "chapter2Banner";
-    banner.innerHTML = `<div id="chapter2BannerTitle">🔥 第二章　残り火</div><div id="chapter2BannerSub">簡易版・構造確認用｜第一章の記録は保管庫に保存されています</div>`;
-    if(buttonArea) buttonArea.parentNode.insertBefore(banner,buttonArea.nextSibling);
+    banner.innerHTML = `<div id="chapter2BannerTitle">第二章</div>`;
+    const searchInput = document.getElementById("search");
+    const searchBreak = searchInput && searchInput.nextElementSibling && searchInput.nextElementSibling.tagName === "BR"
+      ? searchInput.nextElementSibling
+      : null;
+    if(searchBreak){
+      searchBreak.parentNode.insertBefore(banner,searchBreak.nextSibling);
+    }else if(searchInput){
+      searchInput.parentNode.insertBefore(banner,searchInput.nextSibling);
+    }else if(buttonArea){
+      buttonArea.parentNode.insertBefore(banner,buttonArea);
+    }
 
     const row = document.createElement("div");
     row.id = "chapter2ButtonRow";
     row.innerHTML = `<button type="button" data-chapter2-view="collection">📖図鑑</button>
       <button type="button" data-chapter2-view="title">🏆称号</button>
       <button type="button" data-chapter2-view="slot">🎰運命記録</button>
-      <button type="button" data-chapter2-view="fire">🔥残り火</button>`;
-    if(banner) banner.parentNode.insertBefore(row,banner.nextSibling);
+      <button type="button" data-chapter2-view="fire">？？？</button>`;
+    if(buttonArea) buttonArea.parentNode.insertBefore(row,buttonArea.nextSibling);
 
     const archivePanel = document.createElement("div");
     archivePanel.id = "chapterArchivePanel";
     archivePanel.innerHTML = `<div class="chapter-panel-header">📚 第一章保管庫</div>
-      <div class="chapter-panel-note">第一章「忘れ物」の収集データは一切削除されていません。ここからいつでも見返せます。</div>
       <div id="chapterArchiveMenu">
         <button type="button" data-archive-view="collection">📖第一章 図鑑</button>
         <button type="button" data-archive-view="title">🏆第一章 称号</button>
         <button type="button" data-archive-view="slot">🎰第一章 運命記録</button>
-        <button type="button" data-archive-view="lost">？？？ 第一章 忘れ物</button>
-        <button id="chapterBookmarkBtn" type="button">🔖栞</button>
+        <button type="button" data-archive-view="lost">🧩第一章 忘れ物</button>
       </div>
       <div id="chapterArchiveContent"></div>`;
     row.parentNode.insertBefore(archivePanel,row.nextSibling);
@@ -27210,16 +27497,12 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
 
     document.getElementById("chapterIntroYes").onclick = function(){ handleQuestionChoice("YES"); };
     document.getElementById("chapterIntroNo").onclick = function(){ handleQuestionChoice("NO"); };
-    archiveBtn.onclick = openArchive;
-    document.getElementById("chapterBookmarkBtn").onclick = function(){
-      if(getState() === "chapter2"){
-        closeChapterPanels();
+    archiveBtn.onclick = function(){ openArchive(false); };
+    archivePanel.addEventListener("click",function(e){
+      if(e.target && e.target.id === "chapterBookmarkBtn"){
+        openBookmarkQuestion();
         return;
       }
-      showPoem("――失くしたものばかりではない",1900,function(){ showQuestion("bookmark"); });
-    };
-
-    archivePanel.addEventListener("click",function(e){
       const type = e.target && e.target.dataset ? e.target.dataset.archiveView : "";
       if(type) renderArchiveView(type);
     });
@@ -27239,28 +27522,57 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     box.innerHTML = `<b>📕第二章・導入確認</b><br>
       <button id="debugChapterIntro" type="button">📖「本を閉じますか？」から確認</button>
       <button id="debugChapterClosed" type="button">📚本を閉じた後へ</button>
-      <button id="debugChapter2Direct" type="button">🔥第二章を直接開始</button>
+      <button id="debugChapter2Direct" type="button">第二章を直接開始</button>
       <button id="debugChapter1Return" type="button">↩️第一章へ戻す</button>
       <div style="margin-top:7px;font-size:13px;">※第一章の収集データは、どのボタンでも削除されません。</div>`;
     panel.appendChild(box);
 
     document.getElementById("debugChapterIntro").onclick = playIntro;
-    document.getElementById("debugChapterClosed").onclick = function(){ setState("closed"); highlightArchiveButton(); };
-    document.getElementById("debugChapter2Direct").onclick = function(){ setState("chapter2"); showPoem("第二章\n残り火",1800); };
+    document.getElementById("debugChapterClosed").onclick = function(){
+      localStorage.removeItem(CHAPTER_PENDING_KEY);
+      setState("closed");
+      openArchive(true);
+      highlightArchiveButton();
+    };
+    document.getElementById("debugChapter2Direct").onclick = function(){
+      localStorage.removeItem(CHAPTER_PENDING_KEY);
+      setState("chapter2");
+      showPoem("第二章",10000,null,true);
+    };
     document.getElementById("debugChapter1Return").onclick = function(){
       localStorage.removeItem(CHAPTER_KEY);
       localStorage.removeItem(CHAPTER_CHOICE_KEY);
+      localStorage.removeItem(CHAPTER_PENDING_KEY);
       setState("chapter1");
       showPoem("第一章へ戻しました",1300);
     };
   }
 
+  function migrateExistingCompleteToPending(){
+    if(getState() !== "chapter1") return;
+    if(localStorage.getItem("allCompleteShownSafe") !== "1") return;
+    if(localStorage.getItem(CHAPTER_CHOICE_KEY)) return;
+    if(localStorage.getItem(CHAPTER_PENDING_KEY) !== "1"){
+      localStorage.setItem(CHAPTER_PENDING_KEY,"1");
+    }
+  }
+
+  function maybeShowPendingIntro(){
+    if(getState() !== "chapter1") return;
+    if(localStorage.getItem(CHAPTER_PENDING_KEY) !== "1") return;
+    if(typeof navigator !== "undefined" && navigator.onLine === false) return;
+    setTimeout(playIntro,260);
+  }
+
   function boot(){
     buildUI();
+    ensureResetInSubRow();
     ensureDebugButtons();
     applyState();
-    setTimeout(ensureDebugButtons,300);
-    setTimeout(ensureDebugButtons,900);
+    migrateExistingCompleteToPending();
+    maybeShowPendingIntro();
+    setTimeout(function(){ ensureDebugButtons(); ensureResetInSubRow(); },300);
+    setTimeout(function(){ ensureDebugButtons(); ensureResetInSubRow(); },900);
   }
 
   window.kaniPlayChapter2Intro = playIntro;
@@ -27271,7 +27583,11 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
   }else{
     boot();
   }
-  window.addEventListener("load",function(){ ensureDebugButtons(); applyState(); });
+  window.addEventListener("load",function(){
+    ensureDebugButtons();
+    ensureResetInSubRow();
+    applyState();
+  });
 })();
 </script>
 
