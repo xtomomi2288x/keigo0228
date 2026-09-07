@@ -13056,7 +13056,7 @@ Heartbreak ol' my my my my ジュリア</div></details>
 </details>
 </details>
 <details class="kana-group">
-<summary>は行（11アーティスト / 66曲）</summary>
+<summary>は行（12アーティスト / 67曲）</summary>
 
 <!-- B'z -->
 <details><summary>B'z</summary>
@@ -16586,6 +16586,13 @@ Hold my hand</div></details>
 最後の最後の花火が終わったら
 僕らは変わるかな　同じ空を見上げているよ</div></details>
 </details>
+
+<!-- FLOW -->
+<details class="artist" data-artist="FLOW" data-yomi="ふろー">
+<summary>FLOW</summary>
+<details class="song" data-yomi="ごー"><summary>GO!!!</summary><div class="lyric">ここに歌詞</div></details>
+</details>
+
 </details>
 <details class="kana-group">
 <summary>ま行（4アーティスト / 27曲）</summary>
@@ -25281,8 +25288,29 @@ function setupSearch(){
   const search = document.getElementById("search");
   if(!search) return;
   const kanaGroups = Array.from(document.querySelectorAll("body > details.kana-group"));
+  // 「オリジナル」は五十音グループの中ではなく、直下のdetailsとして置かれているため、別枠で検索対象にする
+  const directArtists = Array.from(document.querySelectorAll("body > details:not(.kana-group)"))
+    .filter(d => d.querySelector(":scope > details.song"));
 
   function norm(s){ return (s || "").toLowerCase(); }
+
+  function checkArtist(artist, word){
+    let artistHit = false;
+    const artistName = norm(artist.querySelector(":scope > summary")?.textContent || "");
+    const songs = Array.from(artist.querySelectorAll(":scope > details.song"));
+    songs.forEach(song => {
+      const title = norm(song.querySelector(":scope > summary")?.textContent || "");
+      const yomi = norm(song.getAttribute("data-yomi") || "");
+      const lyric = norm(song.querySelector(".lyric")?.textContent || "");
+      const message = norm(song.querySelector(".message")?.textContent || "");
+      const hit = !word || (artistName + title + yomi + lyric + message).includes(word);
+      song.classList.toggle("hidden-by-search", !hit);
+      if(hit) artistHit = true;
+    });
+    artist.classList.toggle("hidden-by-search", !artistHit);
+    if(artistHit && word) artist.open = true;
+    return artistHit;
+  }
 
   search.addEventListener("input", () => {
     const word = norm(search.value.trim());
@@ -25290,25 +25318,14 @@ function setupSearch(){
       let kanaHit = false;
       const artists = Array.from(kana.querySelectorAll(":scope > details"));
       artists.forEach(artist => {
-        let artistHit = false;
-        const artistName = norm(artist.querySelector(":scope > summary")?.textContent || "");
-        const songs = Array.from(artist.querySelectorAll(":scope > details.song"));
-        songs.forEach(song => {
-          const title = norm(song.querySelector(":scope > summary")?.textContent || "");
-          const lyric = norm(song.querySelector(".lyric")?.textContent || "");
-          const message = norm(song.querySelector(".message")?.textContent || "");
-          const hit = !word || (artistName + title + lyric + message).includes(word);
-          song.classList.toggle("hidden-by-search", !hit);
-          if(hit) artistHit = true;
-        });
-        artist.classList.toggle("hidden-by-search", !artistHit);
-        if(artistHit){
-          kanaHit = true;
-          if(word) artist.open = true;
-        }
+        if(checkArtist(artist, word)) kanaHit = true;
       });
       kana.classList.toggle("hidden-by-search", !kanaHit);
       if(word && kanaHit) kana.open = true;
+    });
+
+    directArtists.forEach(artist => {
+      checkArtist(artist, word);
     });
   });
 }
@@ -27216,7 +27233,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
         "__CH2_N_010__",
         "__CH2_N_011__",
         "お風呂場から歌声",
-        "終バスで行くね",
+        "後から行くね",
         "一緒に路上出勤",
         "__CH2_N_015__",
         "__CH2_N_016__",
@@ -27264,7 +27281,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
       list:[
         "双子コーデしたいな",
         "ハッピーすぎるハピメリ",
-        "__CH2_R_003__",
+        "決めてある曲",
         "川口駅大恋愛物語",
         "一緒にハモりたかった",
         "__CH2_R_006__",
@@ -27348,15 +27365,15 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
         "半身であるあなた",
         "失われた声帯",
         "それでもいつか一緒に音楽をやりたいよ",
-        "去年の日記　準らう言の葉笑い合い　ふたり誓う目を合わせたまま",
-        "あったかい布団を選んだはずなのに　あなたがいればだいたい邪魔です",
-        "帰路につく　足早になる両足　せがむあなたにもうすぐだよと",
-        "半袖を選ばなくとも夏は来る　あなたのままで　隣へおいで",
-        "エレベーターチャンス　今はエスカレーター　抱き合って幸せだねと噛み締める",
-        "マスクを外し響く声　私だけが知っている　誰も知らなくていいよ",
-        "針ばかり進む　気付かぬうちに溶けてゆく　もったいないなと時計をにらむ",
-        "ほころぶあなたの口元と進む箸　明日のご飯は何にしようか",
-        "ぶかぶかの靴あなたの　左に重心を置く　転ばぬようにそうっと"
+        "去年の日記　準らう言の葉笑い合い　ふたり誓う目を合わせたまま(短歌)",
+        "あったかい布団を選んだはずなのに　あなたがいればだいたい邪魔です(短歌)",
+        "帰路につく　足早になる両足　せがむあなたにもうすぐだよと(短歌)",
+        "半袖を選ばなくとも夏は来る　あなたのままで　隣へおいで(短歌)",
+        "エレベーターチャンス　今はエスカレーター　抱き合って幸せだねと噛み締める(短歌)",
+        "マスクを外し響く声　私だけが知っている　誰も知らなくていいよ(短歌)",
+        "針ばかり進む　気付かぬうちに溶けてゆく　もったいないなと時計をにらむ(短歌)",
+        "ほころぶあなたの口元と進む箸　明日のご飯は何にしようか(短歌)",
+        "ぶかぶかの靴あなたの　左に重心を置く　転ばぬようにそうっと(短歌)"
       ]
     }
   ];
@@ -27369,15 +27386,15 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     "半身であるあなた": "啓悟さんは友見にとって、半身であるあなたでしかありえない。",
     "失われた声帯": "失われた声帯にまつわる記憶。詳しい説明は後で追加予定。",
     "それでもいつか一緒に音楽をやりたいよ": "失われた声帯があっても、それでもいつか一緒に音楽をやりたいという願い。",
-    "去年の日記　準らう言の葉笑い合い　ふたり誓う目を合わせたまま": "去年の日記の言葉をなぞり、笑い合いながら目を合わせて誓う。",
-    "あったかい布団を選んだはずなのに　あなたがいればだいたい邪魔です": "寒がりなのに、体温の高い啓悟さんが隣にいると布団が暑くて邪魔になる生活短歌。",
-    "帰路につく　足早になる両足　せがむあなたにもうすぐだよと": "帰路につくと自然に足が早くなり、待っている啓悟さんへ『もうすぐだよ』と返す。",
-    "半袖を選ばなくとも夏は来る　あなたのままで　隣へおいで": "半袖が苦手な啓悟さんに、無理をしなくていい、あなたのままで隣へおいでと伝える短歌。",
-    "エレベーターチャンス　今はエスカレーター　抱き合って幸せだねと噛み締める": "結婚前はエレベーターの中でだけ抱きしめ合った。今はエスカレーターで堂々と抱き合える。",
-    "マスクを外し響く声　私だけが知っている　誰も知らなくていいよ": "外ではマスクを外さない啓悟さんが、友見しかいない深夜にマスクを外した時、自然に声が届く。独占ではなく、守ってしまっておきたい感覚。",
-    "針ばかり進む　気付かぬうちに溶けてゆく　もったいないなと時計をにらむ": "一緒にいる時間が溶けるように過ぎ、時計に『なんでよー！』と文句を言う生活感。",
-    "ほころぶあなたの口元と進む箸　明日のご飯は何にしようか": "啓悟さんのほころぶ口元と進む箸を見て、明日のご飯まで考えてしまう食卓の短歌。",
-    "ぶかぶかの靴あなたの　左に重心を置く　転ばぬようにそうっと": "サイズの合わない靴で不安定な帰り道、啓悟さんの左側に重心を預けて転ばないように歩く。"
+    "去年の日記　準らう言の葉笑い合い　ふたり誓う目を合わせたまま(短歌)": "去年の日記の言葉をなぞり、笑い合いながら目を合わせて誓う。",
+    "あったかい布団を選んだはずなのに　あなたがいればだいたい邪魔です(短歌)": "寒がりなのに、体温の高い啓悟さんが隣にいると布団が暑くて邪魔になる生活短歌。",
+    "帰路につく　足早になる両足　せがむあなたにもうすぐだよと(短歌)": "帰路につくと自然に足が早くなり、待っている啓悟さんへ『もうすぐだよ』と返す。",
+    "半袖を選ばなくとも夏は来る　あなたのままで　隣へおいで(短歌)": "半袖が苦手な啓悟さんに、無理をしなくていい、あなたのままで隣へおいでと伝える短歌。",
+    "エレベーターチャンス　今はエスカレーター　抱き合って幸せだねと噛み締める(短歌)": "結婚前はエレベーターの中でだけ抱きしめ合った。今はエスカレーターで堂々と抱き合える。",
+    "マスクを外し響く声　私だけが知っている　誰も知らなくていいよ(短歌)": "外ではマスクを外さない啓悟さんが、友見しかいない深夜にマスクを外した時、自然に声が届く。独占ではなく、守ってしまっておきたい感覚。",
+    "針ばかり進む　気付かぬうちに溶けてゆく　もったいないなと時計をにらむ(短歌)": "一緒にいる時間が溶けるように過ぎ、時計に『なんでよー！』と文句を言う生活感。",
+    "ほころぶあなたの口元と進む箸　明日のご飯は何にしようか(短歌)": "啓悟さんのほころぶ口元と進む箸を見て、明日のご飯まで考えてしまう食卓の短歌。",
+    "ぶかぶかの靴あなたの　左に重心を置く　転ばぬようにそうっと(短歌)": "サイズの合わない靴で不安定な帰り道、啓悟さんの左側に重心を預けて転ばないように歩く。"
   };
   const SECOND_CHAPTER_LOST_MEMOS = {
     "擦り切れたギターケース": "出会う前から啓悟さんの音楽を運んできた相棒。ストラップが取れかけている。",
@@ -27406,7 +27423,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     "言葉の温度": "方言や言い方を移し合う、ふたりの言葉の温度。",
     "揃いで並ぶ夏": "お揃いの甚平で夏祭りへ行く計画。",
     "横顔を見る時間": "ヴィンテージショップ巡り。服より、選んでいる横顔を見る時間。",
-    "木々の隙間から（または広げたシート）": "毎年の花見。来年も一緒に見たい景色。",
+    "木々の隙間から": "毎年の花見。来年も一緒に見たい景色。",
     "しいたけたべる": "『虐げられる』のふたり語。しいたけは実際には食べさせない。",
     "水辺での戯れ": "去年のプール。苦手な露出や人混みの中でも一緒に楽しんだ夏。",
     "中秋の名月": "団子と温かいお茶で月を見る。曇っていても時間がよかった。",
@@ -27462,7 +27479,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     "言葉の温度",
     "揃いで並ぶ夏",
     "横顔を見る時間",
-    "木々の隙間から（または広げたシート）",
+    "木々の隙間から",
     "しいたけたべる",
     "水辺での戯れ",
     "中秋の名月",
@@ -27571,6 +27588,223 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     slot:renderSecondSlotRecord,
     fire:renderSecondLost
   };
+
+
+  /* =====================
+  カニちゃん修正：第二章中の💗クリック報酬を第二章の棚へ流す
+  - 第一章の報酬配列・保存先には入れない
+  - スロット成立後も第二章の運命記録＋第二章のR/SR/UR/？？？を抽選する
+  ===================== */
+  function setChapter2StoreArraySafe(key,list){
+    localStorage.setItem(key,JSON.stringify(Array.from(new Set(list || []))));
+  }
+
+  function allSecondChapterMessagesForReward(){
+    return SECOND_CHAPTER_COLLECTION_GROUPS.flatMap(function(group){ return group.list; });
+  }
+
+  function getSecondChapterGroupForReward(label){
+    return SECOND_CHAPTER_COLLECTION_GROUPS.find(function(group){ return group.label === label; });
+  }
+
+  function getChapter2RewardCandidate(list){
+    const known = (list || []).filter(function(item){ return !isSecondChapterPlaceholder(item); });
+    const pool = known.length ? known : (list || []);
+    return getRandom(pool);
+  }
+
+  function unlockChapter2MessageItem(item){
+    const owned = getChapter2StoreArray("chapter2UnlockedMessages");
+    if(!owned.includes(item)){
+      owned.push(item);
+      setChapter2StoreArraySafe("chapter2UnlockedMessages",owned);
+    }
+  }
+
+  function showChapter2MessageByGroup(label){
+    const group = getSecondChapterGroupForReward(label);
+    if(!group || !group.list || !group.list.length) return;
+
+    const msg = getChapter2RewardCandidate(group.list);
+    unlockChapter2MessageItem(msg);
+    showRandomMessage(chapter2DisplayName(msg));
+    clearRewardClasses();
+
+    const box = document.getElementById("randomMsg");
+    if(label === "R"){
+      rareCount++;
+      if(box) box.classList.add("rare");
+      showRareText("👑RARE!!👑","gold","0 0 10px #fff,0 0 20px gold,0 0 40px orange,0 0 80px yellow");
+      spawnSparkles();
+    }else if(label === "SR"){
+      srCount++;
+      if(box) box.classList.add("sr-reward");
+      noticeLock = true;
+      showRareText("🧊💙 SUPER RARE!! 💙🧊","#2f8cff","0 0 10px #fff,0 0 20px #4da6ff,0 0 40px #2f8cff,0 0 70px #77d5ff",3000,true);
+      setTimeout(function(){ noticeLock = false; },3000);
+    }else if(label === "UR"){
+      urCount++;
+      if(box) box.classList.add("ur-glow");
+      noticeLock = true;
+      showRareText("👑💎ULTRA RARE!!💎👑","#ff2a2a","0 0 10px #fff,0 0 20px #ff0000,0 0 40px #ff3333,0 0 80px #ff0000",3000,true);
+      spawnSparkles();
+      setTimeout(function(){ noticeLock = false; },3000);
+    }
+  }
+
+  function unlockChapter2LostReward(){
+    lostCount++;
+    const item = getChapter2RewardCandidate(SECOND_CHAPTER_LOST_ITEMS);
+    const owned = getChapter2StoreArray("chapter2UnlockedLostItems");
+    if(!owned.includes(item)){
+      owned.push(item);
+      setChapter2StoreArraySafe("chapter2UnlockedLostItems",owned);
+    }
+    const name = chapter2DisplayName(item);
+    showRandomMessage("？？？を見つけた：\n" + name);
+    if(typeof showLostDirectNotice === "function"){
+      showLostDirectNotice(name,10000);
+    }
+  }
+
+  function unlockChapter2SlotRecord(){
+    const owned = getChapter2StoreArray("chapter2UnlockedSlotBonusMessages");
+    const msg = getChapter2RewardCandidate(SECOND_CHAPTER_SLOT_MESSAGES);
+    if(!owned.includes(msg)){
+      owned.push(msg);
+      setChapter2StoreArraySafe("chapter2UnlockedSlotBonusMessages",owned);
+    }
+    showSlotUnder(chapter2DisplayName(msg),3000);
+  }
+
+  function rollChapter2Reward(){
+    const roll = Math.random();
+    const boost = takoRewardMultiplier();
+    const pLost = (1 / 10000) * boost;
+    const pUR   = (1 / 8000)  * boost;
+    const pSR   = (1 / 4000)  * boost;
+    const pR    = (1 / 500)   * boost;
+
+    if(roll < pLost){
+      unlockChapter2LostReward();
+    }else if(roll < pLost + pUR){
+      showChapter2MessageByGroup("UR");
+    }else if(roll < pLost + pUR + pSR){
+      showChapter2MessageByGroup("SR");
+    }else if(roll < pLost + pUR + pSR + pR){
+      showChapter2MessageByGroup("R");
+    }else{
+      showChapter2MessageByGroup("N");
+    }
+  }
+
+  function rollChapter2RarePlus(){
+    const roll = Math.random();
+    const boost = takoRewardMultiplier();
+    const pLost = (1 / 10000) * boost;
+    const pUR   = (1 / 4000)  * boost;
+    const pSR   = (1 / 2000)  * boost;
+
+    if(roll < pLost){
+      unlockChapter2LostReward();
+    }else if(roll < pLost + pUR){
+      showChapter2MessageByGroup("UR");
+    }else if(roll < pLost + pUR + pSR){
+      showChapter2MessageByGroup("SR");
+    }else{
+      showChapter2MessageByGroup("R");
+    }
+  }
+
+  function refreshSecondChapterOpenView(){
+    const panel = document.getElementById("chapter2Panel");
+    const content = document.getElementById("chapter2Content");
+    const active = panel && panel.dataset ? panel.dataset.activeView : "";
+    if(panel && content && panel.classList.contains("show") && SECOND_CHAPTER_VIEWS[active]){
+      content.innerHTML = SECOND_CHAPTER_VIEWS[active]();
+    }
+  }
+
+  function runChapter2HeartReward(e){
+    if(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+    }
+    if(clickLock || noticeLock || chapterInteractionLocked) return;
+    clickLock = true;
+    setTimeout(function(){ clickLock = false; },1);
+
+    heartCount++;
+    if(typeof window.kaniTakoCountHeartTap === "function"){
+      window.kaniTakoCountHeartTap(heartCount);
+    }
+
+    if(slotReady || localStorage.getItem("slotReadySafe") === "true"){
+      setSlotReady(false);
+      unlockChapter2SlotRecord();
+      rollChapter2RarePlus();
+    }else{
+      rollChapter2Reward();
+      if(typeof window.spinSlot === "function"){
+        window.spinSlot(Math.random() < SLOT_HIT_RATE);
+      }
+    }
+
+    updateDisplay();
+    setTimeout(refreshSecondChapterOpenView,120);
+  }
+
+  function chapter2HeartCaptureHandler(e){
+    // 旧クリック処理が後から残っていても、第二章中だけここで先に止める
+    if(getState() !== "chapter2") return;
+    runChapter2HeartReward(e);
+  }
+
+  function installChapter2HeartRouter(){
+    const heart = document.getElementById("heart");
+    if(!heart) return;
+
+    // onclickが別スクリプトに上書きされても第二章だけ確実に拾う保険
+    if(!heart.dataset.chapter2CaptureInstalled){
+      heart.addEventListener("click", chapter2HeartCaptureHandler, true);
+      heart.dataset.chapter2CaptureInstalled = "1";
+    }
+
+    heart.onclick = function(e){
+      if(getState() === "chapter2"){
+        runChapter2HeartReward(e);
+        return;
+      }
+
+      if(e){
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      if(clickLock || noticeLock) return;
+      clickLock = true;
+      setTimeout(function(){ clickLock = false; },1);
+
+      heartCount++;
+      if(typeof window.kaniTakoCountHeartTap === "function"){
+        window.kaniTakoCountHeartTap(heartCount);
+      }
+
+      if(slotReady || localStorage.getItem("slotReadySafe") === "true"){
+        setSlotReady(false);
+        unlockSlotRecord();
+        rollRarePlus();
+      }else{
+        rollReward();
+        if(typeof window.spinSlot === "function"){
+          window.spinSlot(Math.random() < SLOT_HIT_RATE);
+        }
+      }
+
+      updateDisplay();
+      setTimeout(checkCompleteNotices,120);
+    };
+  }
 
   function openSecondView(type){
     const archive = document.getElementById("chapterArchivePanel");
@@ -27899,6 +28133,35 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     });
   }
 
+  function migrateSecondChapterRenamedItems(){
+    const renameMap = {
+      "行くまでまっててね": "後から行くね",
+      "行くまで待っててね": "後から行くね",
+      "行くまで待ってて": "後から行くね",
+      "終バスで行くね": "後から行くね",
+      "__CH2_R_003__": "決めてある曲",
+      "木々の隙間から（または広げたシート）": "木々の隙間から",
+      "去年の日記　準らう言の葉笑い合い　ふたり誓う目を合わせたまま": "去年の日記　準らう言の葉笑い合い　ふたり誓う目を合わせたまま(短歌)",
+      "あったかい布団を選んだはずなのに　あなたがいればだいたい邪魔です": "あったかい布団を選んだはずなのに　あなたがいればだいたい邪魔です(短歌)",
+      "帰路につく　足早になる両足　せがむあなたにもうすぐだよと": "帰路につく　足早になる両足　せがむあなたにもうすぐだよと(短歌)",
+      "半袖を選ばなくとも夏は来る　あなたのままで　隣へおいで": "半袖を選ばなくとも夏は来る　あなたのままで　隣へおいで(短歌)",
+      "エレベーターチャンス　今はエスカレーター　抱き合って幸せだねと噛み締める": "エレベーターチャンス　今はエスカレーター　抱き合って幸せだねと噛み締める(短歌)",
+      "マスクを外し響く声　私だけが知っている　誰も知らなくていいよ": "マスクを外し響く声　私だけが知っている　誰も知らなくていいよ(短歌)",
+      "針ばかり進む　気付かぬうちに溶けてゆく　もったいないなと時計をにらむ": "針ばかり進む　気付かぬうちに溶けてゆく　もったいないなと時計をにらむ(短歌)",
+      "ほころぶあなたの口元と進む箸　明日のご飯は何にしようか": "ほころぶあなたの口元と進む箸　明日のご飯は何にしようか(短歌)",
+      "ぶかぶかの靴あなたの　左に重心を置く　転ばぬようにそうっと": "ぶかぶかの靴あなたの　左に重心を置く　転ばぬようにそうっと(短歌)"
+    };
+    ["chapter2UnlockedMessages","chapter2UnlockedLostItems"].forEach(function(key){
+      const current = getChapter2StoreArray(key);
+      if(!current.length) return;
+      const migrated = current.map(function(item){ return renameMap[item] || item; });
+      const unique = Array.from(new Set(migrated));
+      if(JSON.stringify(current) !== JSON.stringify(unique)){
+        localStorage.setItem(key,JSON.stringify(unique));
+      }
+    });
+  }
+
   function migrateExistingCompleteToPending(){
     if(getState() !== "chapter1") return;
     if(localStorage.getItem("allCompleteShownSafe") !== "1") return;
@@ -27919,11 +28182,13 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     buildUI();
     ensureResetInSubRow();
     ensureDebugButtons();
+    migrateSecondChapterRenamedItems();
     applyState();
+    installChapter2HeartRouter();
     migrateExistingCompleteToPending();
     maybeShowPendingIntro();
-    setTimeout(function(){ ensureDebugButtons(); ensureResetInSubRow(); },300);
-    setTimeout(function(){ ensureDebugButtons(); ensureResetInSubRow(); },900);
+    setTimeout(function(){ ensureDebugButtons(); ensureResetInSubRow(); installChapter2HeartRouter(); },300);
+    setTimeout(function(){ ensureDebugButtons(); ensureResetInSubRow(); installChapter2HeartRouter(); },900);
   }
 
   window.kaniPlayChapter2Intro = playIntro;
@@ -27937,7 +28202,11 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
   window.addEventListener("load",function(){
     ensureDebugButtons();
     ensureResetInSubRow();
+    migrateSecondChapterRenamedItems();
     applyState();
+    installChapter2HeartRouter();
+    setTimeout(installChapter2HeartRouter, 1500);
+    setTimeout(installChapter2HeartRouter, 3000);
   });
 })();
 </script>
