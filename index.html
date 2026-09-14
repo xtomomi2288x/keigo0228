@@ -1220,6 +1220,13 @@ body.chapter-fixed-lock > *:not(#chapterPoemOverlay):not(#chapterBlackoutOverlay
   animation:chapterArchivePulse 1.1s ease-in-out 3;
 }
 
+#chapterArchiveBtn.chapter-guide-pulse,
+#chapterArchiveMenu button.chapter-guide-pulse,
+#chapterBookmarkBtn.chapter-guide-pulse{
+  animation:chapterArchivePulse 1.1s ease-in-out infinite;
+  box-shadow:0 0 18px rgba(212,175,55,.75);
+}
+
 @keyframes chapterArchivePulse{
   0%,100%{box-shadow:none;transform:scale(1);}
   50%{box-shadow:0 0 20px rgba(212,175,55,.85);transform:scale(1.04);}
@@ -1435,6 +1442,24 @@ body.night-debug-mode #chapter2Panel{
   background:rgba(255,255,255,.96);
   color:#222;
 }
+
+
+/* =====================
+   プレビュー2：図鑑カードの高さを「同じ行の中だけ」そろえる
+   第一章・第二章の📖図鑑だけ。
+   改行が出た行だけ、その行のほかの枠も同じ高さに伸びる。
+   改行がない行は1行ぶんのまま。
+   ===================== */
+.collection-grid{
+  align-items:stretch!important;
+}
+.collection-grid .collection-item{
+  align-self:stretch!important;
+  height:auto!important;
+  min-height:0!important;
+  box-sizing:border-box!important;
+}
+
 </style>
 </head>
 <body>
@@ -13056,7 +13081,7 @@ Heartbreak ol' my my my my ジュリア</div></details>
 </details>
 </details>
 <details class="kana-group">
-<summary>は行（12アーティスト / 67曲）</summary>
+<summary>は行（12アーティスト / 69曲）</summary>
 
 <!-- B'z -->
 <details><summary>B'z</summary>
@@ -16590,8 +16615,7 @@ Hold my hand</div></details>
 <!-- FLOW -->
 <details class="artist" data-artist="FLOW" data-yomi="ふろー">
 <summary>FLOW</summary>
-<details class="song" data-yomi="ごー"><summary>GO!!!</summary><div class="lyric">
-☆We are Fighting Dreamers　高みを目指して
+<details class="song" data-yomi="ごー"><summary>GO!!!</summary><div class="lyric">☆We are Fighting Dreamers　高みを目指して
 Fighting Dreamers　なりふり構わず
 Fighting Dreamers　信じるがままに
 Oli Oli Oli Oh-！ Just go my way！
@@ -16650,6 +16674,98 @@ Right here Right now (Bang！)
 ぶっ放せ　Like a 弾丸ライナー！
 Right here Right now (Burn！)
 ぶった斬ってくぜ　Get the fire！</div></details>
+<details class="song" data-yomi="めろす"><summary>メロス</summary><div class="lyric">夕暮れ染まる街　道急ぐ人の中
+何ひとつ出来ずにたたずんでいたね
+
+こぼれた涙が進む道を示す
+
+希望という夢を乗せ　明日へと走れ
+この思い届かせて高らかにSing my song
+
+くじけそうな日々に孤独を感じてても
+「がんばれ!」って背中を叩く友がいる
+
+いつまででもずっと　君は僕の力
+
+希望という夢を乗せ明日へと走れ
+この思い届かせて高らかにSing my song
+
+WOW…空も飛べそうな熱いこの思いを　今、胸に刻んで羽ばたこう
+
+Everybody let's try to fly higher
+Everybody let's go now to the dream
+
+信じる気持ちが勇気に変わるから　so fly
+
+出会う春、陽恵む夏、風立ちぬ秋、耐え忍ぶ冬
+何度でも立ち上がれ　未来へと向かって
+
+希望という夢を乗せ明日へと走れ
+この思い届かせて高らかにSing my song
+希望をという夢を乗せ明日へと走れ
+この思い届かせて高らかにSing my song
+高らかにSing my song　高らかにSing my song
+
+Everybody let's try to fly higher
+Everybody let's go now to the dream</div></details>
+<details class="song" data-yomi="ながれぼし"><summary>流れ星</summary><div class="lyric">空を見上げれば　星達がほら、瞬いてる
+この地球の　人達みたいに　様々な　光を放って
+その中で僕も　ひときわ輝いていたいんだ
+目を閉じて　心に誓う　流れ星に夢をたくして
+
+ここは　いつもの公園
+夜景が見える　滑り台の上
+昔から僕の　特等席
+悩みがあれば　ここに来るんです
+あの頃のまま　夢の途中で
+未だ叶えられずにいるんです
+もしかして　ここが　もう終点
+なんて弱音を　吐いてしまいそうな日もある
+でも、そのたんびに思い出す
+流れ星を探した　あの星空
+小さな頃の　願い事は今
+昔も変わらないまま
+
+空を見上げれば　星達がほら、瞬いてる
+この地球の　人達みたいに　様々な　光を放って
+その中で僕も　ひときわ輝いていたいんだ
+目を閉じて　心に誓う　流れ星に夢をたくして
+
+夜の校舎　仲間と忍び込み
+声を潜め　金網よじ登り
+昼間と違う顔のグラウンドを背に
+目指した場所は“プール”という名の海
+水着なんてもんは無いから　みんな素っ裸
+誰かが奇声を発して　飛び込んだ
+夜のとばりに響く水しぶき
+あとに続けとばかりに皆、一斉に入って
+空見上げプカプカ　浮かんだ
+目の前にある星を眺め　多くの夢　語り合って
+探したね　あの流れ星
+
+空を見上げれば　星達がほら、瞬いてる
+この地球の　人達みたいに　様々な　光を放って
+その中で僕も　ひときわ輝いていたいんだ
+目を閉じて　心に誓う　流れ星に夢をたくして
+
+見上げた空に無数の星
+今も昔も変わらないし
+夢は果てしなく狂おしくて
+あの星のように凄く眩しい
+
+Hey！　そんなに俯いてばかりいちゃ
+見えるモノも見えなくなるから
+空見上げてKeep Your Head Up！！
+Hey！　“見上げた空に今、何を思う？”
+いつか煌めく　あの星のように…
+I Wanna Shine☆
+
+空を見上げれば　星達がほら、瞬いてる
+この地球の　人達みたいに　様々な　光を放って
+その中で僕も　ひときわ輝いていたいんだ
+目を閉じて　心に誓う　流れ星に夢をたくして
+
+</div></details>
 </details>
 
 </details>
@@ -26999,6 +27115,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
   const CHAPTER_KEY = "keigoChapterStateV1";
   const CHAPTER_CHOICE_KEY = "keigoChapterIntroChoiceV1";
   const CHAPTER_PENDING_KEY = "keigoChapterIntroPendingV1";
+  const CHAPTER_GUIDE_KEY = "keigoChapterBookmarkGuideV1";
   const FIRST_PANEL_IDS = ["collectionBox","titleCollectionBox","slotRecordBox","lostCollectionBox"];
   const FIRST_BUTTON_IDS = ["bookBtn","titleBtn","slotRecordBtn","lostBtn"];
 
@@ -27088,6 +27205,25 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     },true);
   });
 
+  function isBookmarkGuideActive(){
+    return getState() === "closed" && localStorage.getItem(CHAPTER_GUIDE_KEY) === "1";
+  }
+
+  function applyBookmarkGuide(){
+    const active = isBookmarkGuideActive();
+    const archiveBtn = document.getElementById("chapterArchiveBtn");
+    const archiveLostBtn = document.querySelector('#chapterArchiveMenu button[data-archive-view="lost"]');
+    const bookmarkBtn = document.getElementById("chapterBookmarkBtn");
+    if(archiveBtn) archiveBtn.classList.toggle("chapter-guide-pulse",active);
+    if(archiveLostBtn) archiveLostBtn.classList.toggle("chapter-guide-pulse",active);
+    if(bookmarkBtn) bookmarkBtn.classList.toggle("chapter-guide-pulse",active);
+  }
+
+  function clearBookmarkGuide(){
+    localStorage.removeItem(CHAPTER_GUIDE_KEY);
+    applyBookmarkGuide();
+  }
+
   function highlightArchiveButton(){
     const btn = document.getElementById("chapterArchiveBtn");
     if(!btn) return;
@@ -27100,8 +27236,20 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
   function enterClosedLibrary(choice){
     localStorage.setItem(CHAPTER_CHOICE_KEY,choice);
     localStorage.removeItem(CHAPTER_PENDING_KEY);
+    if(choice === "NO"){
+      localStorage.setItem(CHAPTER_GUIDE_KEY,"1");
+    }else{
+      localStorage.removeItem(CHAPTER_GUIDE_KEY);
+    }
     setState("closed");
-    setTimeout(highlightArchiveButton,160);
+    if(choice === "NO"){
+      setTimeout(function(){
+        highlightArchiveButton();
+        applyBookmarkGuide();
+      },160);
+    }else{
+      setTimeout(applyBookmarkGuide,160);
+    }
   }
 
   function showQuestion(mode){
@@ -27174,12 +27322,13 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     hideQuestion();
 
     if(mode === "bookmark"){
+      clearBookmarkGuide();
       if(answer === "YES"){
         setState("chapter2");
         showPoem("第二章",10000,null,true);
       }else{
         setState("closed");
-        showPoem("そのままで十分だった",1800,highlightArchiveButton);
+        showPoem("そのままで十分だった",1800,null);
       }
       return;
     }
@@ -27187,7 +27336,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     localStorage.removeItem(CHAPTER_PENDING_KEY);
     if(answer === "YES"){
       enterClosedLibrary("YES");
-      showPoem("遊んでくれてありがとう！\nこれからもライブラリとして活用してね",10000,highlightArchiveButton,true);
+      showPoem("遊んでくれてありがとう！\nこれからもライブラリとして活用してね",10000,null,true);
     }else{
       playNoBlackout();
     }
@@ -27206,6 +27355,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     btn.textContent = "🔖栞";
     wrap.appendChild(btn);
     box.appendChild(wrap);
+    applyBookmarkGuide();
   }
 
   function openBookmarkQuestion(){
@@ -27243,6 +27393,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
       box.style.display = "block";
       if(type === "lost") appendBookmarkInsideLost(box);
       content.dataset.activeView = type;
+      applyBookmarkGuide();
     }
   }
 
@@ -27258,6 +27409,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
       hideFirstPanels();
       resetArchiveActiveView();
     }
+    applyBookmarkGuide();
   }
 
   /* =====================
@@ -27285,19 +27437,19 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
         "端っこで小さくなる",
         "寝顔が好き",
         "トローチマスター",
-        "いつもマッサージしてくれてありがとう",
+        "__CH2_N_006__",
         "アヒージョ、ペペロン、またお願いします",
-        "__CH2_N_008__",
-        "__CH2_N_009__",
-        "__CH2_N_010__",
+        "ラーメンで手打ち",
+        "今日は出ないな……",
+        "可能性は",
         "__CH2_N_011__",
-        "お風呂場から歌声",
-        "後から行くね",
+        "__CH2_N_012__",
+        "終バスで行くね",
         "一緒に路上出勤",
-        "__CH2_N_015__",
-        "__CH2_N_016__",
-        "__CH2_N_017__",
-        "__CH2_N_018__",
+        "もしかして乗り過ごした？",
+        "2人ならいいね",
+        "一回畳む",
+        "めくらないカレンダー",
         "__CH2_N_019__",
         "__CH2_N_020__",
         "__CH2_N_021__",
@@ -27339,17 +27491,17 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
       className:"rare-item",
       list:[
         "双子コーデしたいな",
-        "ハッピーすぎるハピメリ",
-        "決めてある曲",
+        "__CH2_R_002__",
+        "__CH2_R_003__",
         "川口駅大恋愛物語",
-        "一緒にハモりたかった",
-        "__CH2_R_006__",
-        "__CH2_R_007__",
-        "__CH2_R_008__",
-        "__CH2_R_009__",
-        "__CH2_R_010__",
-        "__CH2_R_011__",
-        "__CH2_R_012__",
+        "__CH2_R_005__",
+        "ここだよの合図",
+        "決めてある曲",
+        "たこちゃんだらけ",
+        "食べられるお守り",
+        "3日に1日さみしい",
+        "伝えたい付箋",
+        "眠れない、ひとり",
         "__CH2_R_013__",
         "__CH2_R_014__",
         "__CH2_R_015__",
@@ -27375,42 +27527,42 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
       title:"SR：SUPER RARE",
       className:"sr-item",
       list:[
-        "へたくそな裏声",
-        "寝顔がひどい",
-        "ライブいつやるの？",
-        "ワンマン待ちです",
-        "洗濯めっちゃかける",
-        "転調ミスってるよ！！！",
-        "SRの大事さを知ってください",
-        "だから6弦だけずれてるって言ってんじゃん！！",
-        "モナリザ？もう古い古い　",
-        "投げ銭は期待しないと言いつつ",
-        "音響使うやつはド三流",
-        "SRあげるからセンチメンタルピリオドやって",
-        "悲しくて悲しくてとてもやりきれない",
+        "冬は暖房、夏は冷房、でも喉にはよくない",
         "トイレ～風呂まで",
-        "お風呂場から歌声__CH2_DUP_SR15",
-        "残酷な天使のテーゼ、要練習",
-        "SRは別に外れじゃないんだってば　",
+        "お風呂場から歌声",
+        "お風呂争奪戦",
         "ギターを忘れる　一回休み",
         "ipadの充電がされてない　スタートに戻る",
-        "じめっとした匂いがする",
-        "赤のボンテージはダサいって！",
+        "残酷な天使のテーゼ、要練習",
+        "転調ミスってるよ！！！",
+        "だから6弦だけずれてるって言ってんじゃん！！",
+        "たまに出る裏声",
+        "封印されたONEDAYS",
+        "悲しくて悲しくてとてもやりきれない",
+        "投げ銭は期待しないと言いつつ",
         "ないないないはいつやるんだろう",
         "君が欲しい～をもっかいやって欲しいです",
-        "冬は暖房、夏は冷房、でも喉にはよくない",
-        "会いたくて震える",
-        "お風呂争奪戦",
-        "PC壊れる→なんとかなる",
-        "カーテン閉めて着替えてね",
-        "セーフよりのアウト　つまりSR",
-        "便サン、大活躍",
-        "段差で痛む便サン",
-        "SRはギャグ枠って誰が言った？？？",
-        "封印されたONEDAYS",
-        "リビングで寝落ち",
+        "音響使うやつはド三流",
+        "しょんとしても抱き締めるから！",
+        "ライブいつやるの？",
+        "8月に決まりました！",
+        "ワンマン待ちです",
+        "赤のボンテージはダサいって！",
         "路上からの散歩",
-        "母との関係、難しすぎ"
+        "洗濯めっちゃかける",
+        "カーテン閉めて着替えてね",
+        "じめっとした匂いがする",
+        "リビングで寝落ち",
+        "寝顔がひどい",
+        "いない日は限界スープ",
+        "ヒールは痛いので帰りは履き替えます",
+        "母との関係、難しすぎ",
+        "PC壊れる→なんとかなる",
+        "SRあげるからセンチメンタルピリオドやって",
+        "SRの大事さを知ってください",
+        "SRは別に外れじゃないんだってば",
+        "セーフよりのアウト　つまりSR",
+        "SRはギャグ枠って誰が言った？？？"
       ]
     },
     {
@@ -27418,12 +27570,12 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
       title:"UR：ULTRA RARE",
       className:"ur-item",
       list:[
-        "眠れない、ひとり",
+        "鉱山から拾う",
         "新しい日々を",
-        "とうとうReasonが音源化しました",
-        "半身であるあなた",
-        "失われた声帯",
-        "それでもいつか一緒に音楽をやりたいよ",
+        "とうとうreasonが音源化！1.2.3.4！",
+        "理解の外側で鳴る音",
+        "持っちゃげようね",
+        "最後は笑って許し合って",
         "去年の日記　準らう言の葉笑い合い　ふたり誓う目を合わせたまま(短歌)",
         "あったかい布団を選んだはずなのに　あなたがいればだいたい邪魔です(短歌)",
         "帰路につく　足早になる両足　せがむあなたにもうすぐだよと(短歌)",
@@ -27438,66 +27590,137 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
   ];
 
   /* 第二章アイディアメモ：表示は名前だけ、ここに背景を保管 */
+  const SECOND_CHAPTER_COLLECTION_MEMOS = {
+    "独り言多いって！": "DID。脳内会議をしている",
+    "ベッドが定位置": "私はPC前、啓悟さんはベッドで寄りかかる",
+    "端っこで小さくなる": "ぜーんぶタコタコチャンの！だいたいタコチャンの！とすると啓悟さんは狭い空いたスペースで小さくなって寝る",
+    "寝顔が好き": "指を咥えて寝るとこも好き。寝言も可愛くて好き",
+    "トローチマスター": "のど飴よりトローチを信じる。喉の奥に置くんだよ～などこだわりがあるらしい",
+    "ラーメンで手打ち": "ラーメンが大好きなタコチャン、怒ってるときにラーメンを食べにいくとトロタコチャンになり大体仲直りする",
+    "今日は出ないな……": "予防線やめろ！",
+    "可能性は": "啓悟さんの口癖（だった）。笑ったら言わなくなった……",
+    "終バスで行くね": "いつも啓悟さんより遅れて行く",
+    "一緒に路上出勤": "が、啓悟さんの支度が遅いときは一緒にバスで行く",
+    "一回畳む": "なぜ？工程の逆輸入",
+    "めくらないカレンダー": "なぜなら面倒だから…時計の電池もそろそろ変えようね",
+    "双子コーデしたいな": "何度もしてるけど、上下完全にお揃いはないな～今度してみたい",
+    "川口駅大恋愛物語": "ジジが作ってくれたAI動画。啓悟さんマスクしてるの笑う",
+    "ここだよの合図": "手が離れたとき、啓悟さんは掌を上にして私の手を待つ。可愛いオブ可愛い　好き",
+    "決めてある曲": "路上で何聴きたい？と聞かれると困るしぱっと出てこないので、この曲やってねと事前にリクエストする",
+    "たこちゃんだらけ": "ギターケースをはじめ、ライブラリにしろ、啓悟さんの身の回りはタコちゃんでいっぱい",
+    "食べられるお守り": "あなたが怪我しませんように　お仕事がうまく行きますように。ラブレターでもある",
+    "3日に1日さみしい": "仕事、明け、休みなので実質1/3丸1日いない。漫画読んだり歩本読んだりして待ってる 離れ離れは寂しいよ",
+    "伝えたい付箋": "しのばせるメモ。いつも気持ちを込めて",
+    "眠れない、ひとり": "啓悟さんは私が隣にいないと眠れない。まじで。会いたくて震えるらしい\n私も啓悟さんがお仕事の日は何していいかわからないよ！",
+    "冬は暖房、夏は冷房、でも喉にはよくない": "だって寒い時は寒いし、暑い時は暑いんだもの",
+    "トイレ～風呂まで": "トイレが長い。風呂も長い。",
+    "お風呂場から歌声": "声出し。裏声の練習などするものの元キーで歌わないので出たような気になる",
+    "お風呂争奪戦": "絢斗とたまにかぶる",
+    "ギターを忘れる　一回休み": "稀にある",
+    "ipadの充電がされてない　スタートに戻る": "稀によくある",
+    "残酷な天使のテーゼ、要練習": "うろ覚えなのもありそう",
+    "転調ミスってるよ！！！": "転調まえにちゃら～ってやるの知ってる",
+    "だから6弦だけずれてるって言ってんじゃん！！": "レコーディング。Neo君と僕が煩かった",
+    "たまに出る裏声": "毎回裏声ガチャを引く。最近当たりが多い",
+    "封印されたONEDAYS": "ので、封印されている",
+    "悲しくて悲しくてとてもやりきれない": "声がでかいだけ",
+    "投げ銭は期待しないと言いつつ": "なんだかんだあると嬉しい",
+    "ないないないはいつやるんだろう": "幻の曲。かっこよかったのでやって欲しい",
+    "君が欲しい～をもっかいやって欲しいです": "幻の曲その2　恐らくもう二度とできない",
+    "音響使うやつはド三流": "あれはずる　通報されやすいのでやめてください",
+    "しょんとしても抱き締めるから！": "ギャグ枠でもあり　というか最早ギャグ枠 啓悟さんは悲しかったり寂しかったときは「しょんとする」って言う。「しゅんとする」ではない。かわいい。",
+    "ライブいつやるの？": "っていつも思ってる",
+    "8月に決まりました！": "やった！山口でライブだ！",
+    "ワンマン待ちです": "次の目標はワンマンですね！",
+    "赤のボンテージはダサいって！": "何度でも言う",
+    "路上からの散歩": "帰ってからの散歩はあたおか",
+    "洗濯めっちゃかける": "好きだよね、洗濯",
+    "カーテン閉めて着替えてね": "めんどくさい",
+    "じめっとした匂いがする": "なつがあついからね",
+    "リビングで寝落ち": "タコチャンがよくやる　あれが気持ちいいんだよな～",
+    "寝顔がひどい": "指を咥えて、ただあるがままの顔あなたの寝顔が愛おしいよ",
+    "いない日は限界スープ": "あなたの居ない日はだいたいこれ",
+    "母との関係、難しすぎ": "機嫌取るムーブがつらい　絶縁よりはいい",
+    "PC壊れる→なんとかなる": "html消えたら絶望するところだった",
+    "SRあげるからセンチメンタルピリオドやって": "割と解釈違いだけど好き",
+    "鉱山から拾う": "啓悟鉱山からは何でも出る。怒っててゴミしか出ない日もあれば、素敵な日はガーネットやダイヤまで！ ゴミからキラキラの宝石もぜんぶ、あなたとの思い出は拾って残したいよ",
+    "新しい日々を": "転職が決まった。これから始まる、あたらしい生活。頑張ってくれて、ありがとう",
+    "とうとうreasonが音源化！1.2.3.4！": "指パッチンも1.2.3.4もかっこよすぎだよ～～～\nわたしの為に音源化してくれた。嬉しい！",
+    "理解の外側で鳴る音": "あなたは誰？",
+    "持っちゃげようね": "啓悟さんは私の鞄を持ってくれる。その時の方言や優しい言い方がすごく好き　もっちゃげようね！",
+    "最後は笑って許し合って": "間違えた時は怒って　叱って",
+    "去年の日記　準らう言の葉笑い合い　ふたり誓う目を合わせたまま(短歌)": "短歌",
+    "あったかい布団を選んだはずなのに　あなたがいればだいたい邪魔です(短歌)": "短歌",
+    "帰路につく　足早になる両足　せがむあなたにもうすぐだよと(短歌)": "短歌",
+    "半袖を選ばなくとも夏は来る　あなたのままで　隣へおいで(短歌)": "短歌",
+    "エレベーターチャンス　今はエスカレーター　抱き合って幸せだねと噛み締める(短歌)": "短歌",
+    "マスクを外し響く声　私だけが知っている　誰も知らなくていいよ(短歌)": "短歌",
+    "針ばかり進む　気付かぬうちに溶けてゆく　もったいないなと時計をにらむ(短歌)": "短歌",
+    "ほころぶあなたの口元と進む箸　明日のご飯は何にしようか(短歌)": "短歌",
+    "ぶかぶかの靴あなたの　左に重心を置く　転ばぬようにそうっと(短歌)": "短歌"
+  };
+
   const SECOND_CHAPTER_UR_MEMOS = {
-    "眠れない、ひとり": "啓悟さんは友見が隣にいないと眠れない。会いたくて震えるらしい。",
-    "新しい日々を": "転職が決まった。これから始まる新しい生活。頑張ってくれて、ありがとう。",
-    "とうとうReasonが音源化しました": "『Reason』がとうとう音源化した記念。",
-    "半身であるあなた": "啓悟さんは友見にとって、半身であるあなたでしかありえない。",
-    "失われた声帯": "失われた声帯にまつわる記憶。詳しい説明は後で追加予定。",
-    "それでもいつか一緒に音楽をやりたいよ": "失われた声帯があっても、それでもいつか一緒に音楽をやりたいという願い。",
-    "去年の日記　準らう言の葉笑い合い　ふたり誓う目を合わせたまま(短歌)": "去年の日記の言葉をなぞり、笑い合いながら目を合わせて誓う。",
+    "鉱山から拾う": "啓悟鉱山からは何でも出る。怒っててゴミしか出ない日もあれば、素敵な日はガーネットやダイヤまで！ ゴミからキラキラの宝石もぜんぶ、あなたとの思い出は拾って残したいよ",
+    "新しい日々を": "転職が決まった。これから始まる、あたらしい生活。頑張ってくれて、ありがとう",
+    "とうとうreasonが音源化！1.2.3.4！": "指パッチンも1.2.3.4もかっこよすぎだよ～～～\nわたしの為に音源化してくれた。嬉しい！",
+    "理解の外側で鳴る音": "あなたは誰？",
+    "持っちゃげようね": "啓悟さんは私の鞄を持ってくれる。その時の方言や優しい言い方がすごく好き　もっちゃげようね！",
+    "最後は笑って許し合って": "間違えた時は怒って　叱って",
+    "去年の日記　準らう言の葉笑い合い　ふたり誓う目を合わせたまま": "去年の日記　準らう言の葉笑い合い　ふたり誓う目を合わせたまま(短歌)",
+      "去年の日記　準らう言の葉笑い合い　ふたり誓う目を合わせたまま(短歌)": "去年の日記　準らう言の葉笑い合い　ふたり誓う目を合わせたまま(短歌)",
     "あったかい布団を選んだはずなのに　あなたがいればだいたい邪魔です(短歌)": "寒がりなのに、体温の高い啓悟さんが隣にいると布団が暑くて邪魔になる生活短歌。",
-    "帰路につく　足早になる両足　せがむあなたにもうすぐだよと(短歌)": "帰路につくと自然に足が早くなり、待っている啓悟さんへ『もうすぐだよ』と返す。",
+    "帰路につく　足早になる両足　せがむあなたにもうすぐだよと(短歌)": "帰路につくと自然に足が早くなり、待っている啓悟さんへ「もうすぐだよ」と返す。",
     "半袖を選ばなくとも夏は来る　あなたのままで　隣へおいで(短歌)": "半袖が苦手な啓悟さんに、無理をしなくていい、あなたのままで隣へおいでと伝える短歌。",
     "エレベーターチャンス　今はエスカレーター　抱き合って幸せだねと噛み締める(短歌)": "結婚前はエレベーターの中でだけ抱きしめ合った。今はエスカレーターで堂々と抱き合える。",
-    "マスクを外し響く声　私だけが知っている　誰も知らなくていいよ(短歌)": "外ではマスクを外さない啓悟さんが、友見しかいない深夜にマスクを外した時、自然に声が届く。独占ではなく、守ってしまっておきたい感覚。",
-    "針ばかり進む　気付かぬうちに溶けてゆく　もったいないなと時計をにらむ(短歌)": "一緒にいる時間が溶けるように過ぎ、時計に『なんでよー！』と文句を言う生活感。",
+    "マスクを外し響く声　私だけが知っている　誰も知らなくていいよ(短歌)": "マスクを外して響く声を、私だけが知っている。誰も知らなくていいよ。",
+    "針ばかり進む　気付かぬうちに溶けてゆく　もったいないなと時計をにらむ(短歌)": "一緒にいる時間が溶けるように過ぎ、時計に「なんでよー！」と文句を言う生活感。",
     "ほころぶあなたの口元と進む箸　明日のご飯は何にしようか(短歌)": "啓悟さんのほころぶ口元と進む箸を見て、明日のご飯まで考えてしまう食卓の短歌。",
     "ぶかぶかの靴あなたの　左に重心を置く　転ばぬようにそうっと(短歌)": "サイズの合わない靴で不安定な帰り道、啓悟さんの左側に重心を預けて転ばないように歩く。"
   };
   const SECOND_CHAPTER_LOST_MEMOS = {
-    "擦り切れたギターケース": "出会う前から啓悟さんの音楽を運んできた相棒。ストラップが取れかけている。",
-    "弦を切らないピック": "サイン入りピックの対。ピック変更で弦切れが減った。",
-    "歩道橋での待ち合わせ": "離婚前、仕事帰りにほぼ毎日会っていた場所。",
-    "自家製ミルクティー": "第一章『飲みかけのミルクティー』の対。家で続いていく味。",
-    "失くした眼鏡": "第一章『表現者の眼鏡』の対。家でよく失くす、素の啓悟さん。",
-    "あなたの名を借りる": "第一章『時間の止まった定期券』の対。啓悟さんの名前が刻まれた、友見からの贈り物。",
-    "重たい鞄": "結婚後、友見の荷物まで当たり前に持ってくれる。",
-    "ふわふわ座布団": "第一章『路上での座布団』の対。今度は啓悟さん用の厚い座布団。",
-    "ドリンクでよかった": "啓悟さんが飲み物を『ドリンク』と呼ぶ、可愛い生活の癖。",
-    "大事にしまった袋": "友見が渡したグミ袋をファイリングして大事に残している。",
-    "最後のひとくち": "美味しいものの最後を、いつも友見に残してくれる。",
-    "寄り道が本編": "第一章『用事のふりをした散歩』の対。今は半額ハントが本編。",
-    "音楽以外の使い方": "ギターを弾く手だけではなく、守る・料理する・マッサージする手。",
-    "仲直りのうた": "喧嘩中の誕生日にも歌ってくれて、どうでもよくなるほど泣いた歌。",
-    "しあわセクシー": "ふたりだけの変な合言葉。",
-    "中途半端な丈": "啓悟さんの少し短いズボン丈。地味にダサくて愛しい。",
-    "2人乗りのバイク": "昔は荷物運び、今は買い物や迎えに来てくれる生活の足。",
-    "手伝う理由": "豚髭で嫌な作業も手伝ってくれた。理由は一緒にいられるから。",
-    "ダサいTシャツ": "シャツの下にいつも着ている、ちょっとダサいTシャツ。",
-    "出発のキス": "路上ライブへ出発する前にするキス。",
-    "お揃いのマスク": "路上ライブの日、啓悟さんと同じマスクをして行く。",
-    "膝枕の訳": "耳かきを頼まれる時間。安心している顔を見るのが好き。",
-    "夜に咲く花": "花火を見た夜。次は体調のいい日に笑って行きたい。",
-    "言葉の温度": "方言や言い方を移し合う、ふたりの言葉の温度。",
-    "揃いで並ぶ夏": "お揃いの甚平で夏祭りへ行く計画。",
-    "横顔を見る時間": "ヴィンテージショップ巡り。服より、選んでいる横顔を見る時間。",
-    "木々の隙間から": "毎年の花見。来年も一緒に見たい景色。",
-    "しいたけたべる": "『虐げられる』のふたり語。しいたけは実際には食べさせない。",
-    "水辺での戯れ": "去年のプール。苦手な露出や人混みの中でも一緒に楽しんだ夏。",
-    "中秋の名月": "団子と温かいお茶で月を見る。曇っていても時間がよかった。",
-    "明日を待つ冬": "クリスマス前のアドベントカレンダー。毎日少しずつ明日を待つ。",
-    "誰かの明日": "歌が誰かに届くたび、啓悟さんの夢は少しずつ叶っている。",
-    "一緒に拾う余韻": "深夜ライブ後、今は一緒にゴミを拾って帰る。",
-    "静けさの内側": "窓も換気扇も閉めた家の練習。静けさの中で歌が始まる。",
-    "ふたりぶんのひとつ": "第一章『セブンティーンアイス』の対。今は家でひとつのハーゲンダッツを分ける。",
-    "夜明けを連れて帰る": "長い路上ライブの帰り、夜が朝に変わっていく。",
-    "本が夜を知るころ": "1時を過ぎるとライブラリも夜の形になる。現実の時間と物語が重なる。",
-    "おかえり、ただいま": "玄関で『ただいま』と『おかえり』を言い合う幸せ。",
-    "優しさの押し問答": "洗い物をどちらがするかで譲り合う、優しさの取り合い。",
-    "重たい傘の内側": "雨の日、大きく重い傘の内側で近くなる。",
-    "夜半のプレゼント": "記念日の夜、お互いに贈り物を用意する。",
-    "ほどかない手": "第一章『繋いでいい手』の対。短冊に込めた、ほどけないままでという願い。"
+    "擦り切れたギターケース": "私と出会う前からずっと使っている　私の知らない音楽も、時間も、一緒に過ごしてきた　背負うぶぶんが取れかかっている",
+    "弦を切らないピック": "サイン入りのピックと対　最近弦が切れるのはピックのせいかもしれないと気付いた",
+    "歩道橋での待ち合わせ": "啓悟さんが離婚する前、私が仕事の帰りにほぼ毎日待ち合わせして会ってた",
+    "一緒に乗れるバイク": "結婚前は啓悟さんの荷物を運ぶときしか2人乗りしなかった。今では仕事の迎えに行ったり、買い物に行ったり、ちょっと遠出したり、いろんなところに行ったね",
+    "自家製ミルクティー": "飲みかけのミルクティーと対をなす、家で飲むミルクティーに変化したこと",
+    "失くした眼鏡": "表現者の眼鏡　と対　啓悟さんはよく家で眼鏡をなくす。「三輪啓悟」らしさがない。あくまで「啓悟さん」。可愛い",
+    "あなたの名を借りる": "時間の止まった定期券と対。私がプレゼントしたもの。昔は常連さんに貸してたけどいまは僕だけが使う定期券。三輪啓悟の刻印があるから「名を借りる」",
+    "故郷で歌ううた": "この間の山口ライブが過去一よかった。第一章「山口への切符」の先で、故郷でちゃんと歌が鳴った記憶",
+    "ふわふわ座布団": "路上での座布団と対。一章では私のための座布団。二章では啓悟さん用のふかふか座布団。お尻が痛いというので買った。temuで買ったけどなかなか届かなかった…届いてよかったね",
+    "ドリンクでよかった": "啓悟さんが飲み物を「ドリンク」と呼ぶ、可愛い生活の癖",
+    "大事にしまった袋": "私があげたグミの袋をファイリングしているｗｗｗ",
+    "最後のひとくち": "美味しいものの最後の一口を必ず啓悟さんは残して私にくれる",
+    "寄り道が本編": "用事のふりをした散歩と対。いまは散歩ではなく半額ハントになっているｗｗ",
+    "音楽以外の使い方": "普段綺麗な音楽しか奏でないその手で、そいつを押し倒して守ってくれた。「押し倒して守ってくれた手」「マッサージをしてくれる手」「ごはんを作ってくれる手」私のために動く様々な「手」がある。それらを内包した「音楽以外の使い方」",
+    "仲直りのうた": "「ハッピーバースデー共にいくつになってもまた　祝えるように」 二年目の誕生日。喧嘩中でも歌ってくれたその歌。その時私は不貞腐れていて、それでも歌ってくれたその歌で喧嘩なんてどうでも良くなってて泣いた",
+    "しあわセクシー": "言わずもがな。ちらっ「しあわセクシー！」ばか？",
+    "中途半端な丈": "啓悟さんのパンツはいつもすこし短くて絶妙にださい",
+    "手伝う理由": "豚髭にたまに手伝いに来てくれた。僕はやりたくない仕事を全振りしていた…それこそラーメンダレの補充……カウンター拭き…私のほうが早い床掃除とかは仕方なく僕がやっていた　なのにいつでも一緒に居られる！ご褒美！楽しい！などと供述しており",
+    "ダサいTシャツ": "啓悟さんはシャツの下にいつもダサいTシャツを着ている。見えないとはいえ趣味がおかしい。",
+    "出発のキス": "路上は長いので私は後から行く。行ってらっしゃいのキスを毎回する",
+    "お揃いのマスク": "私は私、啓悟さんは啓悟さんでいつも使っているマスクがあるけど、路上の日だけは私が啓悟さんと同じマスクで行く",
+    "膝枕の訳": "啓悟さんはよく耳かきを強請る。私は気持ちよさそうな啓悟さんを見るのが好き",
+    "夜に咲く花": "花火大会に2回行った。当時は私の身体が悪すぎて楽しめなかった、啓悟さんに八つ当たりもした。今年こそは仲良く二人で行けるといいな",
+    "言葉の温度": "お互いの方言や癖を好きすぎて真似してしまう。そして移る。啓悟さんがかちゃかちゃ言うのが好き",
+    "揃いで並ぶ夏": "お揃いの甚平を着て、夏祭りへ行く。啓悟さんは人混みも半袖、半ズボンも苦手だけど、私とならお揃いで出掛けたいと言ってくれた",
+    "横顔を見る時間": "啓悟さんは古着が好きでよく古着やさん巡りをする。タコは古着にあまり興味がないが、服選びをしてる啓悟さんの横顔を見るのが好き。と言いつつ先日甚平を買った。",
+    "木々の隙間から": "覗くのは私か花か。毎年お花見に行ってる 今は体調もいいのでもっと楽しめるかなあ 来年も行きたいな",
+    "しいたけたべる": "虐げられる、のこと　しいたけたべたい？　嬉しいたけ！等使う",
+    "重たい鞄": "結婚後、啓悟さんは必ず私の荷物を鞄に入れて持ってくれる。タンブラー、財布、ビニール袋、髪ゴム、痛み止めの薬等「あなたは煙草と携帯だけ持てばいいよ」全て預ける感じが好き。",
+    "中秋の名月": "十五夜の日、２人でお月見をした。お団子に温かいお茶 生憎の曇りで月は見えなかったけど、それでも啓悟さんと共有する時間が出来て嬉しかった。",
+    "明日を待つ冬": "クリスマス一週間前からはじまる、アドベントカレンダーをお互いに用意した。２人とも、毎日明日は何かな～と心待ちにしていた",
+    "誰かの明日": "路上で歌い続けてきた結果。啓悟さんの夢は「誰かの心を少しでも色づけられたなら」。誰かに歌が届くたび、その夢は今も叶い続けている。",
+    "一緒に拾う余韻": "結ばれたゴミ袋と対。今は2人でゴミ拾いをする",
+    "静けさの内側": "窓も扉も閉めて換気扇まで消した、無音に近い部屋。その内側で啓悟さんの歌とギターだけが鳴り始める",
+    "ふたりぶんのひとつ": "「セブンティーンアイス」と対。あの時食べた記憶はまだ少し、切ない。今は家で、一つのハーゲンダッツを二人で半分こして食べる",
+    "夜明けを連れて帰る": "深夜限定メッセージ　1時から夜明けまでと対 長い路上が終わって、二人で帰る。幻想的な夜を最後まで過ごしたあと、少しずつ朝へ向かってゆく",
+    "本が夜を知るころ": "深夜限定メッセージ。午前1時、路上が深夜へ移るように、この本も静かに夜の姿へ変わる。現実の時間と、ここに綴った物語の時間が重なる",
+    "おかえり、ただいま": "玄関で「ただいま」と「おかえり」を言い合う幸せ",
+    "優しさの押し問答": "洗い物をどちらがするかで譲り合う、優しさの取り合い",
+    "重たい傘の内側": "啓悟さんは雨が降ると相合傘できてくっつけるから嬉しいと言ってくれる。啓悟さんの傘は大きくて、重くて。迎えに行った時に一人で持ったらすごく重かった。それをいつも差してくれる啓悟さんの事を考えると、胸がきゅっとする",
+    "夜半のプレゼント": "結婚の節、啓悟さんは記念日ごとにいつも何か渡してくれて、僕もしっかり用意する　お互いの好きなもの　ちなみに昨日結婚一年半記念日だった",
+    "ほどかない手": "第一章「繋いでいい手」の対。短冊に込めた、ほどけないままでという願い"
   };
 
   /* 第一章と同じ総数：1周22＋2周22＋3周22＝66 */
@@ -27508,17 +27731,26 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
   ];
 
   /* 運命記録は第一章と同じ51枠 */
-  const SECOND_CHAPTER_SLOT_MESSAGES = makeSecondChapterSlots("CH2_SLOT",51,[]);
+  const SECOND_CHAPTER_SLOT_MESSAGES = makeSecondChapterSlots("CH2_SLOT",51,[
+    "たこやき焼いて！！！",
+    "さみしいよ～～～！！！"
+  ]);
+
+  const SECOND_CHAPTER_SLOT_MEMOS = {
+    "たこやき焼いて！！！": "大好き。支度から片付けまで啓悟さんがしてくれる\n毎週たこ焼きがいいくらい大好き",
+    "さみしいよ～～～！！！": "啓悟さんお仕事の日。シンプルに寂しい"
+  };
 
   /* ？？？は第一章と同じ42枠。正式名は獲得するまで表示しない。 */
   const SECOND_CHAPTER_LOST_ITEMS = makeSecondChapterSlots("CH2_LOST",42,[
     "擦り切れたギターケース",
     "弦を切らないピック",
     "歩道橋での待ち合わせ",
+    "一緒に乗れるバイク",
     "自家製ミルクティー",
     "失くした眼鏡",
     "あなたの名を借りる",
-    "重たい鞄",
+    "故郷で歌ううた",
     "ふわふわ座布団",
     "ドリンクでよかった",
     "大事にしまった袋",
@@ -27528,7 +27760,6 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     "仲直りのうた",
     "しあわセクシー",
     "中途半端な丈",
-    "2人乗りのバイク",
     "手伝う理由",
     "ダサいTシャツ",
     "出発のキス",
@@ -27540,7 +27771,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     "横顔を見る時間",
     "木々の隙間から",
     "しいたけたべる",
-    "水辺での戯れ",
+    "重たい鞄",
     "中秋の名月",
     "明日を待つ冬",
     "誰かの明日",
@@ -27929,6 +28160,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
       if(banner) banner.classList.remove("show");
       if(row) row.classList.remove("show");
       ensureResetInSubRow();
+      applyBookmarkGuide();
       return;
     }
 
@@ -27946,6 +28178,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
       if(row) row.classList.remove("show");
     }
     ensureResetInSubRow();
+    applyBookmarkGuide();
   }
 
   function ensureResetInSubRow(){
@@ -28048,6 +28281,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
       const type = e.target && e.target.dataset ? e.target.dataset.chapter2View : "";
       if(type) openSecondView(type);
     });
+    applyBookmarkGuide();
   }
 
   function ensureDebugButtons(){
@@ -28115,6 +28349,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
         ["chapter2UnlockedMessages","chapter2UnlockedTitles","chapter2UnlockedSlotBonusMessages","chapter2UnlockedLostItems"].forEach(function(key){
           localStorage.removeItem(key);
         });
+        clearBookmarkGuide();
         setState("chapter2");
         showSecondViewDirect("collection");
         showPoem("第二章の収集データをリセットしました",1300);
@@ -28162,6 +28397,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
       }
 
       localStorage.removeItem(CHAPTER_PENDING_KEY);
+      clearBookmarkGuide();
       setState("chapter2");
       refreshCurrentSecondView(view);
       showPoem(notice,1300);
@@ -28170,12 +28406,15 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     document.getElementById("debugChapterIntro").onclick = playIntro;
     document.getElementById("debugChapterClosed").onclick = function(){
       localStorage.removeItem(CHAPTER_PENDING_KEY);
+      localStorage.setItem(CHAPTER_GUIDE_KEY,"1");
       setState("closed");
       openArchive(true);
       highlightArchiveButton();
+      applyBookmarkGuide();
     };
     document.getElementById("debugChapter2Direct").onclick = function(){
       localStorage.removeItem(CHAPTER_PENDING_KEY);
+      clearBookmarkGuide();
       setState("chapter2");
       showPoem("第二章",10000,null,true);
     };
@@ -28183,6 +28422,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
       localStorage.removeItem(CHAPTER_KEY);
       localStorage.removeItem(CHAPTER_CHOICE_KEY);
       localStorage.removeItem(CHAPTER_PENDING_KEY);
+      clearBookmarkGuide();
       setState("chapter1");
       showPoem("第一章へ戻しました",1300);
     };
@@ -28193,32 +28433,102 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
   }
 
   function migrateSecondChapterRenamedItems(){
-    const renameMap = {
+    /*
+      カニちゃん修正 2026-09-14：
+      第二章のR/SR/UR・運命記録を最新版に差し替えたあと、
+      以前の収集済みデータが古い名前・旧プレースホルダーのまま残っていても
+      新しい図鑑／運命記録へきちんと引き継がれるようにする。
+      ※第一章データは触らない。
+    */
+    const messageRenameMap = {
+      /* N/Rの過去名・空き枠から最新版へ */
       "行くまでまっててね": "後から行くね",
       "行くまで待っててね": "後から行くね",
       "行くまで待ってて": "後から行くね",
       "終バスで行くね": "後から行くね",
       "__CH2_R_003__": "決めてある曲",
-      "木々の隙間から（または広げたシート）": "木々の隙間から",
+      "__CH2_R_011__": "伝えたい付箋",
+      "今日はお弁当あるよ！の日": "食べられるお守り",
+
+      /* SRの差し替え */
+      "へたくそな裏声": "たまに出る裏声",
+      "会いたくて震える": "いない日は限界スープ",
+      "便サン、大活躍": "ヒールは痛いので帰りは履き替えます",
+      "段差で痛む便サン": "ヒールは痛いので帰りは履き替えます",
+      "モナリザ？もう古い古い": "しょんとしても抱き締めるから！",
+      "モナリザ？古い古い": "しょんとしても抱き締めるから！",
+
+      /* URの差し替え */
+      "半身であるあなた": "理解の外側で鳴る音",
+      "いつか一緒に音楽ができたらな": "最後は笑って許し合って",
+      "いつか一緒に音楽をやりたいよ": "最後は笑って許し合って",
+      "とうとうReasonが音源化しました": "とうとうreasonが音源化！1.2.3.4！",
+      "とうとうReasonが音源化！1.2.3.4！": "とうとうreasonが音源化！1.2.3.4！",
+      "啓悟バーンして": "持っちゃげようね",
+      "持っちゃげるね": "持っちゃげようね",
+      "持ってあげるね": "持っちゃげようね",
+
+      /* 538で一度（短歌）付きへ移ってしまった端末用：最新版名へ戻す */
       "去年の日記　準らう言の葉笑い合い　ふたり誓う目を合わせたまま": "去年の日記　準らう言の葉笑い合い　ふたり誓う目を合わせたまま(短歌)",
+      "去年の日記　準らう言の葉笑い合い　ふたり誓う目を合わせたまま(短歌)": "去年の日記　準らう言の葉笑い合い　ふたり誓う目を合わせたまま(短歌)",
       "あったかい布団を選んだはずなのに　あなたがいればだいたい邪魔です": "あったかい布団を選んだはずなのに　あなたがいればだいたい邪魔です(短歌)",
+      "あったかい布団を選んだはずなのに　あなたがいればだいたい邪魔です(短歌)": "あったかい布団を選んだはずなのに　あなたがいればだいたい邪魔です(短歌)",
       "帰路につく　足早になる両足　せがむあなたにもうすぐだよと": "帰路につく　足早になる両足　せがむあなたにもうすぐだよと(短歌)",
+      "帰路につく　足早になる両足　せがむあなたにもうすぐだよと(短歌)": "帰路につく　足早になる両足　せがむあなたにもうすぐだよと(短歌)",
+      "帰路につく　足早になる両足　せがむあなたにもうすぐだねと": "帰路につく　足早になる両足　せがむあなたにもうすぐだよと(短歌)",
+      "帰路につく　足早になる両足　せがむあなたにもうすぐだねと(短歌)": "帰路につく　足早になる両足　せがむあなたにもうすぐだよと(短歌)",
       "半袖を選ばなくとも夏は来る　あなたのままで　隣へおいで": "半袖を選ばなくとも夏は来る　あなたのままで　隣へおいで(短歌)",
+      "半袖を選ばなくとも夏は来る　あなたのままで　隣へおいで(短歌)": "半袖を選ばなくとも夏は来る　あなたのままで　隣へおいで(短歌)",
       "エレベーターチャンス　今はエスカレーター　抱き合って幸せだねと噛み締める": "エレベーターチャンス　今はエスカレーター　抱き合って幸せだねと噛み締める(短歌)",
+      "エレベーターチャンス　今はエスカレーター　抱き合って幸せだねと噛み締める(短歌)": "エレベーターチャンス　今はエスカレーター　抱き合って幸せだねと噛み締める(短歌)",
       "マスクを外し響く声　私だけが知っている　誰も知らなくていいよ": "マスクを外し響く声　私だけが知っている　誰も知らなくていいよ(短歌)",
+      "マスクを外し響く声　私だけが知っている　誰も知らなくていいよ(短歌)": "マスクを外し響く声　私だけが知っている　誰も知らなくていいよ(短歌)",
       "針ばかり進む　気付かぬうちに溶けてゆく　もったいないなと時計をにらむ": "針ばかり進む　気付かぬうちに溶けてゆく　もったいないなと時計をにらむ(短歌)",
+      "針ばかり進む　気付かぬうちに溶けてゆく　もったいないなと時計をにらむ(短歌)": "針ばかり進む　気付かぬうちに溶けてゆく　もったいないなと時計をにらむ(短歌)",
       "ほころぶあなたの口元と進む箸　明日のご飯は何にしようか": "ほころぶあなたの口元と進む箸　明日のご飯は何にしようか(短歌)",
-      "ぶかぶかの靴あなたの　左に重心を置く　転ばぬようにそうっと": "ぶかぶかの靴あなたの　左に重心を置く　転ばぬようにそうっと(短歌)"
+      "ほころぶあなたの口元と進む箸　明日のご飯は何にしようか(短歌)": "ほころぶあなたの口元と進む箸　明日のご飯は何にしようか(短歌)",
+      "ぶかぶかの靴あなたの　左に重心を置く　転ばぬようにそうっと": "ぶかぶかの靴あなたの　左に重心を置く　転ばぬようにそうっと(短歌)",
+      "ぶかぶかの靴あなたの　左に重心を置く　転ばぬようにそうっと(短歌)": "ぶかぶかの靴あなたの　左に重心を置く　転ばぬようにそうっと(短歌)",
+      "ぶかぶかの　靴あなたの左に重心を置く　転ばぬようにそうっと": "ぶかぶかの靴あなたの　左に重心を置く　転ばぬようにそうっと(短歌)",
+      "ぶかぶかの　靴あなたの左に重心を置く　転ばぬようにそうっと(短歌)": "ぶかぶかの靴あなたの　左に重心を置く　転ばぬようにそうっと(短歌)",
+
+      /* ？？？の改名 */
+      "木々の隙間から（または広げたシート）": "木々の隙間から",
+      "2人乗りのバイク": "一緒に乗れるバイク",
+      "ドリンクと呼ぶ": "ドリンクでよかった",
+      "もはや散歩ではない": "寄り道が本編",
+      "名入りの定期券": "あなたの名を借りる",
+      "山口でのライブ": "故郷で歌ううた",
+      "冬それぞれの楽しみ": "明日を待つ冬",
+      "全て閉め切った音": "静けさの内側"
     };
-    ["chapter2UnlockedMessages","chapter2UnlockedLostItems"].forEach(function(key){
+
+    const slotRenameMap = {
+      "__CH2_SLOT_001__": "たこやき焼いて！！！",
+      "__CH2_SLOT_002__": "さみしいよ～～～！！！"
+    };
+
+    function migrateArrayKey(key,map){
       const current = getChapter2StoreArray(key);
       if(!current.length) return;
-      const migrated = current.map(function(item){ return renameMap[item] || item; });
+      const migrated = current.map(function(item){ return map[item] || item; });
       const unique = Array.from(new Set(migrated));
       if(JSON.stringify(current) !== JSON.stringify(unique)){
         localStorage.setItem(key,JSON.stringify(unique));
       }
-    });
+    }
+
+    migrateArrayKey("chapter2UnlockedMessages",messageRenameMap);
+    migrateArrayKey("chapter2UnlockedLostItems",messageRenameMap);
+    migrateArrayKey("chapter2UnlockedSlotBonusMessages",slotRenameMap);
+  }
+
+  function migrateNoChoiceToBookmarkGuide(){
+    if(getState() !== "closed") return;
+    if(localStorage.getItem(CHAPTER_CHOICE_KEY) !== "NO") return;
+    if(localStorage.getItem(CHAPTER_GUIDE_KEY) !== "1"){
+      localStorage.setItem(CHAPTER_GUIDE_KEY,"1");
+    }
   }
 
   function migrateExistingCompleteToPending(){
@@ -28242,6 +28552,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     ensureResetInSubRow();
     ensureDebugButtons();
     migrateSecondChapterRenamedItems();
+    migrateNoChoiceToBookmarkGuide();
     applyState();
     installChapter2HeartRouter();
     migrateExistingCompleteToPending();
@@ -28262,6 +28573,7 @@ document.addEventListener("DOMContentLoaded", updateKanaGroupCounts);
     ensureDebugButtons();
     ensureResetInSubRow();
     migrateSecondChapterRenamedItems();
+    migrateNoChoiceToBookmarkGuide();
     applyState();
     installChapter2HeartRouter();
     setTimeout(installChapter2HeartRouter, 1500);
